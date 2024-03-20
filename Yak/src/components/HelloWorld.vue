@@ -1,10 +1,11 @@
-import { DiscordSDK } from "@discord/embedded-app-sdk";
+<script setup lang="ts">
+import { DiscordSDK } from '@discord/embedded-app-sdk';
+import { createConsumer } from '@rails/actioncable';
 
-import rocketLogo from '/rocket.png';
-import "./style.css";
+defineProps<{ msg: string }>()
 
 // Will eventually store the authenticated user's access_token
-let auth;
+let auth: any;
 
 const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
 
@@ -15,6 +16,7 @@ setupDiscordSdk().then(async() => {
   // Note: the access_token returned is a sensitive secret and should be treated as such
   appendVoiceChannelName()
   appendGuildAvatar();
+  connectToCable();
 });
 
 async function setupDiscordSdk() {
@@ -51,7 +53,7 @@ async function requestAuthorizationCode(){
   });
 }
 
-async function requestTokenExchange(code){
+async function requestTokenExchange(code: string){
   return fetch("/api/tokens", {
     method: "POST",
     headers: {
@@ -63,7 +65,7 @@ async function requestTokenExchange(code){
   });
 }
 
-async function appendVoiceChannelName(user) {
+async function appendVoiceChannelName() {
   const app = document.querySelector('#app');
 
   let activityChannelName = 'Unknown';
@@ -89,7 +91,7 @@ async function appendVoiceChannelName(user) {
   const textTagString = `Activity Channel: ${activityChannelName}`;
   const textTag = document.createElement('p');
   textTag.innerHTML = textTagString;
-  app.appendChild(textTag);
+  app?.appendChild(textTag);
 }
 
 async function appendGuildAvatar() {
@@ -105,7 +107,7 @@ async function appendGuildAvatar() {
   }).then((response) => response.json());
 
   // 2. Find the current guild's info, including it's "icon"
-  const currentGuild = guilds.find((g) => g.id === discordSdk.guildId);
+  const currentGuild = guilds.find((g: any) => g.id === discordSdk.guildId);
 
   // 3. Append to the UI an img tag with the related information
   if (currentGuild != null) {
@@ -118,13 +120,28 @@ async function appendGuildAvatar() {
     guildImg.setAttribute('width', '128px');
     guildImg.setAttribute('height', '128px');
     guildImg.setAttribute('style', 'border-radius: 50%;');
-    app.appendChild(guildImg);
+    app?.appendChild(guildImg);
   }
 }
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <img src="${rocketLogo}" class="logo" alt="Discord" />
-    <h1>I'm in your discord, running your activity.</h1>
-  </div>
-`;
+function connectToCable(){
+  const consumer = createConsumer("wss://enlargement-choice-mv-upper.trycloudflare.com/cable");
+  consumer.subscriptions.create({ channel: "ChatChannel", instance: discordSdk.instanceId },
+  {
+    received(data){
+      console.log('Got a response from the actioncable!');
+      console.log(data);
+    }
+  })
+  consumer.send({ sent_by: auth.user.username, body: "Ping" });
+}
+
+
+</script>
+
+<template>
+  <h1>Deez</h1>
+</template>
+
+<style scoped>
+</style>
