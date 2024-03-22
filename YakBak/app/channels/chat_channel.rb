@@ -4,7 +4,7 @@ class ChatChannel < ApplicationCable::Channel
     stream_from "chat_#{params[:instance]}"
   end
 
-  def receive(data)
+  def sendMessage(data)
     puts 'In the receive(data) function'
     puts data
     ActionCable.server.broadcast("chat_#{params[:instance]}", data)
