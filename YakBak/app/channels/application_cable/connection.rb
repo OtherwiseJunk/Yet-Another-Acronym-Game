@@ -4,7 +4,6 @@ module ApplicationCable
 
     def connect
       puts 'in channel connection!'
-      puts params
     end
   end
 end
