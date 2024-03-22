@@ -125,7 +125,7 @@ async function appendGuildAvatar() {
 }
 
 function connectToCable(){
-  const consumer = createConsumer("wss://enlargement-choice-mv-upper.trycloudflare.com/cable");
+  const consumer = createConsumer("/api/cable");
   consumer.subscriptions.create({ channel: "ChatChannel", instance: discordSdk.instanceId },
   {
     received(data){
