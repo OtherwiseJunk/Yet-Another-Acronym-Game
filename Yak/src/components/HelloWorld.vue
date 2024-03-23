@@ -106,19 +106,13 @@ function connectToCable(){
   instanceChat = consumer.subscriptions.create({ channel: "ChatChannel", instance: discordSdk.instanceId, discordUserId: auth.user.id },
   {
     received(data){
-      console.log('Got a response from the actioncable!');
-      console.log(data);
       messages.value.push(data as Message);
     }
   })
 }
 
 function sendMessage(){
-  console.log(auth);
-  let messageObject = new Message(auth.user.username, message.value, Date.now());
-  let response = instanceChat.send(messageObject);
-  console.log(`success response? ${response}`);
-  messages.value.push(messageObject);
+  instanceChat.send(new Message(auth.user.username, message.value, Date.now()));
   message.value = "";
 }
 
