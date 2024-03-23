@@ -1,7 +1,7 @@
 <template>
     <div class="message-container">
         <p class="message-content">{{ content }}</p>
-        <p class="message-metadata">{{ author }} - {{ new Date(time * 1000).toLocaleTimeString() }}</p>
+        <p class="message-metadata">{{ author }} - {{ new Date(time).toLocaleTimeString() }}</p>
     </div>
 </template>
 

@@ -12,6 +12,7 @@ defineProps<{ msg: string }>()
 let auth: any;
 let accessToken: string;
 const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
+const incomingMessage = new Audio('assets/incoming_message.mp3');
 
 let message = ref("");
 let messages: Ref<Message[]> = ref([])
@@ -120,27 +121,41 @@ function connectToCable(){
   instanceChat = consumer.subscriptions.create({ channel: "ChatChannel", instance: discordSdk.instanceId, discordUserId: auth.user.id },
   {
     received(data){
-      messages.value.push(data as Message);
+      let msg = (data as Message);
+      messages.value.push(msg);
+      scrollToBottom();
+      if(msg.author != auth.user.username){
+        incomingMessage.play()
+      }
     }
   })
 }
 
 function sendMessage(){
-  instanceChat.send(new Message(auth.user.username, message.value, Date.now()));
-  message.value = "";
+  if(message.value){
+    instanceChat.send(new Message(auth.user.username, message.value, Date.now()));
+    message.value = "";
+  }
+}
+
+function scrollToBottom(){
+  setTimeout(() =>{
+    var chatWindow = document.getElementById("chat-box");
+    chatWindow!.scrollTop = chatWindow!.scrollHeight; 
+  }, 50);
 }
 
 
 </script>
 
 <template>
-  <div class="chat-box">
+  <div id="chat-box" class="chat-box">
     <div v-for="msg in messages">
       <MessageComponent :content="msg.content" :author="msg.author" :time="msg.timestamp"/>
     </div>
   </div>
   <div class="chat-inputs">
-    <input id="message-input" type="text" placeholder="Enter a message!" v-model="message"/>
+    <input id="message-input" type="text" placeholder="Enter a message!" v-model="message" @keyup.enter="sendMessage"/>
     <button @click="sendMessage">Send Message</button>
   </div>
 </template>
@@ -150,5 +165,6 @@ function sendMessage(){
     height: 250px;
     width: 700px;
     outline: 2px black solid;
+    overflow-y: scroll;
   }
 </style>
