@@ -10,6 +10,7 @@ defineProps<{ msg: string }>()
 
 // Will eventually store the authenticated user's access_token
 let auth: any;
+let accessToken: string;
 const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
 
 let message = ref("");
@@ -21,9 +22,22 @@ setupDiscordSdk().then(async() => {
 
   // We can now make API calls within the scopes we requested in setupDiscordSDK()
   // Note: the access_token returned is a sensitive secret and should be treated as such
-  appendVoiceChannelName()
-  connectToCable();
+  if(accessToken){
+    appendVoiceChannelName()
+    connectToCable();
+  }
+  else{
+    unauthenticatedUser();
+  }
 });
+
+function unauthenticatedUser(){
+  // Update the UI with a message telling the user they're A CRIMINAL
+  const app = document.querySelector('#app');
+  const textTag = document.createElement('p');
+  textTag.innerHTML = 'You\'re UNAUTHORIZED. Police will be dispatched to your area shortly.';
+  app?.appendChild(textTag);
+}
 
 async function setupDiscordSdk() {
   await discordSdk.ready();
@@ -34,11 +48,11 @@ async function setupDiscordSdk() {
 
   // Retrieve an access_token from your activity's server
   const response = await requestTokenExchange(code);
-  const { access_token } = await response.json();
+  accessToken = (await response.json()).access_token;
 
   // Authenticate with Discord client (using the access_token)
   auth = await discordSdk.commands.authenticate({
-    access_token,
+    access_token: accessToken,
   });
 
   if (auth == null) {
@@ -101,7 +115,7 @@ async function appendVoiceChannelName() {
 }
 
 function connectToCable(){
-  let consumer = createConsumer("/api/cable?discordId=69");
+  let consumer = createConsumer(`/api/cable?token=${accessToken}`);
   consumer.connect();
   instanceChat = consumer.subscriptions.create({ channel: "ChatChannel", instance: discordSdk.instanceId, discordUserId: auth.user.id },
   {
