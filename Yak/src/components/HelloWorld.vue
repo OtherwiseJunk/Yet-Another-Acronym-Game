@@ -1,21 +1,27 @@
 <script setup lang="ts">
 import { DiscordSDK } from '@discord/embedded-app-sdk';
-import { createConsumer } from '@rails/actioncable';
+import { Channel, createConsumer } from '@rails/actioncable';
+import { ref } from 'vue';
+import type { Ref } from 'vue';
+import { Message } from '../models/message'
+import MessageComponent from './MessageComponent.vue';
 
 defineProps<{ msg: string }>()
 
 // Will eventually store the authenticated user's access_token
 let auth: any;
-
 const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
+
+let message = ref("");
+let messages: Ref<Message[]> = ref([])
+let instanceChat: Channel
 
 setupDiscordSdk().then(async() => {
   console.log("Discord SDK is authenticated");
-  
+
   // We can now make API calls within the scopes we requested in setupDiscordSDK()
   // Note: the access_token returned is a sensitive secret and should be treated as such
   appendVoiceChannelName()
-  appendGuildAvatar();
   connectToCable();
 });
 
@@ -94,54 +100,47 @@ async function appendVoiceChannelName() {
   app?.appendChild(textTag);
 }
 
-async function appendGuildAvatar() {
-  const app = document.querySelector('#app');
-
-  // 1. From the HTTP API fetch a list of all of the user's guilds
-  const guilds = await fetch(`https://discord.com/api/v10/users/@me/guilds`, {
-    headers: {
-      // NOTE: we're using the access_token provided by the "authenticate" command
-      Authorization: `Bearer ${auth.access_token}`,
-      'Content-Type': 'application/json',
-    },
-  }).then((response) => response.json());
-
-  // 2. Find the current guild's info, including it's "icon"
-  const currentGuild = guilds.find((g: any) => g.id === discordSdk.guildId);
-
-  // 3. Append to the UI an img tag with the related information
-  if (currentGuild != null) {
-    const guildImg = document.createElement('img');
-    guildImg.setAttribute(
-      'src',
-      // More info on image formatting here: https://discord.com/developers/docs/reference#image-formatting
-      `https://cdn.discordapp.com/icons/${currentGuild.id}/${currentGuild.icon}.webp?size=128`
-    );
-    guildImg.setAttribute('width', '128px');
-    guildImg.setAttribute('height', '128px');
-    guildImg.setAttribute('style', 'border-radius: 50%;');
-    app?.appendChild(guildImg);
-  }
-}
-
 function connectToCable(){
-  const consumer = createConsumer("/api/cable");
-  consumer.subscriptions.create({ channel: "ChatChannel", instance: discordSdk.instanceId },
+  let consumer = createConsumer("/api/cable?discordId=69");
+  consumer.connect();
+  instanceChat = consumer.subscriptions.create({ channel: "ChatChannel", instance: discordSdk.instanceId, discordUserId: auth.user.id },
   {
     received(data){
       console.log('Got a response from the actioncable!');
       console.log(data);
+      messages.value.push(data as Message);
     }
   })
-  consumer.send({ sent_by: auth.user.username, body: "Ping" });
+}
+
+function sendMessage(){
+  console.log(auth);
+  let messageObject = new Message(auth.user.username, message.value, Date.now());
+  let response = instanceChat.send(messageObject);
+  console.log(`success response? ${response}`);
+  messages.value.push(messageObject);
+  message.value = "";
 }
 
 
 </script>
 
 <template>
-  <h1>Deez</h1>
+  <div class="chat-box">
+    <div v-for="msg in messages">
+      <MessageComponent :content="msg.content" :author="msg.author" :time="msg.timestamp"/>
+    </div>
+  </div>
+  <div class="chat-inputs">
+    <input id="message-input" type="text" placeholder="Enter a message!" v-model="message"/>
+    <button @click="sendMessage">Send Message</button>
+  </div>
 </template>
 
 <style scoped>
+  .chat-box{
+    height: 250px;
+    width: 700px;
+    outline: 2px black solid;
+  }
 </style>
