@@ -12,8 +12,7 @@ defineProps<{ msg: string }>()
 let auth: any;
 let accessToken: string;
 const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
-const incomingMessage = new Audio('assets/incoming_message.mp3');
-
+const incomingMessage = new Audio('/assets/incoming_message.mp3');
 let message = ref("");
 let messages: Ref<Message[]> = ref([])
 let instanceChat: Channel
@@ -124,7 +123,7 @@ function connectToCable(){
       let msg = (data as Message);
       messages.value.push(msg);
       scrollToBottom();
-      if(msg.author != auth.user.username){
+      if(msg.author !== auth.user.username){
         incomingMessage.play()
       }
     }
