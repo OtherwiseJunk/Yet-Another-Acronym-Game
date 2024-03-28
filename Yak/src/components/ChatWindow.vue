@@ -4,18 +4,19 @@ import MessageInput from './MessageInput.vue';
 import { useChatStore } from '../stores/cableStore';
 import { watch } from 'vue';
 import { useDiscordStore } from '../stores/discordStore';
+import { Message } from '../models/message';
 
 const chat = useChatStore();
 const discord = useDiscordStore();
 const incomingMessage = new Audio('/assets/incoming_message.mp3');
 
-watch(chat.messages, (newMessages, oldMessages) =>{
-  if(newMessages.length <= oldMessages.length){
+chat.$subscribe((mutation: any, _) =>{
+  const newMessage = mutation.events.newValue;
+  if(!newMessage){
     return;
   }
-
+  
   scrollToBottom();
-  const newMessage = newMessages.sort((a, b) => a.timestamp - b.timestamp)[0];
   if (newMessage.userData.displayName !== discord.auth.user.username) {
     incomingMessage.play()
   }
