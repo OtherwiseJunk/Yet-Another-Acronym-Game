@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import ChatWindow from './components/ChatWindow.vue'
 </script>
 
 <template>
@@ -7,7 +7,7 @@ import HelloWorld from './components/HelloWorld.vue'
     <img src="./assets/yaag_yak.svg" class="logo" alt="YAAG logo" />
     <h2>Yet Another Acronym Game</h2>
   </div>
-  <HelloWorld msg="Vite + Vue" />
+  <ChatWindow/>
 </template>
 
 <style scoped>

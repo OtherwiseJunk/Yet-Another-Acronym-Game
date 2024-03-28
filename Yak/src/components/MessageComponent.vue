@@ -1,14 +1,14 @@
 <template>
-    <div class="bubbleWrapper" @mouseenter="hovered" @mouseleave="hovered">
-        <div class="inlineContainer" >
-            <Avatar class="avatar" :avatarDecorationUrl="avatarDecorationUrl" :avatarUrl="avatarUrl" :shouldAnimate="shouldAnimate"></Avatar>
-            <div class="content-and-username">
-                <div>
-                    <span class="username">{{ author }}</span> <span class="timestamp">{{ new Date(time).toLocaleTimeString() }}</span>
-                </div>
-                <div class="bubble">
-                    {{ content }}
-                </div>
+    <div class="message-container" @mouseenter="hovered" @mouseleave="hovered">
+        <Avatar class="avatar" :avatarDecorationUrl="userData.decorationUrl" :avatarUrl="userData.avatarUrl"
+            :shouldAnimate="shouldAnimate"></Avatar>
+        <div class="content-and-username">
+            <div>
+                <span class="username">{{ userData.displayName }}</span> 
+                <span class="timestamp">{{ `  ${new Date(time).toLocaleTimeString()}` }}</span>
+            </div>
+            <div class="message">
+                {{ content }}
             </div>
         </div>
     </div>
@@ -17,10 +17,15 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Avatar from './Avatar.vue'
-const props = defineProps(['content', 'author', 'time', 'avatarUrl', 'avatarDecorationUrl']);
+import { MessageUserData } from '../models/userData';
+const props = defineProps<{
+    content: string,
+    time: number,
+    userData: MessageUserData
+}>();
 let shouldAnimate = ref(false)
 
-function hovered(){
+function hovered() {
     shouldAnimate.value = !shouldAnimate.value;
 }
 
@@ -32,40 +37,35 @@ console.log(props);
     font-family: 'Raleway';
 }
 
-.timestamp{
+.timestamp {
     font-size: small;
     color: lightgray;
 }
 
-.username{
+.username {
     font-weight: 900;
 }
 
-.avatar{
-    margin-top: 20px;
+.avatar {
+    margin-top: 25px;
 }
 
-.bubbleWrapper {
-    padding: 10px 10px;
-    color: #fff;
+.message-container {
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
 }
 
-.content-and-username{
+.content-and-username {
     display: flex;
     flex-direction: column;
     min-width: 60px;
     margin-left: 25px;
     align-items: start;
-    
 }
 
-.inlineContainer {
-    display: flex;
-    flex-direction: row;
-    
-}
-
-.bubble {
+.message {
     width: fit-content;
     text-align: left;
 }
