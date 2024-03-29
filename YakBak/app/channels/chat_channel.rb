@@ -3,8 +3,8 @@ class ChatChannel < ApplicationCable::Channel
 
   def subscribed
 
-    if not messagesByInstance.key?(params[:instance])
-      messagesByInstance[params[:instance]] = Array.new
+    if not @@messagesByInstance.key?(params[:instance])
+      @@messagesByInstance[params[:instance]] = Array.new
     end
 
     # stream_from "some_channel"
@@ -14,12 +14,12 @@ class ChatChannel < ApplicationCable::Channel
     ChatChannel.broadcast_to(
       discord_user_id,
       title: 'MessageHistory',
-      body: messagesByInstance[params[:instance]]
+      body: @@messagesByInstance[params[:instance]]
     )
   end
 
   def receive(data)
-    messagesByInstance[params[:instance]] << data
+    @@messagesByInstance[params[:instance]] << data
     ActionCable.server.broadcast("chat_#{params[:instance]}", data)
   end
 
