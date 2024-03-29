@@ -10,12 +10,7 @@ class ChatChannel < ApplicationCable::Channel
       @@messagesByInstance[params[:instance]] = Array.new
     end
 
-    # send the current instance history
-    ChatChannel.broadcast_to(
-      discord_user_id,
-      title: 'MessageHistory',
-      body: @@messagesByInstance[params[:instance]]
-    )
+    transmit(@@messagesByInstance)
   end
 
   def receive(data)

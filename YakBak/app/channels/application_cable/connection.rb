@@ -8,9 +8,8 @@ module ApplicationCable
 
     private
     def get_validated_user_discord_id
-      # let user = Api::User::profile(token)
-      # puts user
-      9
+      #
+      SecureRandom.uuid
     end
   end
 end
