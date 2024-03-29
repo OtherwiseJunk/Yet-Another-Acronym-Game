@@ -3,12 +3,12 @@ class ChatChannel < ApplicationCable::Channel
 
   def subscribed
 
+    # stream_from "some_channel"
+    stream_from "chat_#{params[:instance]}"
+
     if not @@messagesByInstance.key?(params[:instance])
       @@messagesByInstance[params[:instance]] = Array.new
     end
-
-    # stream_from "some_channel"
-    stream_from "chat_#{params[:instance]}"
 
     # send the current instance history
     ChatChannel.broadcast_to(
