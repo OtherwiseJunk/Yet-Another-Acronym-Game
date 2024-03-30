@@ -6,7 +6,7 @@ import { DiscordSDK } from "@discord/embedded-app-sdk";
 export const useDiscordStore = defineStore("discord", () => {
   let auth = ref<any>(undefined);
   let currentUserData = ref(new MessageUserData("", "", ""));
-  let instanceId;
+  let instanceId = ref("");
   const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
 
   async function setup() {
@@ -15,7 +15,7 @@ export const useDiscordStore = defineStore("discord", () => {
       // We can now make API calls within the scopes we requested in setupDiscordSDK()
       // Note: the access_token returned is a sensitive secret and should be treated as such
     await setUserInformation();
-    instanceId = discordSdk.instanceId;
+    instanceId.value = discordSdk.instanceId;
   }
 
   async function setupDiscordSdk() {

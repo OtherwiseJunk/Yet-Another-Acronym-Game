@@ -3,7 +3,7 @@ import './style.css'
 import App from './App.vue'
 import { createPinia } from 'pinia'
 import { useDiscordStore } from './stores/discordStore'
-import { useChatStore } from './stores/cableStore'
+import { useChatStore } from './stores/chatStore'
 
 const pinia = createPinia()
 const app = createApp(App)

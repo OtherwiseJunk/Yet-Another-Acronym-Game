@@ -69,6 +69,6 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
 
-  config.hosts  = ["localhost:3000", "127.0.0.1:3000", "yakbak.cacheblasters.com", "ticket-telecharger-stayed-coat.trycloudflare.com"]
+  config.hosts  = ["localhost:3000", "127.0.0.1:3000", "yakbak.cacheblasters.com", "integral-palm-webpage-melbourne.trycloudflare.com"]
   config.log_level= :debug
 end

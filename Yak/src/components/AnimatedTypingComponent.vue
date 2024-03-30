@@ -2,14 +2,10 @@
     <p class="typingEffect font" :class="{ showAnimatedCursor: showAnimatedCursor}">{{ text }}</p>
 </template>
 
-<style>
-@font-face {
-  font-family: 'Honk';
-  src: url("https://1219391019515121716.discordsays.com/assets/Honk.ttf");
-}
+<style scoped>
 
 .font {
-  font-size: 3em;
+  font-size: 2em;
   font-family: 'Honk';
   font-weight: 800;
   font-style: normal;
@@ -53,5 +49,5 @@ import { ref } from '@vue/runtime-dom';
 
     setTimeout(() =>{
         showAnimatedCursor.value = false;
-    }, 3325)
+    }, 3200)
 </script>

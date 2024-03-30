@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useChatStore } from '../stores/cableStore';
+import { useChatStore } from '../stores/chatStore';
 
 const chat = useChatStore();
 
@@ -23,4 +23,4 @@ function sendMessage() {
 
 </script>
 
-<style></style>
+<style></style>../stores/chatStore

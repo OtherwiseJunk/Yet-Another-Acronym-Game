@@ -15,19 +15,31 @@ export const useChatStore = defineStore('cable', () =>{
     }
     function connectToCable() {
         console.log('Connect to cable called');
+        console.log(`Discord Instance ID: ${discord.instanceId}`);
         let consumer = createConsumer(`/api/cable?token=${discord.auth.access_token}`);
         consumer.connect();
         instanceChat.value = consumer.subscriptions.create({ channel: "ChatChannel", instance: discord.instanceId, discordUserId: discord.auth.user.id },
           {
-            received(data) {
-              let msg = (data as Message);
-              messages.value.push(msg);
+            received(data: Message | Message[]) {
+              let msg = data;
+              if(msg instanceof Array){
+                messages.value.push(...(msg as Message[]));
+              }
+              else{
+                messages.value.push(msg);
+              }
             }
-          })
+          });
+          sendChatHistoryRequest();
     }
 
     function sendMessage(message: string){
         instanceChat.value!.send(new Message(message, Date.now(), discord.currentUserData));
+    }
+
+    function sendChatHistoryRequest(){
+      console.log('Calling send for "MessageHistory"')
+      instanceChat.value!.send('MessageHistory');
     }
 
     return { setup, messages, sendMessage}

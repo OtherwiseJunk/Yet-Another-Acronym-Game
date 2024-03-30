@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import MessageComponent from './MessageComponent.vue';
 import MessageInput from './MessageInput.vue';
-import { useChatStore } from '../stores/cableStore';
+import { useChatStore } from '../stores/chatStore';
 import { useDiscordStore } from '../stores/discordStore';
+import { Message } from '../models/message';
 
 const chat = useChatStore();
 const discord = useDiscordStore();
 const incomingMessage = new Audio('/assets/incoming_message.mp3');
 
 chat.$subscribe((mutation: any, _) =>{
-  const newMessage = mutation.events.newValue;
+  const newMessage = mutation.events.newValue as Message;
   if(!newMessage){
     return;
   }
   
   scrollToBottom();
-  if (newMessage.userData.displayName !== discord.auth.user.username) {
+  if (newMessage.userData.displayName !== discord.currentUserData.displayName) {
     incomingMessage.play()
   }
 })
@@ -61,3 +62,4 @@ function scrollToBottom() {
   padding: 0 10px;
 }
 </style>
+../stores/chatStore
