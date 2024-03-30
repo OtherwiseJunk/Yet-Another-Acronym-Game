@@ -19,6 +19,7 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def unsubscribed
-    # Any cleanup needed when channel is unsubscribed
+    puts 'Unsubscribed :dAmn:'
+    puts params
   end
 end
