@@ -1,5 +1,6 @@
 class ChatChannel < ApplicationCable::Channel  
   @@messagesByInstance = {}
+  @@subscriptionCountByInstance = {}
 
   def subscribed
 
@@ -8,6 +9,12 @@ class ChatChannel < ApplicationCable::Channel
 
     if not @@messagesByInstance.key?(params[:instance])
       @@messagesByInstance[params[:instance]] = Array.new
+    end
+
+    if not @@subscriptionCountByInstance.key?(params[:instance])
+      @@subscriptionCountByInstance[params[:instance]] = 1
+    else
+      @@subscriptionCountByInstance[params[:instance]] += 1
     end
 
     transmit(@@messagesByInstance[params[:instance]])
@@ -19,7 +26,13 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def unsubscribed
-    puts 'Unsubscribed :dAmn:'
-    puts params
+    @@subscriptionCountByInstance[params[:instance]] -= 1
+
+    if @@subscriptionCountByInstance[params[:instance]] == 0
+      puts "Last user has disconnected from instance #{params[:instance]}. Cleaning up..."
+      
+      @@subscriptionCountByInstance.delete([params[:instance]])
+      @@messagesByInstance.delete([params[:instance]])
+    end
   end
 end
