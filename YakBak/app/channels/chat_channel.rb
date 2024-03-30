@@ -10,7 +10,7 @@ class ChatChannel < ApplicationCable::Channel
       @@messagesByInstance[params[:instance]] = Array.new
     end
 
-    transmit(@@messagesByInstance)
+    transmit(@@messagesByInstance[params[:instance]])
   end
 
   def receive(data)
