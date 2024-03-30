@@ -8,11 +8,10 @@ module ApplicationCable
 
     private
     def get_validated_user_discord_id
-      profile = Discordrb::API::User.profile params[:token]
-      puts 'Got the profile probably'
-      puts 'idk did I?'
-      puts profile
-      SecureRandom.uuid
+      token = request.original_fullpath.split('=')[1]
+      profile = JSON.parse( Discordrb::API::User.profile( "Bearer #{token}" ) )
+
+      profile["id"]
     end
   end
 end
