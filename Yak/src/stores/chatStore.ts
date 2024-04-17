@@ -30,16 +30,10 @@ export const useChatStore = defineStore('cable', () =>{
               }
             }
           });
-          sendChatHistoryRequest();
     }
 
     function sendMessage(message: string){
         instanceChat.value!.send(new Message(message, Date.now(), discord.currentUserData));
-    }
-
-    function sendChatHistoryRequest(){
-      console.log('Calling send for "MessageHistory"')
-      instanceChat.value!.send('MessageHistory');
     }
 
     return { setup, messages, sendMessage}
