@@ -14,7 +14,7 @@ chat.$subscribe((mutation: any, _) =>{
   if(!newMessage){
     return;
   }
-  
+
   scrollToBottom();
   if (newMessage.userData.displayName !== discord.currentUserData.displayName) {
     incomingMessage.play()
