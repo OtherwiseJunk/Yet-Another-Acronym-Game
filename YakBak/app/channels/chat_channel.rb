@@ -3,8 +3,6 @@ class ChatChannel < ApplicationCable::Channel
   @@subscriptionCountByInstance = {}
 
   def subscribed
-
-    # stream_from "some_channel"
     stream_from "chat_#{params[:instance]}"
 
     if not @@messagesByInstance.key?(params[:instance])
