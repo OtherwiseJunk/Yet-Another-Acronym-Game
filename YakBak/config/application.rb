@@ -31,6 +31,6 @@ module YakBak
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-    config.action_cable.allowed_request_origins = ['*', 'https://1219391019515121716.discordsays.com', 'wss://1219391019515121716.discordsays.com']
+    config.action_cable.allowed_request_origins = [nil, 'https://1219391019515121716.discordsays.com']
   end
 end
