@@ -6,7 +6,7 @@
 
 .font {
   font-size: 2em;
-  font-family: 'Honk';
+  font-family: 'Orbitron';
   font-weight: 800;
   font-style: normal;
 }

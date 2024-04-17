@@ -27,7 +27,7 @@ svg {
   font-size: 100px;
   display: block;
   margin: 0;
-  font-family: 'Honk';
+  font-family: 'Orbitron';
 }
 </style>
 

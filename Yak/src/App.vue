@@ -21,7 +21,7 @@ Array.prototype.shuffle = function(){
 
 <style scoped>
 @font-face {
-  font-family: 'Honk';
+  font-family: 'Orbitron';
   src: url("https://1219391019515121716.discordsays.com/assets/Orbitron.ttf");
 }
 SplashScreen{
