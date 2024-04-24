@@ -25,6 +25,10 @@ class GameChannel < ApplicationCable::Channel
     end
   end
 
+  def receive(data)
+    puts data
+  end
+
   def increment_subcription_count(instance)
     if not @@subscriptionCountByInstance.key?(params[:instance])
       @@subscriptionCountByInstance[params[:instance]] = 1
