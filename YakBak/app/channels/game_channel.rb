@@ -25,7 +25,7 @@ class GameChannel < ApplicationCable::Channel
 
   def receive(data)
     game_state = @@gameStateByInstance[params[:instance]]
-    case data.type
+    case data['type']
     when 0
       puts 'received game start request'
       if(game_state.game_phase == 0)
