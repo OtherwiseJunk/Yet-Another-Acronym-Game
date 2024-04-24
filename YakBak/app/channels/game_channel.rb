@@ -30,11 +30,11 @@ class GameChannel < ApplicationCable::Channel
     case data.type
     when 0
       puts 'received game start request'
-      if(game_state.game_phase == 0){
+      if(game_state.game_phase == 0)
         puts 'starting game...'
         game_state.start_game
         broadcast_game_state
-      }
+      end
   end
 
   def increment_subcription_count(instance)
