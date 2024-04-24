@@ -26,7 +26,15 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def receive(data)
-    puts data
+    game_state = @@gameStateByInstance[params[:instance]]
+    case data.type
+    when 0
+      puts 'received game start request'
+      if(game_state.game_phase == 0){
+        puts 'starting game...'
+        game_state.start_game
+        broadcast_game_state
+      }
   end
 
   def increment_subcription_count(instance)
@@ -44,4 +52,8 @@ class GameChannel < ApplicationCable::Channel
       @@gameStateByInstance[params[:instance]].add_player_to_game player
     end
   end
+
+  def broadcast_game_state(){
+    ActionCable.server.broadcast("game_#{params[:instance]}", @@gameStateByInstance[params[:instance]])
+  }
 end
