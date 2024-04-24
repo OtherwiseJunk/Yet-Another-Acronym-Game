@@ -8,9 +8,7 @@ class GameChannel < ApplicationCable::Channel
     increment_subcription_count params[:instance]
     add_player_to_game params[:discordUserId]
 
-    ActionCable.server.broadcast("game_#{params[:instance]}", @@gameStateByInstance[params[:instance]])
-
-    puts params
+    broadcast_game_state
   end
 
   def unsubscribed
@@ -35,6 +33,7 @@ class GameChannel < ApplicationCable::Channel
         game_state.start_game
         broadcast_game_state
       end
+    end
   end
 
   def increment_subcription_count(instance)
@@ -53,7 +52,7 @@ class GameChannel < ApplicationCable::Channel
     end
   end
 
-  def broadcast_game_state()
+  def broadcast_game_state
     ActionCable.server.broadcast("game_#{params[:instance]}", @@gameStateByInstance[params[:instance]])
   end
 end
