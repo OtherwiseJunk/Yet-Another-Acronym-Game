@@ -19,7 +19,7 @@ class GameChannel < ApplicationCable::Channel
 
     if @@subscriptionCountByInstance[params[:instance]] == 0
       puts "Last user has disconnected from instance #{params[:instance]}. Cleaning up..."
-      
+
       @@subscriptionCountByInstance.delete([params[:instance]])
       @@gameStateByInstance.delete([params[:instance]])
     end
@@ -53,7 +53,7 @@ class GameChannel < ApplicationCable::Channel
     end
   end
 
-  def broadcast_game_state(){
+  def broadcast_game_state()
     ActionCable.server.broadcast("game_#{params[:instance]}", @@gameStateByInstance[params[:instance]])
-  }
+  end
 end
