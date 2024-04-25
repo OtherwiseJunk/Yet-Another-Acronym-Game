@@ -1,5 +1,4 @@
 class GameChannel < ApplicationCable::Channel
-  include GamePhases
   @@gameStateByInstance = {}
   @@subscriptionCountByInstance = {}
 
@@ -64,7 +63,7 @@ class GameChannel < ApplicationCable::Channel
         game_state.next_phase
         broadcast_game_state
         sleep(3)
-        unless game_state.game_phase == RESULTS
+        unless game_state.game_phase == 3
           broadcast_round_countdown game_state
         end
         return
