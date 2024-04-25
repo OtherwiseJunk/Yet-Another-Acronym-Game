@@ -59,7 +59,7 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def broadcast_round_countdown(game_state)
-      if round_time_remaining < 1
+      if game_state.round_time_remaining < 1
         game_state.next_phase
         broadcast_game_state
         sleep(3)
