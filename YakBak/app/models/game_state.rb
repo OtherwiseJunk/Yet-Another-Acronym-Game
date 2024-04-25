@@ -43,6 +43,22 @@ class GameState
         @players.delete player
     end
 
+    def next_phase()
+        case @game_phase
+        when SUBMITTING
+            @round_time_remaining = 20
+            @game_phase = VOTING
+        when VOTING
+        when RESULTS
+        else
+            puts "oh fuck."
+        end
+    end
+
+    def round_second_elapsed
+        @round_time_remaining -= 1
+    end
+
     private
     attr_writer :round_number, :current_acronym, :scores, :game_phase, :players, :round_time_remaining
 
@@ -59,17 +75,5 @@ class GameState
         end
 
         acronym_length
-    end
-
-    def next_phase()
-        case @game_phase
-        when SUBMITTING
-            @round_time_remaining = 20
-            @game_phase = VOTING
-        when VOTING
-        when RESULTS
-        else
-            puts "oh fuck."
-        end
     end
 end
