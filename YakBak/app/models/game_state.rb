@@ -7,7 +7,7 @@ end
 
 class GameState
     include GamePhases
-    attr_reader :round_number, :current_acronym, :scores, :game_phase, :players :round_time_remaining
+    attr_reader :round_number, :current_acronym, :scores, :game_phase, :players, :round_time_remaining
     @@alphabet = ('a'..'z').to_a
 
     def initialize(player)
