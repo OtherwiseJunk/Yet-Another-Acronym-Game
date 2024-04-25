@@ -68,7 +68,7 @@ class GameChannel < ApplicationCable::Channel
         end
         return
       end
-      gameState.round_time_remaining -= 1
+      game_state.round_time_remaining -= 1
       sleep(1)
       broadcast_game_state
       broadcast_round_countdown game_state
