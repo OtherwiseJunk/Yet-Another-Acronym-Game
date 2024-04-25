@@ -7,13 +7,14 @@ end
 
 class GameState
     include GamePhases
-    attr_reader :round_number, :current_acronym, :scores, :game_phase, :players
+    attr_reader :round_number, :current_acronym, :scores, :game_phase, :players :round_time_remaining
     @@alphabet = ('a'..'z').to_a
 
     def initialize(player)
         @players = [player]
         @scores = Hash.new
         @game_phase = UNSTARTED
+        @round_number = 0
     end
 
     def generate_new_acronym(round)
@@ -28,9 +29,10 @@ class GameState
     end
 
     def start_game
-        @round_number = 1
+        @round_number++
         @current_acronym = generate_new_acronym(@round_number)
         @game_phase = SUBMITTING
+        @round_time_remaining = 60
     end
 
     def add_player_to_game(player)
@@ -42,7 +44,7 @@ class GameState
     end
 
     private
-    attr_writer :round_number, :current_acronym, :scores, :game_phase, :players
+    attr_writer :round_number, :current_acronym, :scores, :game_phase, :players, :round_time_remaining
 
     def acronym_length_by_round(round)
         acronym_length = 0
@@ -57,5 +59,17 @@ class GameState
         end
 
         acronym_length
+    end
+
+    def next_phase()
+        case @game_phase
+        when SUBMITTING
+            @round_time_remaining = 20
+            @game_phase = VOTING
+        when VOTING
+        when RESULTS
+        else
+            puts "oh fuck."
+        end
     end
 end

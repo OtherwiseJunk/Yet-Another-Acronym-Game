@@ -1,4 +1,5 @@
 class GameChannel < ApplicationCable::Channel
+  include GamePhases
   @@gameStateByInstance = {}
   @@subscriptionCountByInstance = {}
 
@@ -32,6 +33,8 @@ class GameChannel < ApplicationCable::Channel
         puts 'starting game...'
         game_state.start_game
         broadcast_game_state
+        sleep(3)
+        broadcast_round_countdown game_state
       end
     end
   end
@@ -54,5 +57,21 @@ class GameChannel < ApplicationCable::Channel
 
   def broadcast_game_state
     ActionCable.server.broadcast("game_#{params[:instance]}", @@gameStateByInstance[params[:instance]])
+  end
+
+  def broadcast_round_countdown(game_state)
+      if round_time_remaining < 1
+        game_state.next_phase
+        broadcast_game_state
+        sleep(3)
+        unless game_state.game_phase == RESULTS
+          broadcast_round_countdown game_state
+        end
+        return
+      end
+      gameState.round_time_remaining--
+      sleep(1)
+      broadcast_game_state
+      broadcast_round_countdown game_state
   end
 end
