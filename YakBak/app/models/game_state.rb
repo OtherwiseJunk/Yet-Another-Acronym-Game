@@ -29,7 +29,7 @@ class GameState
     end
 
     def start_game
-        @round_number++
+        @round_number += 1
         @current_acronym = generate_new_acronym(@round_number)
         @game_phase = SUBMITTING
         @round_time_remaining = 60
