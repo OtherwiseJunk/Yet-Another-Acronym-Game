@@ -59,11 +59,12 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def broadcast_round_countdown(game_state)
-    puts @@gameStateByInstance.key?(params[:instance])
+
     unless @@gameStateByInstance.key?(params[:instance])
       puts "Game has ended, bailing on countdown."
       return
     end
+
     if game_state.round_time_remaining < 1
       game_state.next_phase
       broadcast_game_state
@@ -73,9 +74,11 @@ class GameChannel < ApplicationCable::Channel
       end
       return
     end
+
     game_state.round_second_elapsed
     sleep(1)
-    if @@gameStateByInstance.key?(params[:instance])
+
+    if (not game_state.null?) and @@gameStateByInstance.key?(params[:instance])
       broadcast_game_state
       broadcast_round_countdown game_state
     end
