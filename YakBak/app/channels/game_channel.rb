@@ -75,8 +75,10 @@ class GameChannel < ApplicationCable::Channel
     end
     game_state.round_second_elapsed
     sleep(1)
-    broadcast_game_state
-    broadcast_round_countdown game_state
+    if @@gameStateByInstance.key?(params[:instance])
+      broadcast_game_state
+      broadcast_round_countdown game_state
+    end
   end
 
 end
