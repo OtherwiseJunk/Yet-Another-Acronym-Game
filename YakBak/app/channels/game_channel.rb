@@ -18,8 +18,8 @@ class GameChannel < ApplicationCable::Channel
     if @@subscriptionCountByInstance[params[:instance]] == 0
       puts "Last user has disconnected from instance #{params[:instance]}. Cleaning up..."
 
-      @@subscriptionCountByInstance.delete([params[:instance]])
-      @@gameStateByInstance.delete([params[:instance]])
+      @@subscriptionCountByInstance = @@subscriptionCountByInstance.delete([params[:instance]])
+      @@gameStateByInstance = @@gameStateByInstance.delete([params[:instance]])
     end
   end
 
@@ -59,6 +59,7 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def broadcast_round_countdown(game_state)
+    puts @@gameStateByInstance.key?(params[:instance])
     unless @@gameStateByInstance.key?(params[:instance])
       puts "Game has ended, bailing on countdown."
       return
