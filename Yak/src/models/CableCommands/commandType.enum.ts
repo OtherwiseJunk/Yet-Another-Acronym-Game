@@ -1,4 +1,5 @@
 export enum CommandType{
-    NewMessage,
-    MessageHistory
+    StartGame,
+    SubmitAnswer,
+    SubmitVote
 }

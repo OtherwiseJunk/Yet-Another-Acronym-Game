@@ -1,6 +1,10 @@
-import { CommandType } from "./CommandType.enum";
+import { CommandType } from "./commandType.enum";
 
-export interface ICableCommand<T>{
+export interface ICableCommandWithPayload<T>{
     type: CommandType;
     data: T;
+}
+
+export interface ICableCommand{
+    type: CommandType;
 }
