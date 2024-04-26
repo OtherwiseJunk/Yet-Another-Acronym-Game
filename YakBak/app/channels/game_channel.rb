@@ -18,8 +18,8 @@ class GameChannel < ApplicationCable::Channel
     if @@subscriptionCountByInstance[params[:instance]] == 0
       puts "Last user has disconnected from instance #{params[:instance]}. Cleaning up..."
 
-      @@subscriptionCountByInstance = @@subscriptionCountByInstance.delete([params[:instance]])
-      @@gameStateByInstance = @@gameStateByInstance.delete([params[:instance]])
+      @@subscriptionCountByInstance = @@subscriptionCountByInstance.delete([params[:instance]]) || Hash.new
+      @@gameStateByInstance = @@gameStateByInstance.delete([params[:instance]]) || Hash.new
     end
   end
 
@@ -34,6 +34,7 @@ class GameChannel < ApplicationCable::Channel
         broadcast_game_state
         sleep(3)
         broadcast_round_countdown game_state
+        puts "Broadcast Finished!"
       end
     end
   end
@@ -59,29 +60,22 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def broadcast_round_countdown(game_state)
+      while game_state.round_time_remaining > 0
+        game_state.round_second_elapsed
+        sleep(1)
+        unless @@gameStateByInstance.key?(params[:instance])
+          puts "Game has ended, bailing on countdown."
+          return
+        end
+        broadcast_game_state
+      end
 
-    unless @@gameStateByInstance.key?(params[:instance])
-      puts "Game has ended, bailing on countdown."
-      return
-    end
-
-    if game_state.round_time_remaining < 1
+      unless @@gameStateByInstance.key?(params[:instance])
+        puts "Game has ended, bailing on countdown."
+        return
+      end
       game_state.next_phase
       broadcast_game_state
-      sleep(3)
-      unless game_state.game_phase == 3
-        broadcast_round_countdown game_state
-      end
-      return
-    end
-
-    game_state.round_second_elapsed
-    sleep(1)
-
-    unless game_state.nil?
-      broadcast_game_state
-      broadcast_round_countdown game_state
-    end
   end
 
 end
