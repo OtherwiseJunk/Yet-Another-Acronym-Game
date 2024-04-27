@@ -1,4 +1,4 @@
-export class MessageUserData{
+export class UserData{
     constructor(
         public avatarUrl: string,
         public decorationUrl: string,
