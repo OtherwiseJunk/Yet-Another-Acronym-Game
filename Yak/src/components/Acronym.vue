@@ -4,24 +4,27 @@ Thanks to Rebecca Smith!
 <template>
   <div class="container">
     <h1 id="text" class="text"></h1>
-
     <svg id="svg">
     </svg>
   </div>
 </template>
 
 <style scoped>
-svg {
+#svg {
   width: 100%;
   height: 100%;
-  position: absolute;
-  top: -20%;
-  left: 0px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 0;
+  position: absolute;
 }
 
 .container{
+  padding-top: 50px;
   height: 150px;
+  position: relative;
 }
 .text{
   font-size: 100px;
@@ -87,8 +90,8 @@ let svg: SVGElement;
 let text: HTMLElement;
 const letters: any[] = [];
 let value = '';
-let textSize = 100;
-let textCenter = 266;
+let textSize = 120;
+let textCenter = 160;
 class Color{
   constructor(public main: string, public shades: string[]){};
 }
