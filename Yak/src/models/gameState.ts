@@ -1,3 +1,5 @@
+import { UserSubmission } from "./userSubmission";
+
 export class GameState{
     constructor(
         public game_phase: GamePhases,
@@ -5,7 +7,8 @@ export class GameState{
         public current_acronym: string,
         public scores: Map<number, number>,
         public playes: number[],
-        public round_time_remaining: number
+        public round_time_remaining: number,
+        public submissions: Map<number,UserSubmission>
     ){}
 }
 
