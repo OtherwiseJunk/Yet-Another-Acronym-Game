@@ -7,7 +7,7 @@ end
 
 class GameState
     include GamePhases
-    attr_reader :round_number, :current_acronym, :scores, :game_phase, :players, :round_time_remaining
+    attr_reader :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining
     @@alphabet = ('a'..'z').to_a
 
     def initialize(player)
@@ -21,7 +21,7 @@ class GameState
         acronym = ''
         acronym_length = acronym_length_by_round round
 
-        for i in (1..acronym_length)
+        for _ in (1..acronym_length)
             acronym << @@alphabet.sample
         end
 
@@ -33,6 +33,7 @@ class GameState
         @current_acronym = generate_new_acronym(@round_number)
         @game_phase = SUBMITTING
         @round_time_remaining = 60
+        @submissions = Hash.new
     end
 
     def add_player_to_game(player)
@@ -59,8 +60,12 @@ class GameState
         @round_time_remaining -= 1
     end
 
+    def handle_player_submission(discordId, submission)
+        @submissions[discordId] << { submission=> submission, answer_time=> 60 - @round_time_remaining }
+    end
+
     private
-    attr_writer :round_number, :current_acronym, :scores, :game_phase, :players, :round_time_remaining
+    attr_writer :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining
 
     def acronym_length_by_round(round)
         acronym_length = 0

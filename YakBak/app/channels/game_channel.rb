@@ -16,7 +16,7 @@ class GameChannel < ApplicationCable::Channel
     @@gameStateByInstance[params[:instance]].remove_player_from_game params[:discordUserId]
 
     if @@subscriptionCountByInstance[params[:instance]] == 0
-      puts "Last user has disconnected from instance #{params[:instance]}. Cleaning up..."
+      puts 'Last user has disconnected from instance #{params[:instance]}. Cleaning up...'
 
       @@subscriptionCountByInstance = @@subscriptionCountByInstance.delete([params[:instance]]) || Hash.new
       @@gameStateByInstance = @@gameStateByInstance.delete([params[:instance]]) || Hash.new
@@ -34,8 +34,10 @@ class GameChannel < ApplicationCable::Channel
         broadcast_game_state
         sleep(3)
         broadcast_round_countdown game_state
-        puts "Broadcast Finished!"
       end
+    when 1
+      puts 'received submission from '
+      game_state.handle_player_submission
     end
   end
 
@@ -64,14 +66,14 @@ class GameChannel < ApplicationCable::Channel
         game_state.round_second_elapsed
         sleep(1)
         unless @@gameStateByInstance.key?(params[:instance])
-          puts "Game has ended, bailing on countdown."
+          puts 'Game has ended, bailing on countdown.'
           return
         end
         broadcast_game_state
       end
 
       unless @@gameStateByInstance.key?(params[:instance])
-        puts "Game has ended, bailing on countdown."
+        puts 'Game has ended, bailing on countdown.'
         return
       end
       game_state.next_phase
