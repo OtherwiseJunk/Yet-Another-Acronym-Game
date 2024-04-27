@@ -6,7 +6,7 @@ export class GameState{
         public round_number: number,
         public current_acronym: string,
         public scores: Map<number, number>,
-        public playes: number[],
+        public players: number[],
         public round_time_remaining: number,
         public submissions: Map<number,UserSubmission>
     ){}
