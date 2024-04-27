@@ -45,6 +45,7 @@ class GameState
     end
 
     def next_phase()
+        # based on current phased, a little counter-intuitively
         case @game_phase
         when SUBMITTING
             @round_time_remaining = 20
@@ -61,7 +62,7 @@ class GameState
     end
 
     def handle_player_submission(discordId, submission)
-        @submissions[discordId] << { submission=> submission, answer_time=> 60 - @round_time_remaining }
+        @submissions[discordId] = UserSubmission.new(submission, 60-@round_time_remaining)
     end
 
     private

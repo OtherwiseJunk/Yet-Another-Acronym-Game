@@ -37,7 +37,7 @@ class GameChannel < ApplicationCable::Channel
       end
     when 1
       puts 'received submission from '
-      game_state.handle_player_submission
+      game_state.handle_player_submission params[:instance], data
     end
   end
 
