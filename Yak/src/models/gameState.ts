@@ -8,7 +8,7 @@ export class GameState{
         public scores: Map<number, number>,
         public players: number[],
         public round_time_remaining: number,
-        public submissions: Map<number,UserSubmission>
+        public submissions: Map<string,UserSubmission>
     ){}
 }
 

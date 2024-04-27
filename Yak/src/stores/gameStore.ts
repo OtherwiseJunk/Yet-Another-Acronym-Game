@@ -2,14 +2,12 @@ import { Channel, createConsumer } from "@rails/actioncable";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useDiscordStore } from "./discordStore";
-import { GameState } from "../models/gameState";
-import { StartGameCommand } from "../models/CableCommands/startGameCommand";
-import { SubmitAnswerCommand } from "../models/CableCommands/submitAnswerCommand";
+import { GameState, StartGameCommand, SubmitAnswerCommand, UserSubmission } from "../models";
 
 export const useGameStore = defineStore("gameCable", () => {
   let instanceGame = ref<Channel>();
   let gameState = ref(
-    new GameState(0, 1, "", new Map<number, number>(), [], 0)
+    new GameState(0, 1, "", new Map<number, number>(), [], 0, new Map<string, UserSubmission>())
   );
   const discord = useDiscordStore();
 
