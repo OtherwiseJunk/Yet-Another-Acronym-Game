@@ -2,10 +2,10 @@
     <Acronym :letterArray="letterArray"></Acronym>
     <br>
     <div class="input-container">
-        <input class="input font fill-parent" stype="text">
+        <input v-model="submission" class="input font fill-parent" stype="text">
     </div>
     <div class="submit-button">
-        <button @click="submitButton()" class="font">Submit</button>
+        <button v-if="submitable" @click="submitButton()" class="font">Submit</button>
     </div>
 </template>
 
@@ -50,6 +50,7 @@ input:focus {
 </style>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue';
 import Acronym from './Acronym.vue';
 const props = defineProps(['acronym'])
 const emits = defineEmits({
@@ -59,10 +60,27 @@ const emits = defineEmits({
         return false;
     }
 })
+let submission = ref<string>("");
 
 const letterArray = props.acronym.split('');
 
 function submitButton(){
     emits('submit', 'deez');
 }
+
+const submitable  = computed(() => {
+    const words = submission.value.toLowerCase().split(' ')
+    const letters = props.acronym.toLowerCase().split('');
+    if (words.length != letters.length){
+        return false;
+    }
+
+    let submitable = true;
+
+    words.forEach((word, index) =>{
+        submitable = submitable && word.startsWith(letters[index]);
+    });
+
+    return submitable
+})
 </script>
