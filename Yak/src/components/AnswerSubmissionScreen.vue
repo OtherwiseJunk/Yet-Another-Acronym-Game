@@ -3,15 +3,14 @@
         <Acronym :letterArray="letterArray"></Acronym>
         <br>
         <div class="input-container">
-            <input v-model="submission" class="input font fill-parent" stype="text">
+            <input v-model="submission" class="input font fill-parent" type="text">
         </div>
         <div class="submit-button">
-            <button type="submit" v-if="submitable" @click="submit()" @keyup.enter="submit" class="font">Submit</button>
+            <button type="submit" v-if="submittable" @click="submit()" @keyup.enter="submit" class="font">Submit</button>
         </div>
     </div>
     <div v-else>
-        <h2 class="font">Submitted your answer! Waiting for other players...</h2>
-        <h4 class="smaller-font">{{ submission }}</h4>
+        <WaitingForOtherPlayersComponent submissionText="submission"></WaitingForOtherPlayersComponent>
     </div>
 </template>
 
@@ -77,25 +76,25 @@ let allowSubmission = ref<boolean>(true);
 const letterArray = props.acronym.split('');
 
 function submit() {
-    if (submitable.value) {
-        emits('submit', 'deez');
+    if (submittable.value) {
+        emits('submit', submission.value);
         allowSubmission.value = false;
     }
 }
 
-const submitable = computed(() => {
+const submittable = computed(() => {
     const words = submission.value.toLowerCase().split(' ')
     const letters = props.acronym.toLowerCase().split('');
     if (words.length != letters.length) {
         return false;
     }
 
-    let submitable = true;
+    let submittable = true;
 
     words.forEach((word, index) => {
-        submitable = submitable && word.startsWith(letters[index]);
+        submittable = submittable && word.startsWith(letters[index]);
     });
 
-    return submitable
+    return submittable
 })
 </script>

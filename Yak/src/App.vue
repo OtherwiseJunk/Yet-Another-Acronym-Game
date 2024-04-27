@@ -3,7 +3,7 @@
 // import AnimatedTypingComponent from './components/AnimatedTypingComponent.vue';
 import { ref } from 'vue';
 import SplashScreen from './components/SplashScreen.vue'
-import AnswerSubmission from './components/AnswerSubmission.vue'
+import AnswerSubmission from './components/AnswerSubmissionScreen.vue'
 // import { useDiscordStore } from './stores/discordStore';
 import { useGameStore } from './stores/gameStore';
 
