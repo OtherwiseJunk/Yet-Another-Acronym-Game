@@ -1,3 +1,3 @@
 export class UserSubmission{
-    constructor(public submssion: string, public answer_time: number){}
+    constructor(public submission: string, public answer_time: number){}
 }
