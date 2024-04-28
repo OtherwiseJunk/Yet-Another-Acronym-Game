@@ -1,6 +1,6 @@
 <template>
     <div v-if="allowSubmission" >
-        <Acronym :letterArray="letterArray"></Acronym>
+        <Acronym :letterArray="letterArray" :colors="colors.acronymPallette"></Acronym>
         <br>
         <div class="input-container">
             <input v-model="submission" class="input font fill-parent" type="text">
@@ -10,7 +10,7 @@
         </div>
     </div>
     <div v-else>
-        <WaitingForOtherPlayersComponent submissionText="submission"></WaitingForOtherPlayersComponent>
+        <WaitingForOtherPlayersComponent :submissionText="submission"></WaitingForOtherPlayersComponent>
     </div>
 </template>
 
@@ -27,13 +27,6 @@
 
 .font {
     font-size: 2em;
-    font-family: 'Orbitron';
-    font-weight: 800;
-    font-style: normal;
-}
-
-.smaller-font {
-    font-size: 1.5em;
     font-family: 'Orbitron';
     font-weight: 800;
     font-style: normal;
@@ -61,8 +54,10 @@ input:focus {
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import WaitingForOtherPlayersComponent from './WaitingForOtherPlayersComponent.vue'
 import Acronym from './Acronym.vue';
-const props = defineProps(['acronym'])
+import { usePalletteStore } from '../stores/palletteStore';
+const props = defineProps(['acronym', 'colorPallette'])
 const emits = defineEmits({
     submit(answer: string) {
         if (answer) return true;
@@ -70,6 +65,8 @@ const emits = defineEmits({
         return false;
     }
 })
+const colors = usePalletteStore();
+colors.setAcronymPallette(props.acronym);
 let submission = ref<string>("");
 let allowSubmission = ref<boolean>(true);
 
@@ -97,4 +94,4 @@ const submittable = computed(() => {
 
     return submittable
 })
-</script>
+</script>../stores/palletteStore
