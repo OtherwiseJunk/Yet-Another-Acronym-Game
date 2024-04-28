@@ -9,7 +9,7 @@ export const useDiscordStore = defineStore("discord", () => {
   let instanceId = ref("");
   const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
   const defaultImage =
-    "https://cacheblasters.nyc3.cdn.digitaloceanspaces.com/YAAG/yak.png";
+    "https://1219391019515121716.discordsays.com/assets/yak.png";
 
   async function setup() {
     await setupDiscordSdk();
@@ -77,7 +77,6 @@ export const useDiscordStore = defineStore("discord", () => {
     }
 
     if (guildUser?.user.avatar_decoration_data) {
-      //https://cdn.discordapp.com/avatar-decoration-presets
       userData.decorationUrl = `https://cdn.discordapp.com/avatar-decoration-presets/${guildUser.user.avatar_decoration_data.asset}.png?size=256`;
     }
 
