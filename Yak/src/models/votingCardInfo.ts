@@ -5,6 +5,7 @@ export class VotingCardInfo {
     public avatarUrl: string,
     public decoratorUrl: string,
     public submissionText: string,
-    public submissionTime: number
+    public submissionTime: number,
+    public color: string
   ) {}
 }

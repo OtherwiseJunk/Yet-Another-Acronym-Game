@@ -94,4 +94,4 @@ const submittable = computed(() => {
 
     return submittable
 })
-</script>../stores/palletteStore
+</script>

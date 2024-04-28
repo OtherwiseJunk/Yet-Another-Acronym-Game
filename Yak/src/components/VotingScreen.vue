@@ -1,11 +1,11 @@
 <template>
     <div class="container">
-        <div v-for="(votingCardInfo, cardIndex) in votingSubmissions" class="voting-card" @click="vote"
-            :key="votingCardInfo.userId" @mouseenter="shouldAnimateByUserId.set(Number(votingCardInfo.userId), true)"
-            @mouseleave="shouldAnimateByUserId.set(Number(votingCardInfo.userId), false)"
-            :style="{
-                'background': `${hexToRGB(colors.acronymPallette[cardIndex % colors.acronymPallette.length].main, 0.08)}`,
-                'box-shadow': `1px 1px 6px ${colors.acronymPallette[cardIndex % colors.acronymPallette.length].main}`}">
+        <div v-for="(votingCardInfo) in votingSubmissions" class="voting-card" @click="vote"
+            :key="votingCardInfo.userId" @mouseenter="setShouldAnimate(votingCardInfo.userId, true)"
+            @mouseleave="setShouldAnimate(votingCardInfo.userId, false)" :style="{
+            'background': `${colors.hexToRGB(votingCardInfo.color, 0.08)}`,
+            'box-shadow': `1px 1px 6px ${votingCardInfo.color}`
+        }">
             <div class="submitter-info">
                 <Avatar v-show="props.resultsMode" class="avatar" :avatarDecorationUrl="votingCardInfo.decoratorUrl"
                     :avatarUrl="votingCardInfo.avatarUrl"
@@ -14,7 +14,8 @@
                 <p class="time">{{ votingCardInfo.submissionTime }} s</p>
             </div>
             <p class="submission-text">
-                <span v-for="(word, wordIndex) in votingCardInfo.submissionText.split(' ')" :style="{'color': `${colors.acronymPallette[wordIndex].main}`}">{{ `${word} ` }} </span>
+                <span v-for="word in votingCardInfo.submissionText.split(' ')"
+                    :style="{ 'color': `${votingCardInfo.color}` }">{{ `${word} ` }} </span>
             </p>
         </div>
     </div>
@@ -44,7 +45,7 @@ const colors = usePalletteStore();
 let shouldAnimateByUserId = ref<Map<number, boolean>>(new Map());
 let votingSubmissions = ref<VotingCardInfo[]>([]);
 
-Object.keys(props.submissionsByUserId).forEach(userId => {
+Object.keys(props.submissionsByUserId).forEach((userId, index) => {
     let userSubmission: UserSubmission = props.submissionsByUserId[userId];
     discord.getUserInformation(`${userId}`).then((userData) => {
         votingSubmissions.value.push(new VotingCardInfo(
@@ -53,7 +54,8 @@ Object.keys(props.submissionsByUserId).forEach(userId => {
             userData.avatarUrl,
             userData.decorationUrl,
             userSubmission.submission!,
-            userSubmission.answer_time!
+            userSubmission.answer_time!,
+            colors.acronymPallette[index % colors.acronymPallette.length].main
         ));
 
         if (votingSubmissions.value.length === Object.keys(props.submissionsByUserId).length) {
@@ -62,21 +64,13 @@ Object.keys(props.submissionsByUserId).forEach(userId => {
     });
 });
 
-function hexToRGB(hex: string, alpha: number) {
-    var r = parseInt(hex.slice(1, 3), 16),
-        g = parseInt(hex.slice(3, 5), 16),
-        b = parseInt(hex.slice(5, 7), 16);
-
-    if (alpha) {
-        return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
-    } else {
-        return "rgb(" + r + ", " + g + ", " + b + ")";
-    }
-}
-
 function vote(clickEvent: MouseEvent) {
     console.log(clickEvent)
     emits('vote')
+}
+
+function setShouldAnimate(shouldAnimateKey: string, value: boolean) {
+    shouldAnimateByUserId.value.set(Number(shouldAnimateKey), value)
 }
 </script>
 
@@ -120,7 +114,7 @@ function vote(clickEvent: MouseEvent) {
     position: relative;
 }
 
-.voting-card:hover{
+.voting-card:hover {
     top: -10px;
     font-weight: 800;
 }
@@ -133,7 +127,8 @@ function vote(clickEvent: MouseEvent) {
     flex-direction: column;
     flex-wrap: wrap;
 }
-span{
+
+span {
     -webkit-text-stroke: 0.5px #444;
 }
-</style>../stores/palletteStore
+</style>
