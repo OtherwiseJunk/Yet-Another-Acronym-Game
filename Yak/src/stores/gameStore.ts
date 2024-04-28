@@ -7,7 +7,7 @@ import { GameState, StartGameCommand, SubmitAnswerCommand, UserSubmission } from
 export const useGameStore = defineStore("gameCable", () => {
   let instanceGame = ref<Channel>();
   let gameState = ref(
-    new GameState(0, 1, "", new Map<number, number>(), [], 0, new Map<string, UserSubmission>())
+    new GameState(0, 1, "", new Map<number, number>(), [], 0, new Map<number, UserSubmission>())
   );
   const discord = useDiscordStore();
 
