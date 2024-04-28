@@ -3,7 +3,7 @@ Thanks to Rebecca Smith!
 
 <template>
   <div class="container">
-    <h1 id="text" class="text"></h1>
+    <h2 id="text" class="text"></h2>
     <svg id="svg">
     </svg>
   </div>
@@ -36,8 +36,10 @@ Thanks to Rebecca Smith!
 
 <script defer setup lang="ts">
 import { TweenLite, Back, Power3, Power1 } from 'gsap';
+import { Color } from '../models';
 let props = defineProps<{
-  letterArray: string[]
+  letterArray: string[],
+  colors: Color[]
 }>();
 
 function selectSVG(elementId: string){
@@ -71,45 +73,19 @@ class SVGElement {
   }
 }
 
-declare global{
-  interface Array<T>{
-    shuffle: () => void;
-  }
-}
-Array.prototype.shuffle = Array.prototype.shuffle = function(){
-    var i = this.length, j, temp;
-  while(--i > 0){
-    j = Math.floor(Math.random()*(i+1));
-    temp = this[j];
-    this[j] = this[i];
-    this[i] = temp;
-  }
-}
-
 let svg: SVGElement;
 let text: HTMLElement;
 const letters: any[] = [];
 let value = '';
 let textSize = 120;
 let textCenter = 160;
-class Color{
-  constructor(public main: string, public shades: string[]){};
-}
-const colors = [
-  new Color('#FBDB4A', ['#FAE073', '#FCE790', '#FADD65', '#E4C650'] ),
-  new Color('#F3934A', ['#F7B989', '#F9CDAA', '#DD8644', '#F39C59'] ),
-  new Color('#EB547D', ['#EE7293', '#F191AB', '#D64D72', '#C04567'] ),
-  new Color('#9F6AA7', ['#B084B6', '#C19FC7', '#916198', '#82588A'] ),
-  new Color('#5476B3', ['#6382B9', '#829BC7', '#4D6CA3', '#3E5782'] ),
-  new Color('#2BB19B', ['#4DBFAD', '#73CDBF', '#27A18D', '#1F8171'] ),
-  new Color('#70B984', ['#7FBE90', '#98CBA6', '#68A87A', '#5E976E'] )
-];
+
 
 function addLetter(char: string, index: number) {
   const letter = document.createElement('span');
   letter.innerHTML = char;
   text.appendChild(letter);
-  const color = colors[index % colors.length];
+  const color = props.colors[index % props.colors.length];
   letter.style.color = color.main;
   letters[index] = { onScreen: letter, char: char };
   animateLetterIn(letter);
@@ -217,7 +193,6 @@ function addText(index: number){
 setTimeout(() => {
   svg = selectSVG('svg');
   text = document.getElementById('text')!;
-  colors.shuffle();
   addText(0);
 }, 200);
 </script>
