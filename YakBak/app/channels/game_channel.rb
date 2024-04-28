@@ -23,9 +23,9 @@ class GameChannel < ApplicationCable::Channel
     end
   end
 
-  def receive(data)
+  def receive(command)
     game_state = @@gameStateByInstance[params[:instance]]
-    case data['type']
+    case command['type']
     when 0
       puts 'received game start request'
       if(game_state.game_phase == 0)
@@ -37,7 +37,7 @@ class GameChannel < ApplicationCable::Channel
       end
     when 1
       puts 'received submission from '
-      game_state.handle_player_submission params[:instance], data
+      game_state.handle_player_submission params[:discordUserId], command['data']
     end
   end
 
