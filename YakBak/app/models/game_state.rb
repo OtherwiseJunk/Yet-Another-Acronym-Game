@@ -29,11 +29,18 @@ class GameState
     end
 
     def start_game
+        dummy_text="Some Dumb Fucking Input With Like Twelve Whole Words In It, Yanno?";
         @round_number += 1
         @current_acronym = generate_new_acronym(@round_number)
         @game_phase = SUBMITTING
         @round_time_remaining = 60
-        @submissions = Hash.new
+        @submissions = {
+            1 => UserSubmission.new(dummy_text, 42),
+            2 => UserSubmission.new(dummy_text, 69),
+            3 => UserSubmission.new(dummy_text, 420),
+            4 => UserSubmission.new(dummy_text, 1337),
+            5 => UserSubmission.new(dummy_text, 69),
+        }
     end
 
     def add_player_to_game(player)
