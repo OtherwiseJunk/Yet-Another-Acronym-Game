@@ -28,15 +28,13 @@ function setImageSources(shouldAnimate: boolean){
     z-index: 1;
     height: 48px;
     left: -4px;
-    top: -24px;
+    top: -4px;
 }
 
 .avatar-icon {
     height: 40px;
     border-radius: 50%;
     z-index: -1;
-    top: -20px;
-    left: 0px;
 }
 
 .avatar {
