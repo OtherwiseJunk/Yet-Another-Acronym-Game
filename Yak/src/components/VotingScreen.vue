@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="header">
-            <p class="font header-text">{{ props.resultsMode ? "Results" : "Vote" }}</p>
+            <p class="font header-text">{{ props.resultsMode ? "Results" : `Vote - ${props.timeRemaining}` }}</p>
             <p v-show="props.skipVoting" class="font header-subtext">voting skipped as there aren't enough players</p>
         </div>
         <div class="voting-container">
@@ -50,6 +50,10 @@ const props = defineProps({
     },
     skipVoting: {
         type: Boolean,
+        required: true
+    },
+    timeRemaining: {
+        type: Number,
         required: true
     }
 })

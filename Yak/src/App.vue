@@ -48,9 +48,10 @@ function onNextRound(){
     <AnswerSubmission :timeRemaining="roundTimeRemaining" :acronym="acronym" v-if="phase === 1 && animationComplete" @submit="(answer) => onSubmit(answer)">
     </AnswerSubmission>
     <VotingScreen 
-      :submissionsByUserId="submissions" 
+      :submissionsByUserId="submissions"
       :resultsMode="phase === 3"
       :skipVoting="playerCount <= 2"
+      :timeRemaining="roundTimeRemaining"
       v-if="(phase === 2 || phase === 3) && animationComplete" 
       @vote="(submissionUserId) => onVote(submissionUserId)"
       @next-round="onNextRound()">
