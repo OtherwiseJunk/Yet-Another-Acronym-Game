@@ -63,8 +63,8 @@ export const useDiscordStore = defineStore("discord", () => {
 
     let extension = user.avatar?.startsWith("a_") ? "gif" : "webp";
 
-    let guildUser = await fetchDiscordResource(
-      `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member`
+    let guildUser = await fetchDiscordResource( userId === auth.value.user.id ? `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member` :
+      `https://discord.com/api/guilds/${discordSdk.guildId}/members/${userId}`
     );
     // Retrieve the guild-specific avatar, and fallback to the user's avatar
     if (guildUser?.avatar) {
