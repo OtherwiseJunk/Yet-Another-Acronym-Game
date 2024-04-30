@@ -9,7 +9,7 @@ export const useDiscordStore = defineStore("discord", () => {
   let instanceId = ref("");
   const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
   const defaultImage =
-    "https://1219391019515121716.discordsays.com/assets/yak.png";
+    "https://1219391019515121716.discordsays.com/media/yak.png";
 
   async function setup() {
     await setupDiscordSdk();

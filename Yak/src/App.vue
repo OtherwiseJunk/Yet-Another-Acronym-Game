@@ -72,6 +72,6 @@ function onNextRound(){
 
 @font-face {
   font-family: 'Orbitron';
-  src: url("https://1219391019515121716.discordsays.com/assets/Orbitron.ttf");
+  src: url("https://1219391019515121716.discordsays.com/media/Orbitron.ttf");
 }
 </style>

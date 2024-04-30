@@ -19,7 +19,7 @@ function setImageSources(shouldAnimate: boolean){
 <template>
     <div class="avatar-container">
         <img v-if="avatarDecorationUrl" class="avatar-decoration avatar" :src="decorationUrl">
-    <img class="avatar-icon avatar" :src=" avatarUrl ?? 'https://1219391019515121716.discordsays.com/assets/ninja.png'">
+    <img class="avatar-icon avatar" :src=" avatarUrl ?? 'https://1219391019515121716.discordsays.com/media/yak.png'">
     </div>
 </template>
 
