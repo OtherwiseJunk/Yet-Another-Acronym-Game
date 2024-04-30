@@ -8,10 +8,6 @@ services:
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes: 
       - cache:/data
-  yak:
-    image: yak
-    ports:
-      - '5173:80'
 volumes:
   cache:
     driver: local
