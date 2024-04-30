@@ -6,8 +6,11 @@ export default defineConfig({
   plugins: [vue()],
   envDir: '../',
   server: {
-    fs: {
-      strict: false
-    }
+    watch: {
+      usePolling: true,
+     },
+     host: true, // Here
+     strictPort: true,
+     port: 80,
   }
 })
