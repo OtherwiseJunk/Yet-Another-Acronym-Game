@@ -1,5 +1,6 @@
 <template>
     <div v-if="allowSubmission" >
+        <h1 class="font">{{ props.timeRemaining }}</h1>
         <Acronym :letterArray="letterArray" :colors="colors.acronymPallette"></Acronym>
         <br>
         <div class="input-container">
@@ -57,7 +58,7 @@ import { computed, ref } from 'vue';
 import WaitingForOtherPlayersComponent from './WaitingForOtherPlayersComponent.vue'
 import Acronym from './Acronym.vue';
 import { usePalletteStore } from '../stores/palletteStore';
-const props = defineProps(['acronym', 'colorPallette'])
+const props = defineProps(['acronym', 'colorPallette', 'timeRemaining'])
 const emits = defineEmits({
     submit(answer: string) {
         if (answer) return true;

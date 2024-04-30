@@ -11,7 +11,7 @@ const phase = ref(0)
 const animationComplete = ref(false);
 const acronym = ref("");
 const playerCount = ref(1);
-
+const roundTimeRemaining = ref(0);
 
 let submissions: Map<number, UserSubmission>;
 cable.$subscribe((_, state) => {
@@ -19,6 +19,7 @@ cable.$subscribe((_, state) => {
   acronym.value = state.gameState.current_acronym
   submissions = state.gameState.submissions
   playerCount.value = state.gameState.players.length
+  roundTimeRemaining.value = state.gameState.round_time_remaining;
 })
 
 function onComplete() {
@@ -44,7 +45,7 @@ function onNextRound(){
   <div class="yaag-root">
     <SplashScreen v-if="phase === 0 || !animationComplete" @animation-complete="onComplete()" @start="onStart()">
     </SplashScreen>
-    <AnswerSubmission :acronym="acronym" v-if="phase === 1 && animationComplete" @submit="(answer) => onSubmit(answer)">
+    <AnswerSubmission :timeRemaining="roundTimeRemaining" :acronym="acronym" v-if="phase === 1 && animationComplete" @submit="(answer) => onSubmit(answer)">
     </AnswerSubmission>
     <VotingScreen 
       :submissionsByUserId="submissions" 
