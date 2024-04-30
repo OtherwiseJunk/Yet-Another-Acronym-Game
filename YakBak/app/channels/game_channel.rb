@@ -28,12 +28,20 @@ class GameChannel < ApplicationCable::Channel
     case command['type']
     when 0
       puts 'received game start request'
-      if(game_state.game_phase == 0)
+      if(game_state.game_phase == 0 or game_state.game_phase == 3)
         puts 'starting game...'
         game_state.start_game
         broadcast_game_state
         sleep(3)
         broadcast_round_countdown game_state
+        if game_state.players.count < 3
+          puts 'Less than 3 total players, skipping voting'
+          game_state.next_phase
+          broadcast_game_state
+        else
+          broadcast_round_countdown game_state
+        end
+
       end
     when 1
       puts 'received submission from '
@@ -65,9 +73,15 @@ class GameChannel < ApplicationCable::Channel
       while game_state.round_time_remaining > 0
         game_state.round_second_elapsed
         sleep(1)
+
+        if game_state.game_phase == 1 and game_state.submissions.count == game_state.players.count
+          puts 'All players have submitted answers, bailing on countdown.'
+          break
+        end
+
         unless @@gameStateByInstance.key?(params[:instance])
           puts 'Game has ended, bailing on countdown.'
-          return
+          break
         end
         broadcast_game_state
       end
