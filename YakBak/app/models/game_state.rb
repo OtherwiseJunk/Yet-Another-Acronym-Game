@@ -7,7 +7,7 @@ end
 
 class GameState
     include GamePhases
-    attr_reader :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining
+    attr_reader :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining, :votes
     @@alphabet = ('a'..'z').to_a
 
     def initialize(player)
@@ -29,18 +29,13 @@ class GameState
     end
 
     def start_game
-        dummy_text="Some Dumb Fucking Input With Like Twelve Whole Words In It, Yanno?";
+        # test_string = "Some Test Text That Is Exactly Twelve Words, Because I wanna see!"
+        # test_user_data ={"avatarUrl"=>"https://1219391019515121716.discordsays.com/assets/yak.png", "decorationUrl"=>"", "displayName"=>"Test Idiot"}
         @round_number += 1
         @current_acronym = generate_new_acronym(@round_number)
         @game_phase = SUBMITTING
         @round_time_remaining = 60
-        @submissions = {
-            1 => UserSubmission.new(dummy_text, 42),
-            2 => UserSubmission.new(dummy_text, 69),
-            3 => UserSubmission.new(dummy_text, 420),
-            4 => UserSubmission.new(dummy_text, 1337),
-            5 => UserSubmission.new(dummy_text, 69),
-        }
+        @submissions = Hash.new
     end
 
     def add_player_to_game(player)
@@ -57,23 +52,28 @@ class GameState
         when SUBMITTING
             @round_time_remaining = 20
             @game_phase = VOTING
+            @votes = Hash.new
         when VOTING
-        when RESULTS
+            @game_phase = RESULTS
+            @round_time_remaining = 0
         else
             puts "oh fuck."
         end
+    end
+
+    def handle_player_vote()
     end
 
     def round_second_elapsed
         @round_time_remaining -= 1
     end
 
-    def handle_player_submission(discordId, submission)
-        @submissions[discordId] = UserSubmission.new(submission, 60-@round_time_remaining)
+    def handle_player_submission(discordId, submissionData)
+        @submissions[discordId] = UserSubmission.new(submissionData['submission'], 60-@round_time_remaining, submissionData['user_data'])
     end
 
     private
-    attr_writer :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining
+    attr_writer :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining, :votes
 
     def acronym_length_by_round(round)
         acronym_length = 0
