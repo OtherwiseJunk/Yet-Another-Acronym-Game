@@ -41,7 +41,7 @@ export const useGameStore = defineStore("gameCable", () => {
   }
 
   function submitAnswer(answer: string){
-    instanceGame.value!.send(new SubmitAnswerCommand(answer))
+    instanceGame.value!.send(new SubmitAnswerCommand(new UserSubmission(answer, 0, discord.currentUserData)))
   }
 
   return { setup, gameState, startGame, submitAnswer };
