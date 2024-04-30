@@ -14,7 +14,5 @@ app.mount('#app');
 const discord = useDiscordStore();
 const cable = useGameStore();
 
-(async () =>{
-    await discord.setup();
-    await cable.setup();
-})();
+await discord.setup();
+await cable.setup();
