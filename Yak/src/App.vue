@@ -10,6 +10,7 @@ const cable = useGameStore();
 const phase = ref(0)
 const animationComplete = ref(false);
 const acronym = ref("");
+const playerCount = ref(1);
 
 
 let submissions: Map<number, UserSubmission>;
@@ -17,6 +18,7 @@ cable.$subscribe((_, state) => {
   phase.value = state.gameState.game_phase
   acronym.value = state.gameState.current_acronym
   submissions = state.gameState.submissions
+  playerCount.value = state.gameState.players.length
 })
 
 function onComplete() {
@@ -28,30 +30,46 @@ function onStart() {
 function onSubmit(answer: string) {
   cable.submitAnswer(answer);
 }
+function onVote(submissionUserId: string) {
+  console.log('got an OnVote trigger!');
+  console.log(submissionUserId);
+}
+function onNextRound(){
+  cable.startGame();
+}
 
 </script>
 
 <template>
   <div class="yaag-root">
-    <SplashScreen  v-if="phase === 0 || !animationComplete" @animation-complete="onComplete()" @start="onStart()">
+    <SplashScreen v-if="phase === 0 || !animationComplete" @animation-complete="onComplete()" @start="onStart()">
     </SplashScreen>
     <AnswerSubmission :acronym="acronym" v-if="phase === 1 && animationComplete" @submit="(answer) => onSubmit(answer)">
     </AnswerSubmission>
-    <VotingScreen :submissionsByUserId="submissions" :resultsMode="phase === 3" v-if="(phase === 2 || phase === 3) && animationComplete"></VotingScreen>
+    <VotingScreen 
+      :submissionsByUserId="submissions" 
+      :resultsMode="phase === 3"
+      :skipVoting="playerCount <= 2"
+      v-if="(phase === 2 || phase === 3) && animationComplete" 
+      @vote="(submissionUserId) => onVote(submissionUserId)"
+      @next-round="onNextRound()">
+    </VotingScreen>
   </div>
 </template>
 
 <style scoped>
-.yaag-root{
-  max-width: 90%;
-  max-height: 90%;
-  
-  
+.yaag-root {
   justify-content: center;
   align-items: center;
   display: flex;
   flex-direction: column;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
 }
+
 @font-face {
   font-family: 'Orbitron';
   src: url("https://1219391019515121716.discordsays.com/assets/Orbitron.ttf");
