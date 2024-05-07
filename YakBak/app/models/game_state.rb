@@ -8,6 +8,9 @@ end
 class GameState
     include GamePhases
     attr_reader :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining, :votes
+    SUBMISSION_ROUND_TIME = 60
+    VOTING_ROUND_TIME = 20
+
     @@alphabet = ('a'..'z').to_a
 
     def initialize(player)
@@ -32,10 +35,11 @@ class GameState
         # test_string = "Some Test Text That Is Exactly Twelve Words, Because I wanna see!"
         # test_user_data ={"avatarUrl"=>"https://1219391019515121716.discordsays.com/assets/yak.png", "decorationUrl"=>"", "displayName"=>"Test Idiot"}
         @round_number += 1
-        @current_acronym = generate_new_acronym(@round_number)
+        @current_acronym = generate_new_acronym @round_number
         @game_phase = SUBMITTING
-        @round_time_remaining = 60
+        @round_time_remaining = SUBMISSION_ROUND_TIME
         @submissions = Hash.new
+        create_acronym_if_new @current_acronym
     end
 
     def add_player_to_game(player)
@@ -50,7 +54,7 @@ class GameState
         # based on current phased, a little counter-intuitively
         case @game_phase
         when SUBMITTING
-            @round_time_remaining = 20
+            @round_time_remaining = VOTING_ROUND_TIME
             @game_phase = VOTING
             @votes = Hash.new
         when VOTING
@@ -68,8 +72,16 @@ class GameState
         @round_time_remaining -= 1
     end
 
-    def handle_player_submission(discordId, submissionData)
-        @submissions[discordId] = UserSubmission.new(submissionData['submission'], 60-@round_time_remaining, submissionData['user_data'])
+    def handle_player_submission(discord_id, submission_data, instance_id)
+        submission_text = submission_data['submission']
+        user_data = submission_data['user_data']
+        guess_seconds = SUBMISSION_ROUND_TIME - @round_time_remaining
+
+        @submissions[discord_id] = UserSubmission.new submission_text, guess_seconds, user_data
+        create_submission instance_id, discord_id, submission_text, guess_seconds
+    end
+
+    def handle_player_vote()
     end
 
     private
@@ -88,5 +100,19 @@ class GameState
         end
 
         acronym_length
+    end
+
+    def create_submission(instance_id, discord_id, submission_text, guess_seconds)
+        acronym = Acronym.find_by(acronym: @current_acronym)
+        unless acronym.nil?
+            Submission.create game_id: instance_id, discord_user: discord_id, submission: submission_text, guess_seconds: guess_seconds, acronym: acronym
+        end
+    end
+
+    def create_acronym_if_new(acronym)
+        existing_acronym = Acronym.find_by(acronym: acronym)
+        if existing_acronym.nil?
+          Acronym.create acronym: acronym
+        end
     end
 end

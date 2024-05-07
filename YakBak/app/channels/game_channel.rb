@@ -45,12 +45,12 @@ class GameChannel < ApplicationCable::Channel
       end
     when 1
       puts 'received submission from '
-      game_state.handle_player_submission params[:discordUserId], command['data']
+      game_state.handle_player_submission params[:discordUserId], command['data'], params[:instance]
     end
   end
 
   def increment_subcription_count(instance)
-    if not @@subscriptionCountByInstance.key?(params[:instance])
+    if not @@subscriptionCountByInstance.key? params[:instance]
       @@subscriptionCountByInstance[params[:instance]] = 1
     else
       @@subscriptionCountByInstance[params[:instance]] += 1
@@ -58,7 +58,7 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def add_player_to_game(player)
-    if not @@gameStateByInstance.key?(params[:instance])
+    if not @@gameStateByInstance.key? params[:instance]
       @@gameStateByInstance[params[:instance]] = GameState.new player
     else
       @@gameStateByInstance[params[:instance]].add_player_to_game player
@@ -66,27 +66,27 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def broadcast_game_state
-    ActionCable.server.broadcast("game_#{params[:instance]}", @@gameStateByInstance[params[:instance]])
+    ActionCable.server.broadcast "game_#{params[:instance]}", @@gameStateByInstance[params[:instance]]
   end
 
   def broadcast_round_countdown(game_state)
       while game_state.round_time_remaining > 0
         game_state.round_second_elapsed
-        sleep(1)
+        sleep 1
 
         if game_state.game_phase == 1 and game_state.submissions.count == game_state.players.count
           puts 'All players have submitted answers, bailing on countdown.'
           break
         end
 
-        unless @@gameStateByInstance.key?(params[:instance])
+        unless @@gameStateByInstance.key? params[:instance]
           puts 'Game has ended, bailing on countdown.'
           break
         end
         broadcast_game_state
       end
 
-      unless @@gameStateByInstance.key?(params[:instance])
+      unless @@gameStateByInstance.key? params[:instance]
         puts 'Game has ended, bailing on countdown.'
         return
       end
