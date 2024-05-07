@@ -61,7 +61,7 @@ class GameChannel < ApplicationCable::Channel
 
   def add_player_to_game(player)
     puts "Got a request to add player #{player} to game. Checking instance dictionary."
-    puts "dictionary: #{gameStateByInstance}"
+    puts "dictionary: #{@@gameStateByInstance}"
     puts "params: #{params}."
     if not @@gameStateByInstance.key?(params[:instance])
       puts("Creating new game")
