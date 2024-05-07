@@ -8,8 +8,8 @@ end
 class GameState
     include GamePhases
     attr_reader :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining, :votes
-    SUBMISSION_ROUND_TIME = 60
-    VOTING_ROUND_TIME = 20
+    @@SUBMISSION_ROUND_TIME = 60
+    @@VOTING_ROUND_TIME = 20
 
     @@alphabet = ('a'..'z').to_a
 
@@ -18,6 +18,7 @@ class GameState
         @scores = Hash.new
         @game_phase = UNSTARTED
         @round_number = 0
+        puts "Started new game. Starting player array: #{@players}"
     end
 
     def generate_new_acronym(round)
@@ -37,24 +38,27 @@ class GameState
         @round_number += 1
         @current_acronym = generate_new_acronym @round_number
         @game_phase = SUBMITTING
-        @round_time_remaining = SUBMISSION_ROUND_TIME
+        @round_time_remaining = @@SUBMISSION_ROUND_TIME
         @submissions = Hash.new
         create_acronym_if_new @current_acronym
+        puts "Starting Game. Round Time Remianing: #{@round_time_remaining}. Current Acronym #{@current_acronym}."
     end
 
     def add_player_to_game(player)
         @players << player
+        puts "Added player to game. New player array: #{@players}"
     end
 
     def remove_player_from_game(player)
         @players.delete player
+        puts "Removed player from game. New player array: #{@players}"
     end
 
     def next_phase()
         # based on current phased, a little counter-intuitively
         case @game_phase
         when SUBMITTING
-            @round_time_remaining = VOTING_ROUND_TIME
+            @round_time_remaining = @@VOTING_ROUND_TIME
             @game_phase = VOTING
             @votes = Hash.new
         when VOTING
@@ -73,9 +77,10 @@ class GameState
     end
 
     def handle_player_submission(discord_id, submission_data, instance_id)
+        puts "Received player submission. Discord ID: #{discord_id}. Submission Text: #{submission_data['submission']}. Remaining Time: #{@round_time_remaining}. Submission Round Time #{@@SUBMISSION_ROUND_TIME}."
         submission_text = submission_data['submission']
         user_data = submission_data['user_data']
-        guess_seconds = SUBMISSION_ROUND_TIME - @round_time_remaining
+        guess_seconds = @@SUBMISSION_ROUND_TIME - @round_time_remaining
 
         @submissions[discord_id] = UserSubmission.new submission_text, guess_seconds, user_data
         create_submission instance_id, discord_id, submission_text, guess_seconds
