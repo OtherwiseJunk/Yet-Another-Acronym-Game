@@ -4,6 +4,7 @@ module ApplicationCable
 
     def connect
       self.discord_user_id = get_validated_user_discord_id
+      puts "User connected. Discord ID: #{self.discord_user_id}"
     end
 
     private

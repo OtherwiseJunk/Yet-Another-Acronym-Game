@@ -3,6 +3,7 @@ class GameChannel < ApplicationCable::Channel
   @@subscriptionCountByInstance = {}
 
   def subscribed
+    puts "Subscription request. Instance ID: #{params[:instance]}"
     stream_from "game_#{params[:instance]}"
 
     increment_subcription_count params[:instance]
@@ -12,6 +13,7 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def unsubscribed
+    puts "Unsucribe request. Instance ID: #{params[:instance]}"
     @@subscriptionCountByInstance[params[:instance]] -= 1
     @@gameStateByInstance[params[:instance]].remove_player_from_game params[:discordUserId]
 
