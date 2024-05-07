@@ -1,10 +1,6 @@
 class TokensController < ApplicationController
     def create
         uri = URI("https://discord.com/api/oauth2/token")
-        puts "Logging Env Values";
-        ENV.each do |key, value|
-            puts "#{key} = #{value}"
-        end
 
         content_type = "application/x-www-form-urlencoded"
         body = {
