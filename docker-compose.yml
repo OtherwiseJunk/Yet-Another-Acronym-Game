@@ -19,7 +19,7 @@ services:
   rails:
     image: yakbak
     ports:
-      - '3000:3000'
+      - '3333:3000'
     environment:
       - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
