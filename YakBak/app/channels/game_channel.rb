@@ -52,7 +52,7 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def increment_subcription_count(instance)
-    if not @@subscriptionCountByInstance.key? params[:instance]
+    if not @@subscriptionCountByInstance.key?(params[:instance])
       @@subscriptionCountByInstance[params[:instance]] = 1
     else
       @@subscriptionCountByInstance[params[:instance]] += 1
@@ -60,7 +60,7 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def add_player_to_game(player)
-    if not @@gameStateByInstance.key? params[:instance]
+    if not @@gameStateByInstance.key?(params[:instance])
       @@gameStateByInstance[params[:instance]] = GameState.new player
     else
       @@gameStateByInstance[params[:instance]].add_player_to_game player
@@ -81,14 +81,14 @@ class GameChannel < ApplicationCable::Channel
           break
         end
 
-        unless @@gameStateByInstance.key? params[:instance]
+        unless @@gameStateByInstance.key?(params[:instance])
           puts 'Game has ended, bailing on countdown.'
           break
         end
         broadcast_game_state
       end
 
-      unless @@gameStateByInstance.key? params[:instance]
+      unless @@gameStateByInstance.key?(params[:instance])
         puts 'Game has ended, bailing on countdown.'
         return
       end
