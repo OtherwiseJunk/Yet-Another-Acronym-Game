@@ -1,6 +1,6 @@
 class GameChannel < ApplicationCable::Channel
   mutex = Mutex.new
-  mutex.syncronize do
+  mutex.synchronize do
     @@gameStateByInstance = {}
     @@subscriptionCountByInstance = {}
   end
@@ -16,7 +16,7 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def unsubscribed
-    mutex.syncronize do
+    mutex.synchronize do
       puts "Unsucribe request. Instance ID: #{params[:instance]}"
       @@subscriptionCountByInstance[params[:instance]] -= 1
       @@gameStateByInstance[params[:instance]].remove_player_from_game params[:discordUserId]
@@ -31,7 +31,7 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def receive(command)
-    mutex.syncronize do
+    mutex.synchronize do
       game_state = @@gameStateByInstance[params[:instance]]
     case command['type']
     when 0
@@ -59,7 +59,7 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def increment_subcription_count(instance)
-    mutex.syncronize do
+    mutex.synchronize do
       if not @@subscriptionCountByInstance.key?(params[:instance])
         @@subscriptionCountByInstance[params[:instance]] = 1
       else
@@ -69,7 +69,7 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def add_player_to_game(player)
-    mutex.syncronize do
+    mutex.synchronize do
       puts "Got a request to add player #{player} to game. Checking instance dictionary."
       puts "dictionary: #{@@gameStateByInstance}"
       puts "params: #{params}."
@@ -84,13 +84,13 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def broadcast_game_state
-    mutex.syncronize do
+    mutex.synchronize do
       ActionCable.server.broadcast "game_#{params[:instance]}", @@gameStateByInstance[params[:instance]]
     end
   end
 
   def broadcast_round_countdown(game_state)
-    mutex.syncronize do
+    mutex.synchronize do
       while game_state.round_time_remaining > 0
         game_state.round_second_elapsed
         sleep 1
