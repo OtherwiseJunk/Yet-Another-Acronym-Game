@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -10,26 +12,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_05_07_001619) do
+ActiveRecord::Schema[7.1].define(version: 20_240_507_001_619) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
+  enable_extension 'plpgsql'
 
-  create_table "acronyms", force: :cascade do |t|
-    t.string "acronym"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+  create_table 'acronyms', force: :cascade do |t|
+    t.string 'acronym'
+    t.datetime 'created_at', null: false
+    t.datetime 'updated_at', null: false
   end
 
-  create_table "submissions", force: :cascade do |t|
-    t.string "game_id"
-    t.bigint "discord_user"
-    t.string "submission"
-    t.integer "guess_seconds"
-    t.bigint "acronym_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["acronym_id"], name: "index_submissions_on_acronym_id"
+  create_table 'submissions', force: :cascade do |t|
+    t.string 'game_id'
+    t.bigint 'discord_user'
+    t.string 'submission'
+    t.integer 'guess_seconds'
+    t.bigint 'acronym_id', null: false
+    t.datetime 'created_at', null: false
+    t.datetime 'updated_at', null: false
+    t.index ['acronym_id'], name: 'index_submissions_on_acronym_id'
   end
 
-  add_foreign_key "submissions", "acronyms"
+  add_foreign_key 'submissions', 'acronyms'
 end

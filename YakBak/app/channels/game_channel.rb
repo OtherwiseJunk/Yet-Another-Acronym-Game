@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 class GameChannel < ApplicationCable::Channel
-  @redis = Redis.new(host: ENV['REDIS_URL'] || "redis://redis:6379/1")
-  @subscription_count_template = "subscription_count_%{instance_id}}"
-  @game_state_template = "game_state_%{instance_id}"
+  REDIS = Redis.new(host: ENV['REDIS_URL'] || 'redis', password: ENV['REDIS_PASSWORD'] || 'password')
+  SUBSCRIPTION_KEY_TEMPLATE = 'subscription_count_%<instance_id>s'
+  GAME_KEY_TEMPLATE = 'game_state_%<instance_id>s'
+  ROUND_TIME_KEY_TEMPLATE = 'round_time_%<instance_id>s'
 
   def subscribed
-    puts "Subscription request. Instance ID: #{params[:instance]}"
     stream_from "game_#{params[:instance]}"
 
     increment_subcription_count params[:instance]
@@ -14,113 +16,139 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def unsubscribed
-    instance_id = {instance_id: params[:instance]}
-    subscription_count_key = @subscription_count_template % instance_id
-    game_state_key = @game_state_template % instance_id
+    decrement_subscription_count params[:instance]
 
-    puts "Unsucribe request. Instance ID: #{params[:instance]}"
-    @redis.decr(subscription_count_key)
-    game_state = @redis.get(game_state_key)
-    game_state.remove_player_from_game params[:discordUserId]
-    @redis.set(game_state_key, game_state)
+    remove_player_from_game params[:discordUserId]
 
-    if @redis.get(subscription_count_key) == 0
-      puts 'Last user has disconnected from instance #{params[:instance]}. Cleaning up...'
+    run_cleanup params[:instnace]
+  end
 
-      @redis.del(subscription_count_key)
-      @redis.del(game_state_key)
+  def retrieve_game_state
+    key = format(GAME_KEY_TEMPLATE, instance_id)
+    REDIS.get(key)
+  end
+
+  def remove_player_from_game(discord_id)
+    game_state = retrieve_game_state
+    return if game_state.nil?
+
+    game_state.remove_player_from_game discord_id
+    REDIS.set(game_state_key, game_state.to_json)
+  end
+
+  def run_cleanup(instance)
+    instance_id = { instance_id: instance }
+    game_state_key = format(GAME_KEY_TEMPLATE, instance_id)
+    subscription_count_key = format(SUBSCRIPTION_KEY_TEMPLATE, instance_id)
+    return unless REDIS.get(subscription_count_key) == '0'
+
+    Rails.logger.debug "Last user has disconnected from instance #{params[:instance]}. Cleaning up..."
+
+    REDIS.del(subscription_count_key)
+    REDIS.del(game_state_key)
+  end
+
+  def handle_start_game_request(game_state, game_state_key)
+    return unless game_state.game_phase.zero? || (game_state.game_phase == 3)
+
+    game_state.start_game
+    REDIS.set(key, game_state.to_json)
+    broadcast_game_state
+    sleep(3)
+    broadcast_round_countdown key, GameStaet::SUBMISSION_ROUND_TIME
+    if game_state.players.count < 3
+      Rails.logger.debug 'Less than 3 total players, skipping voting'
+      game_state.next_phase
+      REDIS.set(game_state_key, game_state.to_json)
+      broadcast_game_state
+    else
+      broadcast_round_countdown game_state_key
     end
   end
 
   def receive(command)
-    key = @game_state_template % {instance_id: params[:instance]}
-    game_state = @redis.get(key)
+    key = format(GAME_KEY_TEMPLATE, instance_id: params[:instance])
+    game_state = GameState.new ActiveSupport::JSON.decode(REDIS.get(key))
     case command['type']
     when 0
-      puts 'received game start request'
-      if(game_state.game_phase == 0 or game_state.game_phase == 3)
-        puts 'starting game...'
-        game_state.start_game
-        @redis.set(key, game_state)
-        broadcast_game_state
-        sleep(3)
-        broadcast_round_countdown game_state
-        if game_state.players.count < 3
-          puts 'Less than 3 total players, skipping voting'
-          game_state.next_phase
-          @redis.set(key, game_state)
-          broadcast_game_state
-        else
-          broadcast_round_countdown key
-        end
-
-      end
+      handle_start_game_request game_state, key
     when 1
-      puts 'received submission from '
-      game_state.handle_player_submission params[:discordUserId], command['data'], params[:instance]
+      handle_submissions
     end
+  end
+
+  def retrieve_round_time
+    round_time_key = format(ROUND_TIME_KEY_TEMPLATE, instance_id: params[:instance])
+    REDIS.get(round_time_key).to_i
+  end
+
+  def handle_submissions
+    guess_seconds = GameState::SUBMISSION_ROUND_TIME - retrieve_round_time
+    game_state.handle_player_submission params[:discordUserId], command['data'], params[:instance], guess_seconds
+    game_state_json = game_state.to_json
+    REDIS.set(key, game_state_json)
   end
 
   def increment_subcription_count(instance)
-    key = @subscription_count_template % {instance_id: params[:instance]}
+    key = format(SUBSCRIPTION_KEY_TEMPLATE, instance_id: instance)
 
-    unless @redis.exists(key)
-      @redis.set(key, 1)
+    if REDIS.exists(key) != 0
+      REDIS.incr(key)
     else
-      @redis.incr(key)
+      REDIS.set(key, 1)
     end
+  end
+
+  def decrement_subscription_count(instance)
+    key = format(SUBSCRIPTION_KEY_TEMPLATE, instance_id: instance)
+    REDIS.decr(key)
   end
 
   def add_player_to_game(player)
-    key = @game_state_template % {instance_id: params[:instance]}
-    puts "Got a request to add player #{player} to game. Checking instance dictionary."
-    puts "dictionary: #{@@gameStateByInstance}"
-    puts "params: #{params}."
+    key = format(GAME_KEY_TEMPLATE, instance_id: params[:instance])
 
-    unless @redis.exists(key)
-      puts("Creating new game")
-      @redis.set(key, GameState.new(player))
-    else
-      puts("Adding player to existing game")
-      game_state = @redis.get(key)
-      game_state.add_player_to_game player
-      @redis.set(key, game_state)
-    end
+    game_state = if REDIS.exists(key) != 0
+                   GameState.new ActiveSupport::JSON.decode(REDIS.get(key))
+                 else
+                   GameState.new
+                 end
+    game_state.add_player_to_game player
+    REDIS.set(key, game_state.to_json)
   end
 
   def broadcast_game_state
-    key = @game_state_template % {instance_id: params[:instance]}
-    ActionCable.server.broadcast "game_#{params[:instance]}", @redis.get(key)
+    instance = { instance_id: params[:instance] }
+    round_time_key = ROUND_TIME_KEY_TEMPLATE % instance
+
+    return unless REDIS.exists(key) != 0
+
+    game_state = GameState.new ActiveSupport::JSON.decode(REDIS.get(key))
+    game_state.round_time_remaining = REDIS.get(round_time_key)
+    ActionCable.server.broadcast "game_#{params[:instance]}", game_state
   end
 
-  def broadcast_round_countdown(game_state_key)
+  def broadcast_round_countdown(game_state_key, initial_time)
+    round_time_key = format(ROUND_TIME_KEY_TEMPLATE, instance_id: params[:instance])
+    countdown = initial_time
+    REDIS.set(round_time_key, initial_time)
+    while countdown.positive?
+      countdown -= 1
+      game_state = GameState.new ActiveSupport::JSON.decode(REDIS.get(game_state_key))
+      REDIS.set(round_time_key, countdown)
+      sleep 1
 
-      while game_state.round_time_remaining > 0
-        game_state = @redis.get(game_state_key)
-        game_state.round_second_elapsed
-        @redis.set(game_state_key, game_state)
-        sleep 1
+      break if (game_state.game_phase == 1) && (game_state.submissions.count == game_state.players.count)
 
-        if game_state.game_phase == 1 and game_state.submissions.count == game_state.players.count
-          puts 'All players have submitted answers, bailing on countdown.'
-          break
-        end
+      break unless REDIS.exists(game_state_key)
 
-        unless @redis.exists(game_state_key)
-          puts 'Game has ended, bailing on countdown.'
-          break
-        end
-        broadcast_game_state
-      end
-
-      unless @redis.exists(game_state_key)
-        puts 'Game has ended, bailing on countdown.'
-        return
-      end
-      game_state = @redis.get(game_state_key)
-      game_state.next_phase
-      @redis.set(game_state_key, game_state)
       broadcast_game_state
-  end
+    end
 
+    return unless REDIS.exists(game_state_key)
+
+    game_state = GameState.new ActiveSupport::JSON.decode(REDIS.get(game_state_key))
+    game_state.next_phase
+    REDIS.set(game_state_key, game_state.to_json)
+    broadcast_game_state
+  end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class UserSubmission
   attr_accessor :submission, :answer_time
 
