@@ -1,6 +1,5 @@
 class GameChannel < ApplicationCable::Channel
-  @@gameStateByInstance = {}
-  @@subscriptionCountByInstance = {}
+  thread_mattr_accessor :gameStateByInstance, :subscriptionCountByInstance
 
   def subscribed
     puts "Subscription request. Instance ID: #{params[:instance]}"
@@ -14,19 +13,19 @@ class GameChannel < ApplicationCable::Channel
 
   def unsubscribed
     puts "Unsucribe request. Instance ID: #{params[:instance]}"
-    @@subscriptionCountByInstance[params[:instance]] -= 1
-    @@gameStateByInstance[params[:instance]].remove_player_from_game params[:discordUserId]
+    subscriptionCountByInstance[params[:instance]] -= 1
+    gameStateByInstance[params[:instance]].remove_player_from_game params[:discordUserId]
 
-    if @@subscriptionCountByInstance[params[:instance]] == 0
+    if subscriptionCountByInstance[params[:instance]] == 0
       puts 'Last user has disconnected from instance #{params[:instance]}. Cleaning up...'
 
-      @@subscriptionCountByInstance = @@subscriptionCountByInstance.delete([params[:instance]]) || Hash.new
-      @@gameStateByInstance = @@gameStateByInstance.delete([params[:instance]]) || Hash.new
+      subscriptionCountByInstance = subscriptionCountByInstance.delete([params[:instance]]) || Hash.new
+      gameStateByInstance = gameStateByInstance.delete([params[:instance]]) || Hash.new
     end
   end
 
   def receive(command)
-    game_state = @@gameStateByInstance[params[:instance]]
+    game_state = gameStateByInstance[params[:instance]]
     case command['type']
     when 0
       puts 'received game start request'
@@ -52,28 +51,28 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def increment_subcription_count(instance)
-    if not @@subscriptionCountByInstance.key?(params[:instance])
-      @@subscriptionCountByInstance[params[:instance]] = 1
+    if not subscriptionCountByInstance.key?(params[:instance])
+      subscriptionCountByInstance[params[:instance]] = 1
     else
-      @@subscriptionCountByInstance[params[:instance]] += 1
+      subscriptionCountByInstance[params[:instance]] += 1
     end
   end
 
   def add_player_to_game(player)
     puts "Got a request to add player #{player} to game. Checking instance dictionary."
-    puts "dictionary: #{@@gameStateByInstance}"
+    puts "dictionary: #{gameStateByInstance}"
     puts "params: #{params}."
-    if not @@gameStateByInstance.key?(params[:instance])
+    if not gameStateByInstance.key?(params[:instance])
       puts("Creating new game")
-      @@gameStateByInstance[params[:instance]] = GameState.new player
+      gameStateByInstance[params[:instance]] = GameState.new player
     else
       puts("Adding player to existing game")
-      @@gameStateByInstance[params[:instance]].add_player_to_game player
+      gameStateByInstance[params[:instance]].add_player_to_game player
     end
   end
 
   def broadcast_game_state
-    ActionCable.server.broadcast "game_#{params[:instance]}", @@gameStateByInstance[params[:instance]]
+    ActionCable.server.broadcast "game_#{params[:instance]}", gameStateByInstance[params[:instance]]
   end
 
   def broadcast_round_countdown(game_state)
@@ -86,14 +85,14 @@ class GameChannel < ApplicationCable::Channel
           break
         end
 
-        unless @@gameStateByInstance.key?(params[:instance])
+        unless gameStateByInstance.key?(params[:instance])
           puts 'Game has ended, bailing on countdown.'
           break
         end
         broadcast_game_state
       end
 
-      unless @@gameStateByInstance.key?(params[:instance])
+      unless gameStateByInstance.key?(params[:instance])
         puts 'Game has ended, bailing on countdown.'
         return
       end
