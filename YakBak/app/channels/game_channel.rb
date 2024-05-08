@@ -1,5 +1,5 @@
 class GameChannel < ApplicationCable::Channel
-  @redis = Redis.new(host: ENV['REDIS_URL'] || "redis://redis:6379/1", db:'yakbak')
+  @redis = Redis.new(host: ENV['REDIS_URL'] || "redis://redis:6379/1")
   @subscription_count_template = "subscription_count_#{instance_id}}"
   @game_state_template = "game_state_#{instance_id}"
 
