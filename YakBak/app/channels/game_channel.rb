@@ -1,6 +1,7 @@
 class GameChannel < ApplicationCable::Channel
-  @@gameStateByInstance = {}
-  @@subscriptionCountByInstance = {}
+  @redis = Redis.new(host: ENV['REDIS_URL'] || "redis://redis:6379/1", db:'yakbak')
+  @subscription_count_template = "subscription_count_#{instance_id}}"
+  @game_state_template = "game_state_#{instance_id}"
 
   def subscribed
     puts "Subscription request. Instance ID: #{params[:instance]}"
@@ -13,35 +14,44 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def unsubscribed
-    puts "Unsucribe request. Instance ID: #{params[:instance]}"
-    @@subscriptionCountByInstance[params[:instance]] -= 1
-    @@gameStateByInstance[params[:instance]].remove_player_from_game params[:discordUserId]
+    instance_id = {instance_id: params[:instance]}
+    subscription_count_key = @subscription_count_template % instance_id
+    game_state_key = @game_state_template % instance_id
 
-    if @@subscriptionCountByInstance[params[:instance]] == 0
+    puts "Unsucribe request. Instance ID: #{params[:instance]}"
+    @redis.decr(subscription_count_key)
+    game_state = @redis.get(game_state_key)
+    game_state.remove_player_from_game params[:discordUserId]
+    @redis.set(game_state_key, game_state)
+
+    if @redis.get(subscription_count_key) == 0
       puts 'Last user has disconnected from instance #{params[:instance]}. Cleaning up...'
 
-      @@subscriptionCountByInstance = @@subscriptionCountByInstance.delete([params[:instance]]) || Hash.new
-      @@gameStateByInstance = @@gameStateByInstance.delete([params[:instance]]) || Hash.new
+      @redis.del(subscription_count_key)
+      @redis.del(game_state_key)
     end
   end
 
   def receive(command)
-    game_state = @@gameStateByInstance[params[:instance]]
+    key = @game_state_template % {instance_id: params[:instance]}
+    game_state = @redis.get(key)
     case command['type']
     when 0
       puts 'received game start request'
       if(game_state.game_phase == 0 or game_state.game_phase == 3)
         puts 'starting game...'
         game_state.start_game
+        @redis.set(key, game_state)
         broadcast_game_state
         sleep(3)
         broadcast_round_countdown game_state
         if game_state.players.count < 3
           puts 'Less than 3 total players, skipping voting'
           game_state.next_phase
+          @redis.set(key, game_state)
           broadcast_game_state
         else
-          broadcast_round_countdown game_state
+          broadcast_round_countdown key
         end
 
       end
@@ -52,33 +62,43 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def increment_subcription_count(instance)
-    if not @@subscriptionCountByInstance.key?(params[:instance])
-      @@subscriptionCountByInstance[params[:instance]] = 1
+    key = @subscription_count_template % {instance_id: params[:instance]}
+
+    unless @redis.exists(key)
+      @redis.set(key, 1)
     else
-      @@subscriptionCountByInstance[params[:instance]] += 1
+      @redis.incr(key)
     end
   end
 
   def add_player_to_game(player)
+    key = @game_state_template % {instance_id: params[:instance]}
     puts "Got a request to add player #{player} to game. Checking instance dictionary."
     puts "dictionary: #{@@gameStateByInstance}"
     puts "params: #{params}."
-    if not @@gameStateByInstance.key?(params[:instance])
+
+    unless @redis.exists(key)
       puts("Creating new game")
-      @@gameStateByInstance[params[:instance]] = GameState.new player
+      @redis.set(key, GameState.new(player))
     else
       puts("Adding player to existing game")
-      @@gameStateByInstance[params[:instance]].add_player_to_game player
+      game_state = @redis.get(key)
+      game_state.add_player_to_game player
+      @redis.set(key, game_state)
     end
   end
 
   def broadcast_game_state
-    ActionCable.server.broadcast "game_#{params[:instance]}", @@gameStateByInstance[params[:instance]]
+    key = @game_state_template % {instance_id: params[:instance]}
+    ActionCable.server.broadcast "game_#{params[:instance]}", @redis.get(key)
   end
 
-  def broadcast_round_countdown(game_state)
+  def broadcast_round_countdown(game_state_key)
+
       while game_state.round_time_remaining > 0
+        game_state = @redis.get(game_state_key)
         game_state.round_second_elapsed
+        @redis.set(game_state_key, game_state)
         sleep 1
 
         if game_state.game_phase == 1 and game_state.submissions.count == game_state.players.count
@@ -86,18 +106,20 @@ class GameChannel < ApplicationCable::Channel
           break
         end
 
-        unless @@gameStateByInstance.key?(params[:instance])
+        unless @redis.exists(game_state_key)
           puts 'Game has ended, bailing on countdown.'
           break
         end
         broadcast_game_state
       end
 
-      unless @@gameStateByInstance.key?(params[:instance])
+      unless @redis.exists(game_state_key)
         puts 'Game has ended, bailing on countdown.'
         return
       end
+      game_state = @redis.get(game_state_key)
       game_state.next_phase
+      @redis.set(game_state_key, game_state)
       broadcast_game_state
   end
 
