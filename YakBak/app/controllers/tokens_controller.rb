@@ -1,7 +1,7 @@
 class TokensController < ApplicationController
   def create
     uri = URI('https://discord.com/api/oauth2/token')
-    puts 'Logging Env Values'
+    Rails.logger.debug 'Logging Env Values'
     ENV.each do |key, value|
       puts "#{key} = #{value}"
     end
@@ -13,7 +13,7 @@ class TokensController < ApplicationController
     }
 
     response = HTTParty.post(uri, body: body)
-    puts response
+    Rails.logger.debug response
 
     if response.code == 200
       render json: JSON.parse(response.body)

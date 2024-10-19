@@ -5,7 +5,7 @@ class ChatChannel < ApplicationCable::Channel
   def subscribed
     instance_id = params[:instance]
 
-    unless instance_id.present?
+    if instance_id.blank?
       reject
       return
     end

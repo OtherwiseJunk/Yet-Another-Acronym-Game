@@ -59,7 +59,7 @@ class GameState
       @game_phase = RESULTS
       @round_time_remaining = 0
     else
-      puts 'oh fuck.'
+      Rails.logger.debug 'oh fuck.'
     end
   end
 
