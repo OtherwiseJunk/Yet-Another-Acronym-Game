@@ -1,36 +1,40 @@
-class ChatChannel < ApplicationCable::Channel  
-  @@messagesByInstance = {}
-  @@subscriptionCountByInstance = {}
+class ChatChannel < ApplicationCable::Channel
+  @@messages_by_instance = {}
+  @@subscription_count_by_instance = {}
 
   def subscribed
-    stream_from "chat_#{params[:instance]}"
+    instance_id = params[:instance]
 
-    if not @@messagesByInstance.key?(params[:instance])
-      @@messagesByInstance[params[:instance]] = Array.new
+    unless instance_id.present?
+      reject
+      return
     end
 
-    if not @@subscriptionCountByInstance.key?(params[:instance])
-      @@subscriptionCountByInstance[params[:instance]] = 1
-    else
-      @@subscriptionCountByInstance[params[:instance]] += 1
-    end
+    @@messages_by_instance[instance_id] ||= []
+    @@subscription_count_by_instance[instance_id] ||= 0
+    @@subscription_count_by_instance[instance_id] += 1
+
+    stream_from "chat_#{instance_id}"
 
     transmit(@@messagesByInstance[params[:instance]])
   end
 
   def receive(data)
-    @@messagesByInstance[params[:instance]] << data
-    ActionCable.server.broadcast("chat_#{params[:instance]}", data)
+    return unless data.present? && data.is_a?(Hash) && data[:message].present?
+
+    instance_id = params[:instance]
+
+    @@messages_by_instance[instance_id] << data
+    ActionCable.server.broadcast("chat_#{instance_id}", data)
   end
 
   def unsubscribed
-    @@subscriptionCountByInstance[params[:instance]] -= 1
+    instance_id = params[:instance]
+    @@subscription_count_by_instance[instance_id] -= 1 if @@subscription_count_by_instance[instance_id].present?
 
-    if @@subscriptionCountByInstance[params[:instance]] == 0
-      puts "Last user has disconnected from instance #{params[:instance]}. Cleaning up..."
-      
-      @@subscriptionCountByInstance.delete([params[:instance]])
-      @@messagesByInstance.delete([params[:instance]])
-    end
+    return unless @@subscriptionCountByInstance[params[:instance]].zero?
+
+    @@subscriptionCountByInstance.delete([params[:instance]])
+    @@messagesByInstance.delete([params[:instance]])
   end
 end
