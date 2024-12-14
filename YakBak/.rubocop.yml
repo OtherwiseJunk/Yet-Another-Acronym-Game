@@ -110,6 +110,9 @@ Rails/UniqueValidationWithoutIndex:
 
 #################### Style ###############################
 
+Style/ClassVars:
+  Enabled: false
+
 # This doesn't work well with Sorbet type signatures, keep the attribute declarations separate.
 Style/AccessorGrouping:
   Enabled: false
