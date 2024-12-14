@@ -10,13 +10,12 @@ class GameState
   attr_reader :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining,
               :votes
 
-  @@alphabet = ('a'..'z').to_a
-
   def initialize(player)
     @players = [player]
     @scores = {}
     @game_phase = UNSTARTED
     @round_number = 0
+    @alphabet = ('a'..'z').to_a
   end
 
   def generate_new_acronym(round)
@@ -24,15 +23,13 @@ class GameState
     acronym_length = acronym_length_by_round round
 
     (1..acronym_length).each do |_|
-      acronym << @@alphabet.sample
+      acronym << @alphabet.sample
     end
 
     acronym
   end
 
   def start_game
-    # test_string = "Some Test Text That Is Exactly Twelve Words, Because I wanna see!"
-    # test_user_data ={"avatarUrl"=>"https://1219391019515121716.discordsays.com/assets/yak.png", "decorationUrl"=>"", "displayName"=>"Test Idiot"}
     @round_number += 1
     @current_acronym = generate_new_acronym(@round_number)
     @game_phase = SUBMITTING
@@ -69,9 +66,9 @@ class GameState
     @round_time_remaining -= 1
   end
 
-  def handle_player_submission(discordId, submissionData)
-    @submissions[discordId] =
-      UserSubmission.new(submissionData['submission'], 60 - @round_time_remaining, submissionData['user_data'])
+  def handle_player_submission(discord_id, submission_data)
+    @submissions[discord_id] =
+      UserSubmission.new(submission_data['submission'], 60 - @round_time_remaining, submission_data['user_data'])
   end
 
   private
