@@ -1,0 +1,586 @@
+require:
+  - rubocop-rspec
+  - rubocop-performance
+  - rubocop-rails
+  - rubocop-rspec_rails
+
+AllCops:
+  TargetRubyVersion: 3.3
+  Exclude:
+    - "bin/*"
+    - "db/schema.rb"
+    - "node_modules/**/*"
+    - "vendor/bundle/**/*"
+    - "sorbet/**/*"
+    - "storage/**/*"
+    - "tmp/**/*"
+    - ".git/**/*"
+
+###################### Bundler #############################
+
+Bundler/OrderedGems:
+  Enabled: false
+
+###################### Layout ##############################
+
+Layout/ArgumentAlignment:
+  Enabled: false
+
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: false
+
+Layout/EmptyLineAfterMagicComment:
+  Enabled: false
+
+Layout/LineLength:
+  Enabled: false
+
+###################### Lint ##############################
+
+Lint/MissingSuper:
+  Enabled: false
+
+#################### Metrics ###############################
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+#################### Rails #################################
+
+# By default, the rails cops are not run. Override in project or home
+# directory .rubocop.yml files, or by giving the -R/--rails option.
+Rails:
+  Enabled: true
+
+# TODO: Enable this.
+Rails/HasManyOrHasOneDependent:
+  Enabled: false
+
+Rails/LexicallyScopedActionFilter:
+  Enabled: false
+
+# TODO: Enable this?
+Rails/NotNullColumn:
+  Enabled: false
+
+Rails/Output:
+  Enabled: true
+  Exclude:
+    - "db/seeds.rb"
+    - "db/seeds/*.rb"
+    - "lib/wikidata_helper.rb"
+
+Rails/RequestReferer:
+  Enabled: true
+  EnforcedStyle: referrer
+
+Rails/HelperInstanceVariable:
+  Enabled: true
+  Exclude:
+    - 'app/helpers/settings_helper.rb'
+
+# This cop is buggy.
+Rails/BulkChangeTable:
+  Enabled: false
+
+# This has some failures on older migrations.
+Rails/UniqueValidationWithoutIndex:
+  Enabled: false
+
+#################### Style ###############################
+
+Style/ClassVars:
+  Enabled: false
+
+# This doesn't work well with Sorbet type signatures, keep the attribute declarations separate.
+Style/AccessorGrouping:
+  Enabled: false
+
+Style/BlockDelimiters:
+  Enabled: true
+  Exclude:
+    - 'spec/requests/**/*_spec.rb'
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/ConditionalAssignment:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/ExpandPathArguments:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
+
+Style/Lambda:
+  Enabled: false
+
+Style/Next:
+  Enabled: true
+  Exclude:
+    - "lib/tasks/import/wikidata_import_games.rake"
+
+Style/NumericLiterals:
+  Enabled: true
+  Exclude:
+    - "db/schema.rb"
+    - "db/migrate/*.rb"
+
+Style/NumericPredicate:
+  Enabled: false
+
+Style/RedundantReturn:
+  Enabled: false
+
+Style/StringLiterals:
+  Enabled: false
+
+Style/SymbolArray:
+  Enabled: false
+
+Style/SymbolProc:
+  Enabled: false
+
+Style/WordArray:
+  Enabled: false
+
+#################### RSpec ###############################
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/HookArgument:
+  Enabled: true
+  EnforcedStyle: each
+
+RSpec/ImplicitExpect:
+  Enabled: true
+  EnforcedStyle: 'should'
+
+RSpec/MultipleExpectations:
+  Enabled: true
+  Max: 3
+
+RSpec/DescribedClass:
+  Enabled: false
+
+RSpec/EmptyLineAfterExample:
+  Enabled: false
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
+RSpec/BeEq:
+  Enabled: false
+
+RSpec/IndexedLet:
+  Enabled: false
+
+RSpec/SortMetadata:
+  Enabled: false
+
+RSpec/MetadataStyle:
+  Enabled: false
+
+###################### Extras ##############################
+
+### These are enabled to make rubocop stop complaining. These will be
+### auto-enabled in future versions of rubocop and can be removed then.
+
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
+Lint/BinaryOperatorWithIdenticalOperands:
+  Enabled: true
+
+Lint/DeprecatedOpenSSLConstant:
+  Enabled: true
+
+Lint/DuplicateElsifCondition:
+  Enabled: true
+
+Lint/DuplicateRescueException:
+  Enabled: true
+
+Lint/EmptyConditionalBody:
+  Enabled: true
+
+Lint/FloatComparison:
+  Enabled: true
+
+Lint/MixedRegexpCaptureTypes:
+  Enabled: true
+
+Lint/OutOfRangeRegexpRef:
+  Enabled: true
+
+Lint/RaiseException:
+  Enabled: true
+
+Lint/SelfAssignment:
+  Enabled: true
+
+Lint/StructNewOverride:
+  Enabled: true
+
+Lint/TopLevelReturnWithArgument:
+  Enabled: true
+
+Lint/UnreachableLoop:
+  Enabled: true
+
+Style/ArrayCoercion:
+  Enabled: true
+
+Style/BisectedAttrAccessor:
+  Enabled: true
+
+Style/CaseLikeIf:
+  Enabled: true
+
+Style/ExplicitBlockArgument:
+  Enabled: true
+
+Style/ExponentialNotation:
+  Enabled: true
+
+Style/GlobalStdStream:
+  Enabled: true
+
+Style/HashAsLastArrayItem:
+  Enabled: true
+
+Style/HashLikeCase:
+  Enabled: true
+
+Style/OptionalBooleanParameter:
+  Enabled: true
+
+Style/RedundantAssignment:
+  Enabled: true
+
+Style/RedundantFetchBlock:
+  Enabled: true
+
+Style/RedundantFileExtensionInRequire:
+  Enabled: true
+
+Style/RedundantRegexpCharacterClass:
+  Enabled: true
+
+Style/RedundantRegexpEscape:
+  Enabled: true
+
+Style/SingleArgumentDig:
+  Enabled: true
+
+Style/SlicingWithRange:
+  Enabled: true
+
+Style/StringConcatenation:
+  Enabled: true
+
+Performance/AncestorsInclude:
+  Enabled: true
+
+Performance/BigDecimalWithNumericArgument:
+  Enabled: true
+
+Performance/RedundantSortBlock:
+  Enabled: true
+
+Performance/RedundantStringChars:
+  Enabled: true
+
+Performance/ReverseFirst:
+  Enabled: true
+
+Performance/SortReverse:
+  Enabled: true
+
+Performance/Squeeze:
+  Enabled: true
+
+Performance/StringInclude:
+  Enabled: true
+
+Performance/Sum:
+  Enabled: true
+
+Rails/ActiveRecordCallbacksOrder:
+  Enabled: true
+
+Rails/AfterCommitOverride:
+  Enabled: true
+
+Rails/FindById:
+  Enabled: true
+
+Rails/Inquiry:
+  Enabled: true
+
+Rails/MailerName:
+  Enabled: true
+
+Rails/MatchRoute:
+  Enabled: true
+
+Rails/NegateInclude:
+  Enabled: true
+
+Rails/Pluck:
+  Enabled: true
+
+Rails/PluckInWhere:
+  Enabled: true
+
+Rails/RenderInline:
+  Enabled: true
+
+Rails/RenderPlainText:
+  Enabled: true
+
+Rails/ShortI18n:
+  Enabled: true
+
+Rails/SquishedSQLHeredocs:
+  Enabled: true
+
+Rails/WhereExists:
+  Enabled: true
+
+Rails/WhereNot:
+  Enabled: true
+
+Lint/DuplicateRequire:
+  Enabled: true
+
+Lint/EmptyFile:
+  Enabled: true
+
+Lint/TrailingCommaInAttributeDeclaration:
+  Enabled: true
+
+Lint/UselessMethodDefinition:
+  Enabled: true
+
+Style/CombinableLoops:
+  Enabled: true
+
+# This one is dumb so I'm disabling it.
+Style/KeywordParametersOrder:
+  Enabled: false
+
+Style/RedundantSelfAssignment:
+  Enabled: true
+
+Style/SoleNestedConditional:
+  Enabled: true
+
+# Disable this one for now since Sorbet's type signatures for
+# `URI.parse(foo).open` is weird and bad.
+# TODO: Re-enable this.
+Security/Open:
+  Enabled: false
+
+Gemspec/DeprecatedAttributeAssignment:
+  Enabled: true
+
+Layout/LineEndStringConcatenationIndentation:
+  Enabled: true
+
+Layout/SpaceBeforeBrackets:
+  Enabled: true
+
+Lint/AmbiguousAssignment:
+  Enabled: true
+
+Lint/DeprecatedConstants:
+  Enabled: true
+
+Lint/DuplicateBranch:
+  Enabled: true
+
+Lint/DuplicateRegexpCharacterClassElement:
+  Enabled: true
+
+Lint/EmptyBlock:
+  Enabled: true
+
+Lint/EmptyClass:
+  Enabled: true
+
+Lint/EmptyInPattern:
+  Enabled: true
+
+Lint/LambdaWithoutLiteralBlock:
+  Enabled: true
+
+Lint/NoReturnInBeginEndBlocks:
+  Enabled: true
+
+Lint/NumberedParameterAssignment:
+  Enabled: true
+
+Lint/OrAssignmentToConstant:
+  Enabled: true
+
+Lint/RedundantDirGlobSort:
+  Enabled: true
+
+# Intentionally disabled because it does weird things
+Lint/SymbolConversion:
+  Enabled: false
+
+Lint/ToEnumArguments:
+  Enabled: true
+
+Lint/TripleQuotes:
+  Enabled: true
+
+Lint/UnexpectedBlockArity:
+  Enabled: true
+
+Lint/UnmodifiedReduceAccumulator:
+  Enabled: true
+
+Naming/InclusiveLanguage:
+  Enabled: true
+
+# I don't like this rule.
+Style/ArgumentsForwarding:
+  Enabled: false
+
+Style/CollectionCompact:
+  Enabled: true
+
+Style/DocumentDynamicEvalDefinition:
+  Enabled: true
+
+Style/EndlessMethod:
+  Enabled: true
+
+Style/HashConversion:
+  Enabled: true
+
+Style/HashExcept:
+  Enabled: true
+
+Style/IfWithBooleanLiteralBranches:
+  Enabled: true
+
+Style/InPatternThen:
+  Enabled: true
+
+Style/MultilineInPatternThen:
+  Enabled: true
+
+Style/NegatedIfElseCondition:
+  Enabled: true
+
+Style/NilLambda:
+  Enabled: true
+
+Style/QuotedSymbols:
+  Enabled: true
+
+Style/RedundantArgument:
+  Enabled: true
+
+Style/StringChars:
+  Enabled: true
+
+Style/SwapValues:
+  Enabled: true
+
+RSpec/IdenticalEqualityAssertion:
+  Enabled: true
+
+RSpecRails/AvoidSetupHook:
+  Enabled: true
+
+RSpec/NestedGroups:
+  Enabled: false
+
+Performance/BlockGivenWithExplicitBlock:
+  Enabled: true
+
+Performance/CollectionLiteralInLoop:
+  Enabled: true
+
+Performance/ConstantRegexp:
+  Enabled: true
+
+Performance/MapCompact:
+  Enabled: true
+
+Performance/MethodObjectAsBlock:
+  Enabled: true
+
+Performance/RedundantEqualityComparisonBlock:
+  Enabled: true
+
+Performance/RedundantSplitRegexpArgument:
+  Enabled: true
+
+Rails/AddColumnIndex:
+  Enabled: true
+
+Rails/AttributeDefaultBlockValue:
+  Enabled: true
+
+Rails/EagerEvaluationLogMessage:
+  Enabled: true
+
+Rails/ExpandedDateRange:
+  Enabled: true
+
+Rails/I18nLocaleAssignment:
+  Enabled: true
+
+Rails/TimeZoneAssignment:
+  Enabled: true
+
+Rails/UnusedIgnoredColumns:
+  Enabled: true
+
+Rails/WhereEquals:
+  Enabled: true
+
+# I don't like this rule.
+Style/HashSyntax:
+ Enabled: false

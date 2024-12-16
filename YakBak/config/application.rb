@@ -1,6 +1,6 @@
-require_relative "boot"
+require_relative 'boot'
 
-require "rails/all"
+require 'rails/all'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -14,7 +14,7 @@ module YakBak
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w(assets tasks))
+    config.autoload_lib(ignore: %w[assets tasks])
 
     config.log_level = :debug
 
@@ -31,6 +31,6 @@ module YakBak
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-    config.action_cable.allowed_request_origins = [nil, 'https://1219391019515121716.discordsays.com']
+    config.action_cable.allowed_request_origins = [nil, 'https://1219391019515121716.discordsays.com', 'https://purchasing-primarily-resolution-void.trycloudflare.com', 'https://yak.cacheblasters.com']
   end
 end
