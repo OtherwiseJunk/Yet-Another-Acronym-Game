@@ -19,7 +19,7 @@ export const useGameStore = defineStore("gameCable", () => {
     console.log("Connect to cable called");
     console.log(`Discord Instance ID: ${discord.instanceId}`);
     let consumer = createConsumer(
-      `/api/cable?token=${discord.auth.access_token}`
+      `/.proxy/api/cable?token=${discord.auth.access_token}`
     );
     consumer.connect();
     instanceGame.value = consumer.subscriptions.create(

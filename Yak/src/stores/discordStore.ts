@@ -100,7 +100,7 @@ export const useDiscordStore = defineStore("discord", () => {
   }
 
   async function requestTokenExchange(code: string) {
-    return fetch("/api/tokens", {
+    return fetch("/.proxy/api/tokens", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
