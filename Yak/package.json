@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@discord/embedded-app-sdk": "^2.4.0",
@@ -16,11 +18,22 @@
     "vue": "^3.5.21"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^4.1.1",
+    "@storybook/addon-a11y": "^9.1.5",
+    "@storybook/addon-docs": "^9.1.5",
+    "@storybook/addon-onboarding": "^9.1.5",
+    "@storybook/addon-vitest": "^9.1.5",
+    "@storybook/vue3-vite": "^9.1.5",
     "@types/actioncable": "^5.2.11",
     "@vitejs/plugin-vue": "^6.0.1",
+    "storybook": "^9.1.5",
     "typescript": "^5.2.2",
     "vite": "^7.1.4",
-    "vue-tsc": "^3.0.6"
+    "vue-tsc": "^3.0.6",
+    "vitest": "^3.2.4",
+    "@vitest/browser": "^3.2.4",
+    "playwright": "^1.55.0",
+    "@vitest/coverage-v8": "^3.2.4"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
