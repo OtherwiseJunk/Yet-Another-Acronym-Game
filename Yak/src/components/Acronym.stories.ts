@@ -33,7 +33,7 @@ export const Default: Story = {
 
 export const LongAcronym: Story = {
     args: {
-        letterArray: ['S', 'T', 'O', 'R', 'Y'],
+        letterArray: ['S', 'T', 'O', 'R', 'Y', 'T', 'I', 'M', 'E', '!', ' ', 'G', 'E', 'T', ' ', 'R', 'E', 'A', 'D', 'Y'],
         colors: defaultColors,
     },
 };

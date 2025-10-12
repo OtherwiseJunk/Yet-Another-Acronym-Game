@@ -46,7 +46,6 @@ const textRef = ref<HTMLElement | null>(null);
 const svgRef = ref<SVGSVGElement | null>(null);
 
 let letters: any[] = [];
-let value = '';
 const textSize = 120;
 const textCenter = 160;
 
@@ -61,18 +60,6 @@ function addLetter(char: string, index: number) {
   animateLetterIn(letter);
   addDecoration(letter, color);
 }
-
-function addLetters(chars: string[]){
-  chars.forEach((char: string, index: number) => {
-    if (letters[index] && letters[index].char !== char) {
-      letters[index].onScreen.innerHTML = char;
-      letters[index].char = char;
-    }
-    if (letters[index] === undefined) {
-      addLetter(char, index);
-    }
-  });
-};
 
 function positionLetters(){
   letters.forEach(letter => {
@@ -157,8 +144,7 @@ function addText(index: number){
   clearTimeout(animationTimeout);
   animationTimeout = window.setTimeout(() => {
     if (props.letterArray && props.letterArray[index]) {
-      value += props.letterArray[index];
-      addLetters(value.split(''));
+      addLetter(props.letterArray[index], index);
       positionLetters();
       addText(index + 1);
     }
@@ -185,7 +171,6 @@ async function startAnimation() {
       textRef.value.innerHTML = '';
   }
   letters = [];
-  value = '';
 
   // Start animation
   addText(0);

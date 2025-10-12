@@ -1,8 +1,9 @@
 <template>
-    <div class="container">
+    <!-- guard rendering until the stories / parent have passed props -->
+    <div v-if="submissionsByUserId" class="container">
         <div class="header">
-            <p class="font header-text">{{ props.resultsMode ? "Results" : `Vote - ${props.timeRemaining}` }}</p>
-            <p v-show="props.skipVoting" class="font header-subtext">voting skipped as there aren't enough players</p>
+            <p class="font header-text">{{ resultsMode ? "Results" : `Vote - ${timeRemaining}` }}</p>
+            <p v-show="skipVoting" class="font header-subtext">voting skipped as there aren't enough players</p>
         </div>
         <div class="voting-container">
             <div v-for="(votingCardInfo) in votingSubmissions" class="voting-card" @click="vote(votingCardInfo.userId)"
@@ -13,10 +14,10 @@
                 'box-shadow': `1px 1px 6px ${votingCardInfo.color}`
             }">
                 <div class="submitter-info">
-                    <Avatar v-show="props.resultsMode" class="avatar" :avatarDecorationUrl="votingCardInfo.decoratorUrl"
+                    <Avatar v-show="resultsMode" class="avatar" :avatarDecorationUrl="votingCardInfo.decoratorUrl"
                         :avatarUrl="votingCardInfo.avatarUrl"
                         :shouldAnimate="shouldAnimateByUserId.get(Number(votingCardInfo.userId))"></Avatar>
-                    <p v-show="props.resultsMode" class="submitter-info-text">{{ votingCardInfo.displayName }}</p>
+                    <p v-show="resultsMode" class="submitter-info-text">{{ votingCardInfo.displayName }}</p>
                     <p class="time submitter-info-text">{{ votingCardInfo.submissionTime }} s</p>
                 </div>
                 <p class="submission-text" :id='"p." + votingCardInfo.userId'> {{ votingCardInfo.submissionText }}
@@ -37,7 +38,7 @@ import { UserSubmission } from '../models'
 import { useDiscordStore } from '../stores/discordStore';
 import Avatar from './Avatar.vue';
 import { VotingCardInfo } from '../models/votingCardInfo';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { usePalletteStore } from '../stores/palletteStore';
 const props = defineProps({
     submissionsByUserId: {
@@ -57,18 +58,43 @@ const props = defineProps({
         required: true
     }
 })
+// expose prop values as computed refs so they're available directly on $setup
+const submissionsByUserId = computed(() => props.submissionsByUserId);
+const resultsMode = computed(() => props.resultsMode);
+const skipVoting = computed(() => props.skipVoting);
+const timeRemaining = computed(() => props.timeRemaining);
+
+// Debug: log the incoming prop values so you can inspect them in the Storybook console.
+// Remove these lines after debugging.
+try {
+    // We log the raw values (unwrapped) so source mapping and console inspection are easy.
+    // When Storybook is open with DevTools, check the Console to see this output.
+    // If you want the debugger to pause here, uncomment the `debugger;` line below.
+    // debugger;
+    // eslint-disable-next-line no-console
+    console.log('[VotingScreen] incoming props', {
+        submissionsByUserId: submissionsByUserId.value,
+        resultsMode: resultsMode.value,
+        skipVoting: skipVoting.value,
+        timeRemaining: timeRemaining.value,
+    });
+} catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('[VotingScreen] error logging props', e);
+}
 const emits = defineEmits(['vote', 'next-round'])
 const discord = useDiscordStore();
 const colors = usePalletteStore();
+// initialize selectedGradient early so Vue's CSS var binding can access it during setup
+const selectedGradient = colors.acronymPallette.map(color => color.main);
 
 let shouldAnimateByUserId = ref<Map<number, boolean>>(new Map());
 let votingSubmissions = ref<VotingCardInfo[]>([]);
-let hasVoted = ref<boolean>(props.resultsMode);
-let selectedGradient = colors.acronymPallette.map(color => color.main)
+let hasVoted = ref<boolean>(resultsMode.value);
 
-watch(props, (newValue, _) =>{
-    if(newValue.resultsMode){
-        Object.keys(props.submissionsByUserId).forEach(userId =>{
+watch(resultsMode, (newValue, _) =>{
+    if(newValue){
+        Object.keys(submissionsByUserId.value).forEach(userId =>{
             document.getElementById(userId)?.classList.remove('gradient');
             document.getElementById(userId)?.classList.remove('selected-text');
 
@@ -76,8 +102,8 @@ watch(props, (newValue, _) =>{
     }
 })
 
-Object.keys(props.submissionsByUserId).forEach(userId => {
-    let userSubmission: UserSubmission = props.submissionsByUserId[userId];
+Object.keys(submissionsByUserId.value).forEach(userId => {
+    let userSubmission: UserSubmission = submissionsByUserId.value[userId];
     votingSubmissions.value.push(new VotingCardInfo(
         userId,
         userSubmission.user_data.displayName,
@@ -94,13 +120,16 @@ votingSubmissions.value.forEach((votingCardInfo: VotingCardInfo, index: number) 
 });
 
 function vote(userId: string) {
-    if (discord.auth.user.id != userId && !hasVoted.value && !props.resultsMode) {
+    if (discord.auth.user.id != userId && !hasVoted.value && !resultsMode.value) {
         let selectedElement = document.getElementById(userId)!
         let selectedElementChildParagraph = document.getElementById(`p.${userId}`)!
         let userSubmission: UserSubmission = props.submissionsByUserId[userId];
         emits('vote', userId)
         hasVoted.value = true;
         selectedElement.classList.add('gradient')
+            // set the CSS variable on the selected element so the pseudo-element can read it
+            // format: a comma-separated list of color stops (e.g. "#ff0000, #00ff00, #0000ff")
+            selectedElement.style.setProperty('--selectedGradient', selectedGradient.join(', '));
         selectedElementChildParagraph.innerHTML = userSubmission.submission;
         selectedElementChildParagraph.classList.add('selected-text')
     }
@@ -201,6 +230,8 @@ function nextRound(){
     font-size: 1em;
 }
 
+/* submission text uses default styles */
+
 .next-round-button {
     height: 40px;
     margin-top: 10px;
@@ -225,7 +256,8 @@ function nextRound(){
     left: calc(-1 * var(--borderWidth));
     height: calc(100% + var(--borderWidth) * 2);
     width: calc(100% + var(--borderWidth) * 2);
-    background: linear-gradient(60deg, v-bind(selectedGradient));
+    /* use a runtime CSS variable set on the selected element; fallback to a simple gradient */
+    background: linear-gradient(60deg, var(--selectedGradient, #FF7F24, #FF2AFF, #00FFDE));
     border-radius: calc(2 * var(--borderWidth));
     z-index: -1;
     animation: animated-gradient 3s ease alternate infinite;

@@ -7,7 +7,27 @@ export const useDiscordStore = defineStore("discord", () => {
   let auth = ref<any>(undefined);
   let currentUserData = ref(new UserData("", "", ""));
   let instanceId = ref("");
-  const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
+  // Construct the Discord SDK, but guard against environments (like Storybook)
+  // where the embedded-app SDK can't initialize (it may read frame query params).
+  let discordSdk: any;
+  try {
+    discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
+  } catch (e) {
+    // Fallback stub used in Storybook / test environments. The stub exposes the
+    // same surface used by the app but returns safe defaults so stories won't crash.
+    // eslint-disable-next-line no-console
+    console.warn('DiscordSDK unavailable; using stub in this environment.', e);
+    discordSdk = {
+      instanceId: '',
+      guildId: '',
+      ready: async () => { },
+      commands: {
+        authorize: async () => ({ code: '' }),
+        authenticate: async () => ({ user: { id: 'storybook-user' }, access_token: '' }),
+        getInstanceConnectedParticipants: async () => ({ participants: [] }),
+      },
+    };
+  }
   const defaultImage =
     "https://1219391019515121716.discordsays.com/media/yak.png";
 
@@ -63,7 +83,7 @@ export const useDiscordStore = defineStore("discord", () => {
 
     let extension = user.avatar?.startsWith("a_") ? "gif" : "webp";
 
-    let guildUser = await fetchDiscordResource( userId === auth.value.user.id ? `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member` :
+    let guildUser = await fetchDiscordResource(userId === auth.value.user.id ? `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member` :
       `https://discord.com/api/guilds/${discordSdk.guildId}/members/${userId}`
     );
     // Retrieve the guild-specific avatar, and fallback to the user's avatar

@@ -5,7 +5,7 @@
         <AnimatedTypingComponent v-if="displayInputAutomation" :text="fullText"></AnimatedTypingComponent>
     </div>
     <div class="start-button">
-        <button v-if="displayStartButton" @click="clickStart()" class="font">Start</button>
+        <button v-if="displayStartButton" @click="clickStart()" class="font start-btn">Start</button>
     </div>
 </template>
 
@@ -16,8 +16,11 @@
     width: 700px;
     height: 50px;
     border-radius: 35px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.3);
     backdrop-filter: saturate(150%) blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .font {
@@ -30,6 +33,22 @@
 .start-button {
     height: 100px;
     margin-top: 40px;
+}
+
+.start-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 10px 30px;
+    border-radius: 35px; /* Match the input box */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: saturate(150%) blur(10px); /* Match the input box */
+}
+
+.start-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
 }
 </style>
 
