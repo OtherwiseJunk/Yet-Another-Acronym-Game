@@ -7,27 +7,7 @@ export const useDiscordStore = defineStore("discord", () => {
   let auth = ref<any>(undefined);
   let currentUserData = ref(new UserData("", "", ""));
   let instanceId = ref("");
-  // Construct the Discord SDK, but guard against environments (like Storybook)
-  // where the embedded-app SDK can't initialize (it may read frame query params).
-  let discordSdk: any;
-  try {
-    discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
-  } catch (e) {
-    // Fallback stub used in Storybook / test environments. The stub exposes the
-    // same surface used by the app but returns safe defaults so stories won't crash.
-    // eslint-disable-next-line no-console
-    console.warn('DiscordSDK unavailable; using stub in this environment.', e);
-    discordSdk = {
-      instanceId: '',
-      guildId: '',
-      ready: async () => { },
-      commands: {
-        authorize: async () => ({ code: '' }),
-        authenticate: async () => ({ user: { id: 'storybook-user' }, access_token: '' }),
-        getInstanceConnectedParticipants: async () => ({ participants: [] }),
-      },
-    };
-  }
+  let discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
   const defaultImage =
     "https://1219391019515121716.discordsays.com/media/yak.png";
 
@@ -41,22 +21,26 @@ export const useDiscordStore = defineStore("discord", () => {
   }
 
   async function setupDiscordSdk() {
-    await discordSdk.ready();
-    console.log("Discord SDK is ready");
+    try {
+      await discordSdk.ready();
+      console.log("Discord SDK is ready");
 
-    // Authorize with Discord Client
-    const { code } = await requestAuthorizationCode();
+      // Authorize with Discord Client
+      const { code } = await requestAuthorizationCode();
 
-    // Retrieve an access_token from your activity's server
-    const response = await requestTokenExchange(code);
+      // Retrieve an access_token from your activity's server
+      const response = await requestTokenExchange(code);
 
-    // Authenticate with Discord client (using the access_token)
-    auth.value = await discordSdk.commands.authenticate({
-      access_token: (await response.json()).access_token,
-    });
+      // Authenticate with Discord client (using the access_token)
+      auth.value = await discordSdk.commands.authenticate({
+        access_token: (await response.json()).access_token,
+      });
 
-    if (auth == null) {
-      throw new Error("Authenticate command failed");
+      if (auth == null) {
+        throw new Error("Authenticate command failed");
+      }
+    } catch (e) {
+      console.error("Error during Discord SDK setup:", e);
     }
   }
 
@@ -96,7 +80,7 @@ export const useDiscordStore = defineStore("discord", () => {
       userData.avatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultAvatarIndex}.${extension}`;
     }
 
-    if (guildUser?.user.avatar_decoration_data) {
+    if (guildUser?.user?.avatar_decoration_data) {
       userData.decorationUrl = `https://cdn.discordapp.com/avatar-decoration-presets/${guildUser.user.avatar_decoration_data.asset}.png?size=256`;
     }
 

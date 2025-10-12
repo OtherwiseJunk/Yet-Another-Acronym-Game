@@ -21,6 +21,7 @@ Array.prototype.shuffle = Array.prototype.shuffle = function () {
 
 const colors = [
   // Neon variants
+  new Color("#FF073A", ["#FF295C", "#FF4C7F", "#FF6E99", "#FF91B2"]), // Red
   new Color("#F2EA02", ["#F9F733", "#FFFF66", "#F5F012", "#ECE600"]), // Yellow
   new Color("#FF5C00", ["#FF7F24", "#FFA347", "#FF5400", "#FF4C00"]), // Orange
   new Color("#FF04F6", ["#FF2AFF", "#FF4DF9", "#FF00EF", "#FF00E6"]), // Pink
@@ -37,18 +38,19 @@ const colors = [
   new Color("#0000FF", ["#3333FF", "#6666FF", "#9999FF", "#CCCCFF"]), // Blue
   new Color("#4B0082", ["#6633FF", "#8559FF", "#A880FF", "#CCAAFF"]), // Indigo
   new Color("#9400D3", ["#AD33FF", "#C466FF", "#D699FF", "#EBC0FF"]), // Violet
+  new Color("#FF00FF", ["#FF33FF", "#FF66FF", "#FF99FF", "#FFCCFF"]), // Magenta
 ];
 
 export const usePalletteStore = defineStore("palletteStore", () => {
   let lastAcronym = ref<string>("");
-  let acronymPallette = ref<Color[]>([]) ;
+  let acronymPallette = ref<Color[]>([]);
 
   function setAcronymPallette(acronym: string) {
     if (lastAcronym.value !== acronym) {
       acronymPallette.value = [];
       colors.shuffle();
       lastAcronym.value = acronym;
-      acronym.split('').forEach((_, index) =>{
+      acronym.split('').forEach((_, index) => {
         acronymPallette.value.push(colors[index % colors.length])
       })
     }
@@ -56,15 +58,15 @@ export const usePalletteStore = defineStore("palletteStore", () => {
 
   function hexToRGB(hex: string, alpha: number) {
     var r = parseInt(hex.slice(1, 3), 16),
-        g = parseInt(hex.slice(3, 5), 16),
-        b = parseInt(hex.slice(5, 7), 16);
+      g = parseInt(hex.slice(3, 5), 16),
+      b = parseInt(hex.slice(5, 7), 16);
 
     if (alpha) {
-        return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+      return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
     } else {
-        return "rgb(" + r + ", " + g + ", " + b + ")";
+      return "rgb(" + r + ", " + g + ", " + b + ")";
     }
-}
+  }
 
   return { acronymPallette, setAcronymPallette, hexToRGB };
 });
