@@ -21,26 +21,22 @@ export const useDiscordStore = defineStore("discord", () => {
   }
 
   async function setupDiscordSdk() {
-    try {
-      await discordSdk.ready();
-      console.log("Discord SDK is ready");
+    await discordSdk.ready();
+    console.log("Discord SDK is ready");
 
-      // Authorize with Discord Client
-      const { code } = await requestAuthorizationCode();
+    // Authorize with Discord Client
+    const { code } = await requestAuthorizationCode();
 
-      // Retrieve an access_token from your activity's server
-      const response = await requestTokenExchange(code);
+    // Retrieve an access_token from your activity's server
+    const response = await requestTokenExchange(code);
 
-      // Authenticate with Discord client (using the access_token)
-      auth.value = await discordSdk.commands.authenticate({
-        access_token: (await response.json()).access_token,
-      });
+    // Authenticate with Discord client (using the access_token)
+    auth.value = await discordSdk.commands.authenticate({
+      access_token: (await response.json()).access_token,
+    });
 
-      if (auth == null) {
-        throw new Error("Authenticate command failed");
-      }
-    } catch (e) {
-      console.error("Error during Discord SDK setup:", e);
+    if (auth.value == null) {
+      throw new Error("Error during Discord SDK setup; Authenticate command failed");
     }
   }
 
