@@ -17,7 +17,8 @@
 		"vscode": {
 			"extensions": [
 				"vitest.explorer",
-				"Vue.volar"
+				"Vue.volar",
+				"github.vscode-github-actions"
 			]
 		}
 	}
