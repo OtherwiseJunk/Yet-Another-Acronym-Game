@@ -8,6 +8,7 @@ const meta: Meta<typeof SplashScreen> = {
     // We can define the events that the component emits
     // so that they appear in the Storybook actions panel.
     argTypes: {
+        // @ts-ignore
         'onAnimationComplete': { action: 'animation-complete' },
         onStart: { action: 'start' },
     },

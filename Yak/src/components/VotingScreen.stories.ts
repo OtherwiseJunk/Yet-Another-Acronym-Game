@@ -10,6 +10,7 @@ const meta: Meta<typeof VotingScreen> = {
         resultsMode: { control: 'boolean' },
         skipVoting: { control: 'boolean' },
         timeRemaining: { control: 'number' },
+        // @ts-ignore
         vote: { action: 'vote' },
         'next-round': { action: 'next-round' },
     },

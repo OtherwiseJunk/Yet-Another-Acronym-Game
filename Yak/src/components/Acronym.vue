@@ -34,7 +34,7 @@
 
 <script defer setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { gsap, Back, Power3, Power1 } from 'gsap';
+import { gsap } from 'gsap';
 import { Color } from '../models';
 
 const props = defineProps<{

@@ -1,9 +1,9 @@
-import { ref, computed, watch, type Ref } from 'vue';
+import { ref, watch, type Ref } from 'vue';
 
 // Function to convert hex to RGB
 function hexToRgb(hex: string): [number, number, number] | null {
     const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+    hex = hex.replace(shorthandRegex, function (_, r, g, b) {
         return r + r + g + g + b + b;
     });
 
