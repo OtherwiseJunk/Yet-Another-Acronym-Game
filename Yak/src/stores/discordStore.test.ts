@@ -33,7 +33,7 @@ describe('discordStore', () => {
     setActivePinia(createPinia());
     discordUserData = {
       nick: 'Mocked Nickname',
-      avartar: 'guildAvatarUrl',
+      avatar: 'guildAvatarUrl',
       user: { avatar_decoration_data: { asset: 'decorationAsset' } }
     }
     vi.clearAllMocks();
@@ -70,13 +70,13 @@ describe('discordStore', () => {
     expect(store.auth).toBeDefined();
     expect(store.auth?.access_token).toBe("test-access-token");
     expect(store.currentUserData.displayName).toBe("Mocked Nickname");
-    expect(store.currentUserData.avatarUrl).toContain(`https://cdn.discordapp.com/avatars/test-user-id/avatarUrl.webp?size=256`);
+    expect(store.currentUserData.avatarUrl).toContain(`https://cdn.discordapp.com/guilds/test-guild-id/users/test-user-id/avatars/guildAvatarUrl.webp?size=256`);
   });
 
   it('should use .gif for animated avatars', async () => {
     discordUserData = {
       nick: 'Mocked Nickname',
-      avartar: 'a_guildAvatarUrl',
+      avatar: 'a_guildAvatarUrl',
       user: { avatar_decoration_data: { asset: 'decorationAsset' } }
     }
     const store = useDiscordStore();
@@ -86,7 +86,7 @@ describe('discordStore', () => {
       ]
     });
     await store.setup();
-    expect(store.currentUserData.avatarUrl).toContain(`https://cdn.discordapp.com/avatars/test-user-id/a_avatarUrl.gif?size=256`);
+    expect(store.currentUserData.avatarUrl).toContain(`https://cdn.discordapp.com/guilds/test-guild-id/users/test-user-id/avatars/a_guildAvatarUrl.gif?size=256`);
   });
 
   it('should fail if auth is null', async () => {
@@ -109,7 +109,7 @@ describe('discordStore', () => {
       await store.setup();
       const userData = await store.getUserInformation('test-user-id');
       expect(userData.displayName).toBe('Mocked Nickname');
-      expect(userData.avatarUrl).toContain(`https://cdn.discordapp.com/avatars/test-user-id/avatarUrl.webp?size=256`);
+      expect(userData.avatarUrl).toContain(`https://cdn.discordapp.com/guilds/test-guild-id/users/test-user-id/avatars/guildAvatarUrl.webp?size=256`);
       expect(userData.decorationUrl).toBe('https://cdn.discordapp.com/avatar-decoration-presets/decorationAsset.png?size=256');
     });
 
@@ -129,7 +129,7 @@ describe('discordStore', () => {
       };
       discordUserData = {
         nick: displayName,
-        avartar: avatar,
+        avatar: avatar,
         user: {}
       }
 
@@ -147,16 +147,16 @@ describe('discordStore', () => {
 
       mockDiscordSdk.commands.getInstanceConnectedParticipants.mockResolvedValue({
         participants: [
-          { id: authId, avatar: authAvatar, displayName: authDisplayName },
-          { id: nonAuthId, avatar: nonAuthAvatar, displayName: nonAuthDisplayName },
+          { id: authId, avatar: authAvatar, username: 'authUser', discriminator: '0001', global_name: authDisplayName },
+          { id: nonAuthId, avatar: nonAuthAvatar, username: 'nonAuthUser', discriminator: '0002', global_name: nonAuthDisplayName },
         ]
       });
       store.auth = {
         user: { id: authId },
       };
       discordUserData = {
-        nick: nonAuthAvatar,
-        avartar: nonAuthAvatar,
+        nick: nonAuthDisplayName,
+        avatar: nonAuthAvatar,
         user: {}
       }
 
@@ -164,6 +164,78 @@ describe('discordStore', () => {
 
       expect(userData.displayName).toBe(nonAuthDisplayName);
       expect(userData.avatarUrl).toBe('https://cdn.discordapp.com/embed/avatars/0.webp');
+    });
+
+    it('should fallback to username#discriminator if no nick or global_name', async () => {
+      const store = useDiscordStore();
+      const id = 'no-nick-global-id';
+
+      mockDiscordSdk.commands.getInstanceConnectedParticipants.mockResolvedValue({
+        participants: [
+          { id: id, avatar: null, username: 'noNickUser', discriminator: '1234' },
+        ]
+      });
+      store.auth = {
+        user: { id: id },
+      };
+      discordUserData = {
+        nick: null,
+        avatar: null,
+        user: {}
+      }
+
+      const userData = await store.getUserInformation(id);
+
+      expect(userData.displayName).toBe('noNickUser#1234');
+    });
+
+    it('should handle users without decoration data', async () => {
+      const store = useDiscordStore();
+      const id = 'no-decoration-user-id';
+
+      mockDiscordSdk.commands.getInstanceConnectedParticipants.mockResolvedValue({
+        participants: [
+          { id: id, avatar: 'avatarUrl', username: 'decoratedUser', discriminator: '5678', global_name: 'Decorated User' },
+        ]
+      });
+      store.auth = {
+        user: { id: id },
+      };
+      discordUserData = {
+        nick: 'Decorated User',
+        avatar: 'avatarUrl',
+        user: {}
+      }
+
+      const userData = await store.getUserInformation(id);
+
+      expect(userData.displayName).toBe('Decorated User');
+      expect(userData.avatarUrl).toContain(`https://cdn.discordapp.com/guilds/test-guild-id/users/no-decoration-user-id/avatars/avatarUrl.webp?size=256`);
+      expect(userData.decorationUrl).toBe('');
+    });
+
+    it('should use user.avatar if no guild avatar', async () => {
+      const store = useDiscordStore();
+      const id = 'no-guild-avatar-id';
+
+      mockDiscordSdk.commands.getInstanceConnectedParticipants.mockResolvedValue({
+        participants: [
+          { id: id, avatar: 'avatarUrl', username: 'noGuildAvatarUser', discriminator: '9101', global_name: 'No Guild Avatar User' },
+        ]
+      });
+      store.auth = {
+        user: { id: id },
+      };
+      discordUserData = {
+        nick: 'No Guild Avatar User',
+        avatar: null,
+        user: {}
+      }
+
+      const userData = await store.getUserInformation(id);
+
+      expect(userData.displayName).toBe('No Guild Avatar User');
+      expect(userData.avatarUrl).toContain(`https://cdn.discordapp.com/avatars/${id}/avatarUrl.webp?size=256`);
     });
   });
 });
