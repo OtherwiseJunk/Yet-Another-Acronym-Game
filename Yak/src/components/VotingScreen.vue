@@ -63,25 +63,6 @@ const submissionsByUserId = computed(() => props.submissionsByUserId);
 const resultsMode = computed(() => props.resultsMode);
 const skipVoting = computed(() => props.skipVoting);
 const timeRemaining = computed(() => props.timeRemaining);
-
-// Debug: log the incoming prop values so you can inspect them in the Storybook console.
-// Remove these lines after debugging.
-try {
-    // We log the raw values (unwrapped) so source mapping and console inspection are easy.
-    // When Storybook is open with DevTools, check the Console to see this output.
-    // If you want the debugger to pause here, uncomment the `debugger;` line below.
-    // debugger;
-    // eslint-disable-next-line no-console
-    console.log('[VotingScreen] incoming props', {
-        submissionsByUserId: submissionsByUserId.value,
-        resultsMode: resultsMode.value,
-        skipVoting: skipVoting.value,
-        timeRemaining: timeRemaining.value,
-    });
-} catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn('[VotingScreen] error logging props', e);
-}
 const emits = defineEmits(['vote', 'next-round'])
 const discord = useDiscordStore();
 const colors = usePalletteStore();

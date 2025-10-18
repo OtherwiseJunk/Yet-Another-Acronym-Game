@@ -8,7 +8,7 @@ declare global {
   }
 }
 Array.prototype.shuffle = Array.prototype.shuffle = function () {
-  var i = this.length,
+  let i = this.length,
     j,
     temp;
   while (--i > 0) {
@@ -42,8 +42,8 @@ const colors = [
 ];
 
 export const usePalletteStore = defineStore("palletteStore", () => {
-  let lastAcronym = ref<string>("");
-  let acronymPallette = ref<Color[]>([]);
+  const lastAcronym = ref<string>("");
+  const acronymPallette = ref<Color[]>([]);
 
   function setAcronymPallette(acronym: string) {
     if (lastAcronym.value !== acronym) {
@@ -57,7 +57,7 @@ export const usePalletteStore = defineStore("palletteStore", () => {
   }
 
   function hexToRGB(hex: string, alpha: number) {
-    var r = parseInt(hex.slice(1, 3), 16),
+    const r = parseInt(hex.slice(1, 3), 16),
       g = parseInt(hex.slice(3, 5), 16),
       b = parseInt(hex.slice(5, 7), 16);
 

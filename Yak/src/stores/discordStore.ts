@@ -4,10 +4,10 @@ import { UserData } from "../models";
 import { DiscordSDK } from "@discord/embedded-app-sdk";
 
 export const useDiscordStore = defineStore("discord", () => {
-  let auth = ref<any>(undefined);
-  let currentUserData = ref(new UserData("", "", ""));
-  let instanceId = ref("");
-  let discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
+  const auth = ref<any>(undefined);
+  const currentUserData = ref(new UserData("", "", ""));
+  const instanceId = ref("");
+  const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
   const defaultImage =
     "https://1219391019515121716.discordsays.com/media/yak.png";
 
@@ -41,7 +41,7 @@ export const useDiscordStore = defineStore("discord", () => {
   }
 
   async function fetchDiscordResource(resource: string): Promise<any> {
-    let resp = await fetch(resource, {
+    const resp = await fetch(resource, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${auth.value.access_token}`,
@@ -51,19 +51,19 @@ export const useDiscordStore = defineStore("discord", () => {
   }
 
   async function getUserInformation(userId: string): Promise<UserData> {
-    let participants = (
+    const participants = (
       await discordSdk.commands.getInstanceConnectedParticipants()
     ).participants;
-    let user = participants.find((user) => user.id === userId);
-    let userData = new UserData(defaultImage, "", "Unknown User");
+    const user = participants.find((user) => user.id === userId);
+    const userData = new UserData(defaultImage, "", "Unknown User");
 
     if (user == undefined || user == null) {
       return userData;
     }
 
-    let extension = user.avatar?.startsWith("a_") ? "gif" : "webp";
+    const extension = user.avatar?.startsWith("a_") ? "gif" : "webp";
 
-    let guildUser = await fetchDiscordResource(userId === auth.value.user.id ? `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member` :
+    const guildUser = await fetchDiscordResource(userId === auth.value.user.id ? `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member` :
       `https://discord.com/api/guilds/${discordSdk.guildId}/members/${userId}`
     );
     // Retrieve the guild-specific avatar, and fallback to the user's avatar

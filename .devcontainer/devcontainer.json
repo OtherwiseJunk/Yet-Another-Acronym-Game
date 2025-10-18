@@ -18,7 +18,8 @@
 			"extensions": [
 				"vitest.explorer",
 				"Vue.volar",
-				"github.vscode-github-actions"
+				"github.vscode-github-actions",
+				"rvest.vs-code-prettier-eslint"
 			]
 		}
 	}

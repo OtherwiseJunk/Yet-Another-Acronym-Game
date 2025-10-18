@@ -17,7 +17,7 @@ setup((app) => {
   } catch (e) {
     // If initialization fails in certain environments, silently continue —
     // individual stories can still set the pallette as needed.
-    // eslint-disable-next-line no-console
+     
     console.warn('Could not initialize pallette store for Storybook', e);
   }
 });

@@ -5,8 +5,8 @@ import { useDiscordStore } from "./discordStore";
 import { GameState, StartGameCommand, SubmitAnswerCommand, UserSubmission } from "../models";
 
 export const useGameStore = defineStore("gameCable", () => {
-  let instanceGame = ref<Channel>();
-  let gameState = ref(
+  const instanceGame = ref<Channel>();
+  const gameState = ref(
     new GameState(0, 1, "", new Map<number, number>(), [], 0, new Map<number, UserSubmission>())
   );
   const discord = useDiscordStore();
@@ -18,7 +18,7 @@ export const useGameStore = defineStore("gameCable", () => {
   function connectToCable() {
     console.log("Connect to cable called");
     console.log(`Discord Instance ID: ${discord.instanceId}`);
-    let consumer = createConsumer(
+    const consumer = createConsumer(
       `/.proxy/api/cable?token=${discord.auth.access_token}`
     );
     consumer.connect();
