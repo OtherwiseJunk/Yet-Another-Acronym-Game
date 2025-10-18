@@ -3,20 +3,25 @@ import { useGameStore } from './gameStore';
 import { createPinia, setActivePinia } from 'pinia';
 import { GameState, StartGameCommand, SubmitAnswerCommand, UserData, UserSubmission } from '../models';
 
-let createConsumerReceivedCallback: (data: any) => void;
-let createdChannel: any = null;
+interface Channel {
+    channel: string;
+    instance: string;
+    discordUserId: number;
+}
+let createConsumerReceivedCallback: (data: GameState) => void;
+let createdChannel: Channel = null;
 
 const mockSend = vi.fn();
 const mockUnsubscribe = vi.fn();
 const mockConnect = vi.fn();
 const mockCreate = vi.fn((channel, callbacks) => {
-                createdChannel = channel;
-                createConsumerReceivedCallback = callbacks.received
-                return {
-                    send: mockSend,
-                    unsubscribe: mockUnsubscribe
-                };
-            })
+    createdChannel = channel;
+    createConsumerReceivedCallback = callbacks.received
+    return {
+        send: mockSend,
+        unsubscribe: mockUnsubscribe
+    };
+})
 
 vi.mock('@rails/actioncable', () => ({
     createConsumer: vi.fn(() => ({
@@ -89,7 +94,7 @@ describe('gameStore', () => {
     it('should update gameState when data is received', () => {
         const store = useGameStore();
         store.setup();
-        const newGameState = new GameState(1, 2, "NEW", new Map([[1, 10]]), [1,2], 30, new Map([[1, new UserSubmission("Answer", 0, new UserData("avatarUrl", "decorationUrl", "mockedUser"))]]));
+        const newGameState = new GameState(1, 2, "NEW", new Map([[1, 10]]), [1, 2], 30, new Map([[1, new UserSubmission("Answer", 0, new UserData("avatarUrl", "decorationUrl", "mockedUser"))]]));
         createConsumerReceivedCallback(newGameState);
         expect(store.gameState).toEqual(newGameState);
     });

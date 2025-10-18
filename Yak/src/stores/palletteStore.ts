@@ -2,20 +2,15 @@ import { defineStore } from "pinia";
 import { Color } from "../models";
 import { ref } from "vue";
 
-declare global {
-  interface Array<T> {
-    shuffle: () => void;
-  }
-}
-Array.prototype.shuffle = Array.prototype.shuffle = function () {
-  let i = this.length,
+function shuffleArray<T>(array: T[]) {
+  let i = array.length,
     j,
     temp;
   while (--i > 0) {
     j = Math.floor(Math.random() * (i + 1));
-    temp = this[j];
-    this[j] = this[i];
-    this[i] = temp;
+    temp = array[j];
+    array[j] = array[i];
+    array[i] = temp;
   }
 };
 
@@ -48,7 +43,7 @@ export const usePalletteStore = defineStore("palletteStore", () => {
   function setAcronymPallette(acronym: string) {
     if (lastAcronym.value !== acronym) {
       acronymPallette.value = [];
-      colors.shuffle();
+      shuffleArray(colors);
       lastAcronym.value = acronym;
       acronym.split('').forEach((_, index) => {
         acronymPallette.value.push(colors[index % colors.length])

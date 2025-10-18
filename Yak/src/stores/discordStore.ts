@@ -1,10 +1,11 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { UserData } from "../models";
+import { AuthenticateResponse, UserData } from "../models";
 import { DiscordSDK } from "@discord/embedded-app-sdk";
+import { APIGuildMember } from "discord-api-types/v10";
 
 export const useDiscordStore = defineStore("discord", () => {
-  const auth = ref<any>(undefined);
+  const auth = ref<AuthenticateResponse>(undefined);
   const currentUserData = ref(new UserData("", "", ""));
   const instanceId = ref("");
   const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
@@ -40,14 +41,14 @@ export const useDiscordStore = defineStore("discord", () => {
     }
   }
 
-  async function fetchDiscordResource(resource: string): Promise<any> {
+  async function fetchDiscordResource<T>(resource: string): Promise<T> {
     const resp = await fetch(resource, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${auth.value.access_token}`,
       },
     });
-    return resp.json();
+    return resp.json() as T;
   }
 
   async function getUserInformation(userId: string): Promise<UserData> {
@@ -63,7 +64,7 @@ export const useDiscordStore = defineStore("discord", () => {
 
     const extension = user.avatar?.startsWith("a_") ? "gif" : "webp";
 
-    const guildUser = await fetchDiscordResource(userId === auth.value.user.id ? `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member` :
+    const guildUser: APIGuildMember = await fetchDiscordResource<APIGuildMember>(userId === auth.value.user.id ? `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member` :
       `https://discord.com/api/guilds/${discordSdk.guildId}/members/${userId}`
     );
     // Retrieve the guild-specific avatar, and fallback to the user's avatar

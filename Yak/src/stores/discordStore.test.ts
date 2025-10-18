@@ -1,13 +1,17 @@
 import { setActivePinia, createPinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useDiscordStore } from "./discordStore";
+import { APIAvatarDecorationData, APIGuildMember, GuildMemberFlags } from "discord-api-types/v10";
+import { AuthenticateResponse } from "../models";
 
-let discordUserData: any = undefined;
+let discordUserData: APIGuildMember = undefined;
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
 let mockDiscordSdk: any = undefined;
 const nonAuthDisplayName = 'nonAuthUser';
 const nonAuthAvatar = null;
 const nonAuthId = 'non-auth-user-id';
 const guildId = 'test-guild-id';
+const defaultDecorationData: APIAvatarDecorationData = { sku_id: 'skuId', asset: 'decorationAsset' };
 
 // 2. Mock the entire module, making the DiscordSDK export a mock constructor
 vi.mock('@discord/embedded-app-sdk', () => ({
@@ -31,11 +35,8 @@ vi.stubGlobal('fetch', vi.fn().mockImplementation((url) => {
 describe('discordStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
-    discordUserData = {
-      nick: 'Mocked Nickname',
-      avatar: 'guildAvatarUrl',
-      user: { avatar_decoration_data: { asset: 'decorationAsset' } }
-    }
+    discordUserData = createAPIGuildMember('Mocked Nickname', 'guildAvatarUrl', defaultDecorationData);
+
     vi.clearAllMocks();
     mockDiscordSdk = {
       instanceId: 'test-instance-id',
@@ -74,11 +75,7 @@ describe('discordStore', () => {
   });
 
   it('should use .gif for animated avatars', async () => {
-    discordUserData = {
-      nick: 'Mocked Nickname',
-      avatar: 'a_guildAvatarUrl',
-      user: { avatar_decoration_data: { asset: 'decorationAsset' } }
-    }
+    discordUserData = createAPIGuildMember('Mocked Nickname', 'a_guildAvatarUrl', defaultDecorationData);
     const store = useDiscordStore();
     mockDiscordSdk.commands.getInstanceConnectedParticipants.mockResolvedValueOnce({
       participants: [
@@ -124,14 +121,8 @@ describe('discordStore', () => {
           { id: id, avatar: avatar, displayName: displayName },
         ]
       });
-      store.auth = {
-        user: { id: id },
-      };
-      discordUserData = {
-        nick: displayName,
-        avatar: avatar,
-        user: {}
-      }
+      store.auth = createAuthenticateResponse(id);
+      discordUserData = createAPIGuildMember(displayName, avatar);
 
       const userData = await store.getUserInformation(id);
 
@@ -151,14 +142,8 @@ describe('discordStore', () => {
           { id: nonAuthId, avatar: nonAuthAvatar, username: 'nonAuthUser', discriminator: '0002', global_name: nonAuthDisplayName },
         ]
       });
-      store.auth = {
-        user: { id: authId },
-      };
-      discordUserData = {
-        nick: nonAuthDisplayName,
-        avatar: nonAuthAvatar,
-        user: {}
-      }
+      store.auth = createAuthenticateResponse(authId);
+      discordUserData = createAPIGuildMember(nonAuthDisplayName, nonAuthAvatar);
 
       const userData = await store.getUserInformation(nonAuthId);
 
@@ -175,14 +160,8 @@ describe('discordStore', () => {
           { id: id, avatar: null, username: 'noNickUser', discriminator: '1234' },
         ]
       });
-      store.auth = {
-        user: { id: id },
-      };
-      discordUserData = {
-        nick: null,
-        avatar: null,
-        user: {}
-      }
+      store.auth = createAuthenticateResponse(id);
+      discordUserData = createAPIGuildMember(null, null);
 
       const userData = await store.getUserInformation(id);
 
@@ -198,13 +177,22 @@ describe('discordStore', () => {
           { id: id, avatar: 'avatarUrl', username: 'decoratedUser', discriminator: '5678', global_name: 'Decorated User' },
         ]
       });
-      store.auth = {
-        user: { id: id },
-      };
+      store.auth = createAuthenticateResponse(id);
       discordUserData = {
         nick: 'Decorated User',
         avatar: 'avatarUrl',
-        user: {}
+        roles: [],
+        deaf: false,
+        mute: false,
+        flags: GuildMemberFlags.IsGuest,
+        joined_at: new Date().toISOString(),
+        user: { // Minimal user object to satisfy the type
+          id: "",
+          username: "",
+          discriminator: "",
+          global_name: "",
+          avatar: ""
+        }
       }
 
       const userData = await store.getUserInformation(id);
@@ -223,14 +211,8 @@ describe('discordStore', () => {
           { id: id, avatar: 'avatarUrl', username: 'noGuildAvatarUser', discriminator: '9101', global_name: 'No Guild Avatar User' },
         ]
       });
-      store.auth = {
-        user: { id: id },
-      };
-      discordUserData = {
-        nick: 'No Guild Avatar User',
-        avatar: null,
-        user: {}
-      }
+      store.auth = createAuthenticateResponse(id);
+      discordUserData = createAPIGuildMember("No Guild Avatar User", null);
 
       const userData = await store.getUserInformation(id);
 
@@ -239,3 +221,39 @@ describe('discordStore', () => {
     });
   });
 });
+
+
+function createAPIGuildMember(nick?: string, avatar?: string, avatar_decoration_data?: APIAvatarDecorationData): APIGuildMember {
+  return {
+    nick: nick,
+    avatar: avatar,
+    roles: [],
+    deaf: false,
+    mute: false,
+    flags: GuildMemberFlags.IsGuest,
+    joined_at: new Date().toISOString(),
+    user: { // Minimal user object to satisfy the type
+      id: "",
+      username: "",
+      discriminator: "",
+      global_name: "",
+      avatar: "",
+      avatar_decoration_data: avatar_decoration_data
+    }
+  }
+}
+
+function createAuthenticateResponse(id: string): AuthenticateResponse {
+  return { // Minimal AuthenticateResponse to satisfy the type
+    access_token: 'test-access-token',
+    scopes: [],
+    expires: '',
+    application: { id: '', name: '', description: '' },
+    user: {
+      id: id,
+      username: "",
+      discriminator: "",
+      public_flags: 0
+    },
+  }
+}

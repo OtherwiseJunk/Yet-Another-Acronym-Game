@@ -19,7 +19,7 @@ export const useGameStore = defineStore("gameCable", () => {
     console.log("Connect to cable called");
     console.log(`Discord Instance ID: ${discord.instanceId}`);
     const consumer = createConsumer(
-      `/.proxy/api/cable?token=${discord.auth.access_token}`
+      `/.proxy/api/cable?token=${discord.auth!.access_token}`
     );
     consumer.connect();
     instanceGame.value = consumer.subscriptions.create(
@@ -29,8 +29,8 @@ export const useGameStore = defineStore("gameCable", () => {
         discordUserId: discord.auth.user.id,
       },
       {
-        received(data: any) {
-          gameState.value = data as GameState;
+        received(data: GameState) {
+          gameState.value = data;
         },
       }
     );
@@ -40,7 +40,7 @@ export const useGameStore = defineStore("gameCable", () => {
     instanceGame.value!.send(new StartGameCommand());
   }
 
-  function submitAnswer(answer: string){
+  function submitAnswer(answer: string) {
     instanceGame.value!.send(new SubmitAnswerCommand(new UserSubmission(answer, 0, discord.currentUserData)))
   }
 

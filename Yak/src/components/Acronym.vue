@@ -1,4 +1,5 @@
-// Original Reference for animation https://codepen.io/rachsmith/pen/oGEMbz - Thanks to Rebecca Smith!
+// Original Reference for animation https://codepen.io/rachsmith/pen/oGEMbz -
+Thanks to Rebecca Smith!
 
 <template>
   <div class="container">
@@ -8,7 +9,8 @@
 </template>
 
 <style scoped>
-#svg, svg {
+#svg,
+svg {
   width: 100%;
   height: 100%;
   top: 0;
@@ -19,39 +21,45 @@
   position: absolute;
 }
 
-.container{
+.container {
   padding-top: 50px;
   height: 150px;
   position: relative;
 }
-.text{
+.text {
   font-size: 100px;
   display: block;
   margin: 0;
-  font-family: 'Orbitron';
+  font-family: "Orbitron";
 }
 </style>
 
 <script defer setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { gsap } from 'gsap';
-import { Color } from '../models';
+import { ref, onMounted, onUnmounted, watch } from "vue";
+import { gsap } from "gsap";
+import { Color } from "../models";
 
 const props = defineProps<{
-  letterArray: string[],
-  colors: Color[]
+  letterArray: string[];
+  colors: Color[];
 }>();
 
 const textRef = ref<HTMLElement | null>(null);
 const svgRef = ref<SVGSVGElement | null>(null);
 
-let letters: any[] = [];
+interface Letter {
+  onScreen: HTMLSpanElement;
+  char: string;
+  shift?: boolean;
+}
+
+let letters: Letter[] = [];
 const textSize = 120;
 const textCenter = 160;
 
 function addLetter(char: string, index: number) {
   if (!textRef.value) return;
-  const letter = document.createElement('span');
+  const letter = document.createElement("span");
   letter.innerHTML = char;
   textRef.value.appendChild(letter);
   const color = props.colors[index % props.colors.length];
@@ -61,40 +69,57 @@ function addLetter(char: string, index: number) {
   addDecoration(letter, color);
 }
 
-function positionLetters(){
-  letters.forEach(letter => {
+function positionLetters() {
+  letters.forEach((letter) => {
     if (!letter) return;
     const timing = letter.shift ? 0.1 : 0;
-    gsap.to(letter.onScreen, { duration: timing, x: `${letter.onScreen.offsetLeft}px`, ease: 'power3.inOut' });
+    gsap.to(letter.onScreen, {
+      duration: timing,
+      x: `${letter.onScreen.offsetLeft}px`,
+      ease: "power3.inOut",
+    });
     letter.shift = true;
   });
 }
 
-function animateLetterIn(letter: HTMLElement){
+function animateLetterIn(letter: HTMLElement) {
   const yOffset = (0.5 + Math.random() * 0.5) * textSize;
-  gsap.fromTo(letter, { scale: 0 }, { duration: 0.4, scale: 1, ease: 'back.out' });
-  gsap.fromTo(letter, { opacity: 0 }, { duration: 0.4, opacity: 1, ease: 'power3.out' });
-  gsap.to(letter, { duration: 0.2, y: -yOffset, ease: 'power3.inOut' });
-  gsap.to(letter, { duration: 0.2, y: 0, ease: 'power3.inOut', delay: 0.2 });
+  gsap.fromTo(
+    letter,
+    { scale: 0 },
+    { duration: 0.4, scale: 1, ease: "back.out" }
+  );
+  gsap.fromTo(
+    letter,
+    { opacity: 0 },
+    { duration: 0.4, opacity: 1, ease: "power3.out" }
+  );
+  gsap.to(letter, { duration: 0.2, y: -yOffset, ease: "power3.inOut" });
+  gsap.to(letter, { duration: 0.2, y: 0, ease: "power3.inOut", delay: 0.2 });
   const rotation = -50 + Math.random() * 100;
-  gsap.to(letter, { duration: 0.2, rotation: rotation, ease: 'power3.inOut' });
-  gsap.to(letter, { duration: 0.2, rotation: 0, ease: 'power3.inOut', delay: 0.2 });
+  gsap.to(letter, { duration: 0.2, rotation: rotation, ease: "power3.inOut" });
+  gsap.to(letter, {
+    duration: 0.2,
+    rotation: 0,
+    ease: "power3.inOut",
+    delay: 0.2,
+  });
 }
 
-function addDecoration(letter: HTMLElement, color: Color){
+function addDecoration(letter: HTMLElement, color: Color) {
   setTimeout(() => {
     if (!letter.parentElement) return; // letter might have been removed
     const x0 = letter.offsetLeft + letter.offsetWidth / 2;
     const y0 = textCenter - textSize * 0.5;
     const shade = color.shades[Math.floor(Math.random() * 4)];
-    for (var i = 0; i < 8; i++) addTriangle(x0, y0, shade);
-    for (var i = 0; i < 8; i++) addCircle(x0, y0);
+    for (var t = 0; t < 8; t++) addTriangle(x0, y0, shade);
+    for (var c = 0; c < 8; c++) addCircle(x0, y0);
   }, 150);
-};
+}
 
-function addTriangle(x0: number, y0: number, shade: string){
+function addTriangle(x0: number, y0: number, shade: string) {
   if (!svgRef.value) return;
-  const tri = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  const tri = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
   const a = Math.random();
   const a2 = a + (-0.2 + Math.random() * 0.4);
   const r = textSize * 0.52;
@@ -106,41 +131,70 @@ function addTriangle(x0: number, y0: number, shade: string){
   const triSize = textSize * 0.1;
   const scale = 0.3 + Math.random() * 0.7;
   const offset = triSize * scale;
-  tri.setAttribute('points', `0,0 ${triSize * 2},0 ${triSize},${triSize * 2}`);
-  tri.setAttribute('style', `fill:${shade}`);
+  tri.setAttribute("points", `0,0 ${triSize * 2},0 ${triSize},${triSize * 2}`);
+  tri.setAttribute("style", `fill:${shade}`);
   svgRef.value.appendChild(tri);
-  gsap.fromTo(tri, { rotation: Math.random() * 360, scale: scale, x: x - offset, y: y - offset, opacity: 1 }, {
-    duration: 0.6, x: x2 - offset, y: y2 - offset, opacity: 0, ease: 'power1.inOut', onComplete: () => {
-      svgRef.value?.removeChild(tri);
+  gsap.fromTo(
+    tri,
+    {
+      rotation: Math.random() * 360,
+      scale: scale,
+      x: x - offset,
+      y: y - offset,
+      opacity: 1,
+    },
+    {
+      duration: 0.6,
+      x: x2 - offset,
+      y: y2 - offset,
+      opacity: 0,
+      ease: "power1.inOut",
+      onComplete: () => {
+        svgRef.value?.removeChild(tri);
+      },
     }
-  });
+  );
 }
 
-function addCircle(centerX:number, centerY:number){
+function addCircle(centerX: number, centerY: number) {
   if (!svgRef.value) return;
-  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  const circle = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "circle"
+  );
   const randomAngle = Math.random();
   const circleRadiusX = textSize * 0.52;
   const circleRadiusY = circleRadiusX + textSize;
-  const initialX = centerX + circleRadiusX * Math.cos(2 * Math.PI * randomAngle);
-  const initialY = centerY + circleRadiusX * Math.sin(2 * Math.PI * randomAngle);
+  const initialX =
+    centerX + circleRadiusX * Math.cos(2 * Math.PI * randomAngle);
+  const initialY =
+    centerY + circleRadiusX * Math.sin(2 * Math.PI * randomAngle);
   const finalX = centerX + circleRadiusY * Math.cos(2 * Math.PI * randomAngle);
   const finalY = centerY + circleRadiusY * Math.sin(2 * Math.PI * randomAngle);
   const circleSize = textSize * 0.05 * Math.random();
 
-  circle.setAttribute('r', String(circleSize));
-  circle.setAttribute('style', 'fill:#eee');
+  circle.setAttribute("r", String(circleSize));
+  circle.setAttribute("style", "fill:#eee");
 
   svgRef.value.appendChild(circle);
-  gsap.fromTo(circle, { x: initialX - circleSize, y: initialY - circleSize, opacity: 1 }, {
-    duration: 0.6, x: finalX - circleSize, y: finalY - circleSize, opacity: 0, ease: 'power1.inOut', onComplete: () => {
-      svgRef.value?.removeChild(circle);
+  gsap.fromTo(
+    circle,
+    { x: initialX - circleSize, y: initialY - circleSize, opacity: 1 },
+    {
+      duration: 0.6,
+      x: finalX - circleSize,
+      y: finalY - circleSize,
+      opacity: 0,
+      ease: "power1.inOut",
+      onComplete: () => {
+        svgRef.value?.removeChild(circle);
+      },
     }
-  });
+  );
 }
 
 let animationTimeout: number;
-function addText(index: number){
+function addText(index: number) {
   clearTimeout(animationTimeout);
   animationTimeout = window.setTimeout(() => {
     if (props.letterArray && props.letterArray[index]) {
@@ -149,17 +203,19 @@ function addText(index: number){
       addText(index + 1);
     }
   }, 300);
-};
+}
 
 function animateLettersOut() {
   const tweens = letters
-    .filter(l => l && l.onScreen)
-    .map(l => gsap.to(l.onScreen, {
+    .filter((l) => l && l.onScreen)
+    .map((l) =>
+      gsap.to(l.onScreen, {
         duration: 0.3,
         scale: 0,
         opacity: 0,
-        ease: 'power3.in'
-    }));
+        ease: "power3.in",
+      })
+    );
   return Promise.all(tweens);
 }
 
@@ -168,7 +224,7 @@ async function startAnimation() {
   await animateLettersOut();
   clearTimeout(animationTimeout);
   if (textRef.value) {
-      textRef.value.innerHTML = '';
+    textRef.value.innerHTML = "";
   }
   letters = [];
 
