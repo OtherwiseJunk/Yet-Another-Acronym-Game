@@ -8,31 +8,31 @@ export const useGameStore = defineStore("gameCable", () => {
   const gameState = ref(
     new GameState(0, 1, "", new Map<number, number>(), [], 0, new Map<number, UserSubmission>())
   );
-  let accessToken: string;
-  let instanceId: string;
-  let currentUserData: UserData;
-  let currentUserId: number;
+  const accessToken = ref<string>();
+  const instanceId = ref<string>();
+  const currentUserData = ref<UserData>();
+  const currentUserId = ref<number>();
 
   function setup(token: string, instance: string, userData: UserData, userId: number) {
     console.log("Attempting to setup cable");
-    accessToken = token;
-    instanceId = instance;
-    currentUserData = userData;
-    currentUserId = userId;
+    accessToken.value = token;
+    instanceId.value = instance;
+    currentUserData.value = userData;
+    currentUserId.value = userId;
     connectToCable();
   }
   function connectToCable() {
     console.log("Connect to cable called");
-    console.log(`Discord Instance ID: ${instanceId}`);
+    console.log(`Discord Instance ID: ${instanceId.value}`);
     const consumer = createConsumer(
-      `/.proxy/api/cable?token=${accessToken}`
+      `/.proxy/api/cable?token=${accessToken.value}`
     );
     consumer.connect();
     instanceGame.value = consumer.subscriptions.create(
       {
         channel: "GameChannel",
-        instance: instanceId,
-        discordUserId: currentUserId,
+        instance: instanceId.value,
+        discordUserId: currentUserId.value,
       },
       {
         received(data: GameState) {
@@ -43,11 +43,21 @@ export const useGameStore = defineStore("gameCable", () => {
   }
 
   function startGame() {
-    instanceGame.value!.send(new StartGameCommand());
+    if (!instanceGame.value) {
+      console.error("Game channel not connected");
+      return;
+    }
+
+    instanceGame.value.send(new StartGameCommand());
   }
 
   function submitAnswer(answer: string) {
-    instanceGame.value!.send(new SubmitAnswerCommand(new UserSubmission(answer, 0, currentUserData)))
+    if (!instanceGame.value) {
+      console.error("Game channel not connected");
+      return;
+    }
+
+    instanceGame.value.send(new SubmitAnswerCommand(new UserSubmission(answer, 0, currentUserData.value)))
   }
 
   return { setup, gameState, startGame, submitAnswer };

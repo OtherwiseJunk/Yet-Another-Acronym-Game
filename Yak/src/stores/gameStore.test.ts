@@ -10,6 +10,7 @@ interface Channel {
 }
 let createConsumerReceivedCallback: (data: GameState) => void;
 let createdChannel: Channel = null;
+let store;
 
 const mockSend = vi.fn();
 const mockUnsubscribe = vi.fn();
@@ -45,12 +46,16 @@ vi.mock('./discordStore', () => ({
 
 describe('gameStore', () => {
     beforeEach(() => {
+
         setActivePinia(createPinia())
         vi.clearAllMocks();
+        store = useGameStore();
+        store.setup("token", "test-instance-id", {} as UserData, 1);
     });
     it('should initialize with default values', () => {
-        const store = useGameStore();
+
         const gameState: GameState = store.gameState;
+
         expect(gameState).toBeDefined();
         expect(gameState.game_phase).toBe(0);
         expect(gameState.round_number).toBe(1);
@@ -62,8 +67,6 @@ describe('gameStore', () => {
     });
 
     it('should call connectToCable on setup', () => {
-        const store = useGameStore();
-        store.setup("token", "test-instance-id", {} as UserData, 1);
         expect(mockConnect).toHaveBeenCalled();
         expect(mockCreate).toHaveBeenCalled();
         expect(createdChannel).toEqual({
@@ -74,9 +77,8 @@ describe('gameStore', () => {
     });
 
     it('should send StartGameCommand when startGame is called', () => {
-        const store = useGameStore();
-        store.setup("token", "instance-id", {} as UserData, 1);
         store.startGame();
+
         expect(mockSend).toHaveBeenCalledWith(new StartGameCommand());
     });
 
@@ -85,19 +87,17 @@ describe('gameStore', () => {
         const expectedUserData = new UserData("avatarUrl", "decorationUrl", "mockedUser");
         const expectedSubmissionData = new UserSubmission(answer, 0, expectedUserData);
         const expectedAnswerSubmission = new SubmitAnswerCommand(expectedSubmissionData);
-
-        const store = useGameStore();
         store.setup("token", "instance-id", expectedUserData, 1);
 
         store.submitAnswer(answer);
+        
         expect(mockSend).toHaveBeenCalledWith(expectedAnswerSubmission);
     });
 
     it('should update gameState when data is received', () => {
-        const store = useGameStore();
-        store.setup("token", "instance-id", {} as UserData, 1);
         const newGameState = new GameState(1, 2, "NEW", new Map([[1, 10]]), [1, 2], 30, new Map([[1, new UserSubmission("Answer", 0, new UserData("avatarUrl", "decorationUrl", "mockedUser"))]]));
         createConsumerReceivedCallback(newGameState);
+        
         expect(store.gameState).toEqual(newGameState);
     });
 });
