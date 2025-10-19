@@ -14,7 +14,12 @@ app.mount('#app');
 const discord = useDiscordStore();
 const cable = useGameStore();
 
-( async () => {
+(async () => {
     await discord.setup();
-    await cable.setup();
+    await cable.setup(
+        discord.auth!.access_token,
+        discord.instanceId,
+        discord.currentUserData,
+        discord.auth!.user.id
+    );
 })()

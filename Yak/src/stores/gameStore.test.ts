@@ -63,7 +63,7 @@ describe('gameStore', () => {
 
     it('should call connectToCable on setup', () => {
         const store = useGameStore();
-        store.setup();
+        store.setup("token", "test-instance-id", {} as UserData, 1);
         expect(mockConnect).toHaveBeenCalled();
         expect(mockCreate).toHaveBeenCalled();
         expect(createdChannel).toEqual({
@@ -75,27 +75,61 @@ describe('gameStore', () => {
 
     it('should send StartGameCommand when startGame is called', () => {
         const store = useGameStore();
-        store.setup();
+        store.setup("token", "instance-id", {} as UserData, 1);
         store.startGame();
         expect(mockSend).toHaveBeenCalledWith(new StartGameCommand());
     });
 
     it('should send SubmitAnswerCommand with correct UserSubmission when submitAnswer is called', () => {
-        const store = useGameStore();
-        store.setup();
         const answer = "Test Answer";
         const expectedUserData = new UserData("avatarUrl", "decorationUrl", "mockedUser");
-        const expectedSubmission = new UserSubmission(answer, 0, expectedUserData);
+        const expectedSubmissionData = new UserSubmission(answer, 0, expectedUserData);
+        const expectedAnswerSubmission = new SubmitAnswerCommand(expectedSubmissionData);
+
+        const store = useGameStore();
+        store.setup("token", "instance-id", expectedUserData, 1);
 
         store.submitAnswer(answer);
-        expect(mockSend).toHaveBeenCalledWith(new SubmitAnswerCommand(expectedSubmission));
+        expect(mockSend).toHaveBeenCalledWith(expectedAnswerSubmission);
     });
 
     it('should update gameState when data is received', () => {
         const store = useGameStore();
-        store.setup();
+        store.setup("token", "instance-id", {} as UserData, 1);
         const newGameState = new GameState(1, 2, "NEW", new Map([[1, 10]]), [1, 2], 30, new Map([[1, new UserSubmission("Answer", 0, new UserData("avatarUrl", "decorationUrl", "mockedUser"))]]));
         createConsumerReceivedCallback(newGameState);
         expect(store.gameState).toEqual(newGameState);
     });
 });
+
+/*
+[
+  {
+    type: 1,
+    data: {
+      submission: "Test Answer",
+      answer_time: 0,
+      user_data: {
+        avatarUrl: "avatarUrl",
+        decorationUrl: "decorationUrl",
+        displayName: "mockedUser",
+      },
+    },
+  },
+]
+*/
+
+/*
+{
+  type: 1,
+  data: {
+    submission: "Test Answer",
+    answer_time: 0,
+    user_data: {
+      avatarUrl: "avatarUrl",
+      decorationUrl: "decorationUrl",
+      displayName: "mockedUser",
+    },
+  },
+}
+*/
