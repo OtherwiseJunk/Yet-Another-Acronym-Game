@@ -101,35 +101,3 @@ describe('gameStore', () => {
         expect(store.gameState).toEqual(newGameState);
     });
 });
-
-/*
-[
-  {
-    type: 1,
-    data: {
-      submission: "Test Answer",
-      answer_time: 0,
-      user_data: {
-        avatarUrl: "avatarUrl",
-        decorationUrl: "decorationUrl",
-        displayName: "mockedUser",
-      },
-    },
-  },
-]
-*/
-
-/*
-{
-  type: 1,
-  data: {
-    submission: "Test Answer",
-    answer_time: 0,
-    user_data: {
-      avatarUrl: "avatarUrl",
-      decorationUrl: "decorationUrl",
-      displayName: "mockedUser",
-    },
-  },
-}
-*/
