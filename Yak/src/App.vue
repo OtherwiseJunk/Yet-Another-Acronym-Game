@@ -4,9 +4,11 @@ import SplashScreen from './components/SplashScreen.vue'
 import AnswerSubmission from './components/AnswerSubmissionScreen.vue'
 import VotingScreen from './components/VotingScreen.vue'
 import { useGameStore } from './stores/gameStore';
+import { usePalletteStore } from './stores/palletteStore';
 import { UserSubmission } from './models/userSubmission';
 
 const cable = useGameStore();
+const colors = usePalletteStore();
 const phase = ref(0)
 const animationComplete = ref(false);
 const acronym = ref("");
@@ -17,6 +19,7 @@ let submissions: Map<number, UserSubmission>;
 cable.$subscribe((_, state) => {
   phase.value = state.gameState.game_phase
   acronym.value = state.gameState.current_acronym
+  colors.setAcronymPallette(acronym.value.split(''));
   submissions = state.gameState.submissions
   playerCount.value = state.gameState.players.length
   roundTimeRemaining.value = state.gameState.round_time_remaining;

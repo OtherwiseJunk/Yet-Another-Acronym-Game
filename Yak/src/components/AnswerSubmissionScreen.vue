@@ -1,14 +1,16 @@
 <template>
     <div v-if="allowSubmission" class="submission-screen-container">
         <h1 class="font" :style="{ color: dynamicTextColor }">{{ props.timeRemaining }}</h1>
-        <Acronym :letterArray="letterArray" :colors="colors.acronymPallette"></Acronym>
+        <Acronym :letterArray="letterArray" :colors="props.colorPallette"></Acronym>
         <br>
-        <div class="input-container">
-            <input v-model="submission" class="input font fill-parent" type="text" :style="{ color: dynamicTextColor }">
-        </div>
-        <div class="submit-button">
-            <button type="submit" v-if="submittable" @click="submit()" @keyup.enter="submit" class="font start-btn">Submit</button>
-        </div>
+        <form @submit.prevent="submit">
+            <div class="input-container">
+                <input v-model="submission" class="input font fill-parent" type="text" :style="{ color: dynamicTextColor }">
+            </div>
+            <div class="submit-button">
+                <button type="submit" :disabled="!submittable" class="font start-btn">Submit</button>
+            </div>
+        </form>
     </div>
     <div v-else>
         <WaitingForOtherPlayersComponent :submissionText="submission"></WaitingForOtherPlayersComponent>
@@ -19,9 +21,22 @@
 import { computed, ref } from 'vue';
 import WaitingForOtherPlayersComponent from './WaitingForOtherPlayersComponent.vue'
 import Acronym from './Acronym.vue';
-import { usePalletteStore } from '../stores/palletteStore';
 import { useDynamicTextColor } from '../composables/useDynamicTextColor';
-const props = defineProps(['acronym', 'colorPallette', 'timeRemaining'])
+import { Color } from '../models/color';
+const props = defineProps({
+    acronym: {
+        type: String,
+        required: true
+    },
+    timeRemaining: {
+        type: Number,
+        required: true
+    },
+    colorPallette: {
+        type: Array as () => Color[],
+        required: true
+    }
+});
 const emits = defineEmits({
     submit(answer: string) {
         if (answer) return true;
@@ -29,8 +44,7 @@ const emits = defineEmits({
         return false;
     }
 })
-const colors = usePalletteStore();
-colors.setAcronymPallette(props.acronym);
+
 let submission = ref<string>("");
 let allowSubmission = ref<boolean>(true);
 
@@ -53,13 +67,7 @@ const submittable = computed(() => {
         return false;
     }
 
-    let submittable = true;
-
-    words.forEach((word, index) => {
-        submittable = submittable && word.startsWith(letters[index]);
-    });
-
-    return submittable
+    return words.every((word, index) => word.startsWith(letters[index]));
 })
 </script>
 

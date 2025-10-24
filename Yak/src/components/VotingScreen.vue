@@ -1,11 +1,11 @@
 <template>
   <!-- guard rendering until the stories / parent have passed props -->
-  <div v-if="submissionsByUserId" class="container">
+  <div v-if="props.submissionsByUserId" class="container">
     <div class="header">
       <p class="font header-text">
-        {{ resultsMode ? "Results" : `Vote - ${timeRemaining}` }}
+        {{ props.resultsMode ? "Results" : `Vote - ${props.timeRemaining}` }}
       </p>
-      <p v-show="skipVoting" class="font header-subtext">
+      <p v-show="props.skipVoting" class="font header-subtext">
         voting skipped as there aren't enough players
       </p>
     </div>
@@ -25,7 +25,7 @@
       >
         <div class="submitter-info">
           <Avatar
-            v-show="resultsMode"
+            v-show="props.resultsMode"
             class="avatar"
             :avatarDecorationUrl="votingCardInfo.decoratorUrl"
             :avatarUrl="votingCardInfo.avatarUrl"
@@ -33,7 +33,7 @@
               shouldAnimateByUserId.get(Number(votingCardInfo.userId))
             "
           ></Avatar>
-          <p v-show="resultsMode" class="submitter-info-text">
+          <p v-show="props.resultsMode" class="submitter-info-text">
             {{ votingCardInfo.displayName }}
           </p>
           <p class="time submitter-info-text">
@@ -61,7 +61,7 @@ import { UserSubmission } from "../models";
 import { useDiscordStore } from "../stores/discordStore";
 import Avatar from "./Avatar.vue";
 import { VotingCardInfo } from "../models/votingCardInfo";
-import { ref, watch, computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { usePalletteStore } from "../stores/palletteStore";
 const props = defineProps({
   submissionsByUserId: {
@@ -81,56 +81,57 @@ const props = defineProps({
     required: true,
   },
 });
-// expose prop values as computed refs so they're available directly on $setup
-const submissionsByUserId = computed(() => props.submissionsByUserId);
-const resultsMode = computed(() => props.resultsMode);
-const skipVoting = computed(() => props.skipVoting);
-const timeRemaining = computed(() => props.timeRemaining);
+
 const emits = defineEmits(["vote", "next-round"]);
 const discord = useDiscordStore();
 const colors = usePalletteStore();
 // initialize selectedGradient early so Vue's CSS var binding can access it during setup
 const selectedGradient = colors.acronymPallette.map((color) => color.main);
 
-let shouldAnimateByUserId = ref<Map<number, boolean>>(new Map());
-let votingSubmissions = ref<VotingCardInfo[]>([]);
-let hasVoted = ref<boolean>(resultsMode.value);
-
-watch(resultsMode, (newValue) => {
-  if (newValue) {
-    Object.keys(submissionsByUserId.value).forEach((userId) => {
-      document.getElementById(userId)?.classList.remove("gradient");
-      document.getElementById(userId)?.classList.remove("selected-text");
-    });
-  }
-});
-
-Object.keys(submissionsByUserId.value).forEach((userId) => {
-  let userSubmission: UserSubmission = submissionsByUserId.value[userId];
-  votingSubmissions.value.push(
-    new VotingCardInfo(
+const votingSubmissions = computed(() => {
+  const submissions = Object.keys(props.submissionsByUserId).map((userId) => {
+    const userSubmission: UserSubmission =
+      props.submissionsByUserId[userId];
+    return new VotingCardInfo(
       userId,
       userSubmission.user_data.displayName,
       userSubmission.user_data.avatarUrl,
       userSubmission.user_data.decorationUrl,
       userSubmission.submission!,
       userSubmission.answer_time!
-    )
+    );
+  });
+
+  submissions.sort(
+    (current, next) => current.submissionTime - next.submissionTime
   );
+
+  submissions.forEach((votingCardInfo: VotingCardInfo, index: number) => {
+    if (colors.acronymPallette.length > 0) {
+      votingCardInfo.color =
+        colors.acronymPallette[index % colors.acronymPallette.length].main;
+    } else {
+      votingCardInfo.color = "#FFFFFF"; // Fallback color
+    }
+  });
+
+  return submissions;
+})
+
+let shouldAnimateByUserId = ref<Map<number, boolean>>(new Map());
+let hasVoted = ref<boolean>(props.resultsMode.value);
+
+watch(props.resultsMode, (newValue) => {
+  if (newValue) {
+    Object.keys(props.submissionsByUserId.value).forEach((userId) => {
+      document.getElementById(userId)?.classList.remove("gradient");
+      document.getElementById(userId)?.classList.remove("selected-text");
+    });
+  }
 });
 
-votingSubmissions.value.sort(
-  (current, next) => current.submissionTime - next.submissionTime
-);
-votingSubmissions.value.forEach(
-  (votingCardInfo: VotingCardInfo, index: number) => {
-    votingCardInfo.color =
-      colors.acronymPallette[index % colors.acronymPallette.length].main;
-  }
-);
-
 function vote(userId: string) {
-  if (discord.auth.user.id != userId && !hasVoted.value && !resultsMode.value) {
+  if (discord.auth.user.id != userId && !hasVoted.value && !props.resultsMode.value) {
     let selectedElement = document.getElementById(userId)!;
     let selectedElementChildParagraph = document.getElementById(`p.${userId}`)!;
     let userSubmission: UserSubmission = props.submissionsByUserId[userId];
