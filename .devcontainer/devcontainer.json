@@ -30,10 +30,7 @@
 		}
 	},
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": [
-		"bundle install --gemfile /workspaces/Yet-Another-Acronym-Game/YakBak/Gemfile",
-		"sudo chown -R $(whoami) /workspaces/Yet-Another-Acronym-Game/",
-		"npm install --prefix /workspaces/Yet-Another-Acronym-Game/YakBak"
-	]
+	"postCreateCommand": "chmod +x /workspaces/Yet-Another-Acronym-Game/.devcontainer/postCreateCommand.sh && /workspaces/Yet-Another-Acronym-Game/.devcontainer/postCreateCommand.sh"
+
 	// Forward ports from the container to your local machine.
 }
