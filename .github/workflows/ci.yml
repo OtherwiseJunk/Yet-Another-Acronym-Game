@@ -23,6 +23,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+      
+      - name: Install dependencies
+        working-directory: Yak
+        run: npm ci
 
       - name: Run ESLint
         working-directory: Yak
@@ -45,10 +49,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Install dependencies
-        working-directory: Yak
-        run: npm ci
-
       - name: Run Vitest
         working-directory: Yak
         run: npx vitest --run --reporter dot
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby-version: ['3.3.8']
+        ruby-version: ['3.4.7']
 
     steps:
       - name: Checkout repository
