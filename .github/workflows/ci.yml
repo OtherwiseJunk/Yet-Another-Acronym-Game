@@ -49,6 +49,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
+      - name: Install dependencies
+        working-directory: Yak
+        run: npm ci
+
       - name: Run Vitest
         working-directory: Yak
         run: npx vitest --run --reporter dot
