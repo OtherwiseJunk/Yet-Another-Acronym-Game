@@ -19,7 +19,7 @@ let submissions: Map<number, UserSubmission>;
 cable.$subscribe((_, state) => {
   phase.value = state.gameState.game_phase
   acronym.value = state.gameState.current_acronym
-  colors.setAcronymPallette(acronym.value.split(''));
+  colors.setAcronymPallette(acronym.value);
   submissions = state.gameState.submissions
   playerCount.value = state.gameState.players.length
   roundTimeRemaining.value = state.gameState.round_time_remaining;
