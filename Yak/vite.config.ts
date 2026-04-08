@@ -16,6 +16,17 @@ export default defineConfig({
           include: ['src/**/*.test.ts'],
           environment: 'jsdom',
         }
-      }]
+      }],
+    coverage: {
+      include: ['src/**'],
+      exclude: [
+        'src/**/*.stories.ts',
+        'src/**/*.test.ts',
+        'src/main.ts',
+        'src/vite-env.d.ts',
+        'src/models/Discord/authenticationResponse.ts',
+        'src/models/CableCommands/command.interface.ts',
+      ],
+    },
   }
 });
