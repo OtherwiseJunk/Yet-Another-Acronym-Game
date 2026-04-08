@@ -97,7 +97,34 @@ describe('gameStore', () => {
     it('should update gameState when data is received', () => {
         const newGameState = new GameState(1, 2, "NEW", new Map([[1, 10]]), [1, 2], 30, new Map([[1, new UserSubmission("Answer", 0, new UserData("avatarUrl", "decorationUrl", "mockedUser"))]]));
         createConsumerReceivedCallback(newGameState);
-        
+
         expect(store.gameState).toEqual(newGameState);
+    });
+});
+
+describe('gameStore - not connected', () => {
+    beforeEach(() => {
+        setActivePinia(createPinia());
+        vi.clearAllMocks();
+    });
+
+    it('should log error when startGame is called without a connected channel', () => {
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const store = useGameStore();
+
+        store.startGame();
+
+        expect(errorSpy).toHaveBeenCalledWith('Game channel not connected');
+        expect(mockSend).not.toHaveBeenCalled();
+    });
+
+    it('should log error when submitAnswer is called without a connected channel', () => {
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const store = useGameStore();
+
+        store.submitAnswer('test');
+
+        expect(errorSpy).toHaveBeenCalledWith('Game channel not connected');
+        expect(mockSend).not.toHaveBeenCalled();
     });
 });
