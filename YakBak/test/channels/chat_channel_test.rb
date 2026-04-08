@@ -2,7 +2,7 @@ require 'test_helper'
 
 class ChatChannelTest < ActionCable::Channel::TestCase
   test "chat channel should use consistent variable naming" do
-    source = File.read(Rails.root.join('app', 'channels', 'chat_channel.rb'))
+    source = File.read(Rails.root.join('app/channels/chat_channel.rb'))
 
     has_snake_case_messages = source.include?('@@messages_by_instance')
     has_camel_case_messages = source.include?('@@messagesByInstance')

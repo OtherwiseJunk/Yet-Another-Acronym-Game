@@ -1,9 +1,6 @@
 class TokensController < ApplicationController
   def create
     uri = URI('https://discord.com/api/oauth2/token')
-    Rails.logger.debug 'Logging Env Values'
-    puts "VITE_DISCORD_CLIENT_ID: #{ENV['VITE_DISCORD_CLIENT_ID']}"
-    puts "DISCORD_CLIENT_SECRET: #{ENV['DISCORD_CLIENT_SECRET']}"
     body = {
       client_id: ENV['VITE_DISCORD_CLIENT_ID'],
       client_secret: ENV['DISCORD_CLIENT_SECRET'],
