@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, toRef } from 'vue';
 import WaitingForOtherPlayersComponent from './WaitingForOtherPlayersComponent.vue'
 import Acronym from './Acronym.vue';
 import { useDynamicTextColor } from '../composables/useDynamicTextColor';
@@ -48,7 +48,7 @@ const emits = defineEmits({
 let submission = ref<string>("");
 let allowSubmission = ref<boolean>(true);
 
-const letterArray = props.acronym.split('');
+const letterArray = computed(() => props.acronym.split(''));
 
 const inputBackgroundColor = ref('rgba(255, 255, 255, 0.1)'); // The background of the input container
 const dynamicTextColor = useDynamicTextColor(inputBackgroundColor);
