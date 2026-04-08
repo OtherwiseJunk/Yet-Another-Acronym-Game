@@ -28,9 +28,13 @@ jobs:
         working-directory: Yak
         run: npm ci
 
-      - name: Run ESLint
+      - name: Run oxlint
         working-directory: Yak
-        run: npx eslint .
+        run: npm run lint
+
+      - name: Check formatting (oxfmt)
+        working-directory: Yak
+        run: npm run format:check
 
   test-yak:
     name: Yak unit tests
