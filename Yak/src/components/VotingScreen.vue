@@ -119,11 +119,11 @@ const votingSubmissions = computed(() => {
 })
 
 let shouldAnimateByUserId = ref<Map<number, boolean>>(new Map());
-let hasVoted = ref<boolean>(props.resultsMode.value);
+let hasVoted = ref<boolean>(props.resultsMode);
 
-watch(props.resultsMode, (newValue) => {
+watch(() => props.resultsMode, (newValue) => {
   if (newValue) {
-    Object.keys(props.submissionsByUserId.value).forEach((userId) => {
+    Object.keys(props.submissionsByUserId).forEach((userId) => {
       document.getElementById(userId)?.classList.remove("gradient");
       document.getElementById(userId)?.classList.remove("selected-text");
     });
@@ -131,7 +131,7 @@ watch(props.resultsMode, (newValue) => {
 });
 
 function vote(userId: string) {
-  if (discord.auth.user.id != userId && !hasVoted.value && !props.resultsMode.value) {
+  if (discord.auth.user.id != userId && !hasVoted.value && !props.resultsMode) {
     let selectedElement = document.getElementById(userId)!;
     let selectedElementChildParagraph = document.getElementById(`p.${userId}`)!;
     let userSubmission: UserSubmission = props.submissionsByUserId[userId];
@@ -144,7 +144,7 @@ function vote(userId: string) {
       "--selectedGradient",
       selectedGradient.join(", ")
     );
-    selectedElementChildParagraph.innerHTML = userSubmission.submission;
+    selectedElementChildParagraph.textContent = userSubmission.submission;
     selectedElementChildParagraph.classList.add("selected-text");
   }
 }
