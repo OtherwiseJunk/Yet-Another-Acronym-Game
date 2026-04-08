@@ -1,5 +1,5 @@
-// Original Reference for animation https://codepen.io/rachsmith/pen/oGEMbz -
-Thanks to Rebecca Smith!
+// Original Reference for animation https://codepen.io/rachsmith/pen/oGEMbz - Thanks to Rebecca
+Smith!
 
 <template>
   <div class="container">
@@ -84,16 +84,8 @@ function positionLetters() {
 
 function animateLetterIn(letter: HTMLElement) {
   const yOffset = (0.5 + Math.random() * 0.5) * textSize;
-  gsap.fromTo(
-    letter,
-    { scale: 0 },
-    { duration: 0.4, scale: 1, ease: "back.out" }
-  );
-  gsap.fromTo(
-    letter,
-    { opacity: 0 },
-    { duration: 0.4, opacity: 1, ease: "power3.out" }
-  );
+  gsap.fromTo(letter, { scale: 0 }, { duration: 0.4, scale: 1, ease: "back.out" });
+  gsap.fromTo(letter, { opacity: 0 }, { duration: 0.4, opacity: 1, ease: "power3.out" });
   gsap.to(letter, { duration: 0.2, y: -yOffset, ease: "power3.inOut" });
   gsap.to(letter, { duration: 0.2, y: 0, ease: "power3.inOut", delay: 0.2 });
   const rotation = -50 + Math.random() * 100;
@@ -152,23 +144,18 @@ function addTriangle(x0: number, y0: number, shade: string) {
       onComplete: () => {
         svgRef.value?.removeChild(tri);
       },
-    }
+    },
   );
 }
 
 function addCircle(centerX: number, centerY: number) {
   if (!svgRef.value) return;
-  const circle = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "circle"
-  );
+  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
   const randomAngle = Math.random();
   const circleRadiusX = textSize * 0.52;
   const circleRadiusY = circleRadiusX + textSize;
-  const initialX =
-    centerX + circleRadiusX * Math.cos(2 * Math.PI * randomAngle);
-  const initialY =
-    centerY + circleRadiusX * Math.sin(2 * Math.PI * randomAngle);
+  const initialX = centerX + circleRadiusX * Math.cos(2 * Math.PI * randomAngle);
+  const initialY = centerY + circleRadiusX * Math.sin(2 * Math.PI * randomAngle);
   const finalX = centerX + circleRadiusY * Math.cos(2 * Math.PI * randomAngle);
   const finalY = centerY + circleRadiusY * Math.sin(2 * Math.PI * randomAngle);
   const circleSize = textSize * 0.05 * Math.random();
@@ -189,7 +176,7 @@ function addCircle(centerX: number, centerY: number) {
       onComplete: () => {
         svgRef.value?.removeChild(circle);
       },
-    }
+    },
   );
 }
 
@@ -214,7 +201,7 @@ function animateLettersOut() {
         scale: 0,
         opacity: 0,
         ease: "power3.in",
-      })
+      }),
     );
   return Promise.all(tweens);
 }

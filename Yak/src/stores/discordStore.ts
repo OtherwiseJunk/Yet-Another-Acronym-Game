@@ -9,8 +9,7 @@ export const useDiscordStore = defineStore("discord", () => {
   const currentUserData = ref(new UserData("", "", ""));
   const instanceId = ref("");
   const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
-  const defaultImage =
-    "https://1219391019515121716.discordsays.com/media/yak.png";
+  const defaultImage = "https://1219391019515121716.discordsays.com/media/yak.png";
 
   async function setup() {
     await setupDiscordSdk();
@@ -52,9 +51,8 @@ export const useDiscordStore = defineStore("discord", () => {
   }
 
   async function getUserInformation(userId: string): Promise<UserData> {
-    const participants = (
-      await discordSdk.commands.getInstanceConnectedParticipants()
-    ).participants;
+    const participants = (await discordSdk.commands.getInstanceConnectedParticipants())
+      .participants;
     const user = participants.find((user) => user.id === userId);
     const userData = new UserData(defaultImage, "", "Unknown User");
 
@@ -64,8 +62,10 @@ export const useDiscordStore = defineStore("discord", () => {
 
     const extension = user.avatar?.startsWith("a_") ? "gif" : "webp";
 
-    const guildUser: APIGuildMember = await fetchDiscordResource<APIGuildMember>(userId === auth.value.user.id ? `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member` :
-      `https://discord.com/api/guilds/${discordSdk.guildId}/members/${userId}`
+    const guildUser: APIGuildMember = await fetchDiscordResource<APIGuildMember>(
+      userId === auth.value.user.id
+        ? `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member`
+        : `https://discord.com/api/guilds/${discordSdk.guildId}/members/${userId}`,
     );
     // Retrieve the guild-specific avatar, and fallback to the user's avatar
     if (guildUser?.avatar) {
@@ -83,9 +83,7 @@ export const useDiscordStore = defineStore("discord", () => {
 
     // Retrieve the guild-specific nickname, and fallback to the username#discriminator
     userData.displayName =
-      guildUser?.nick ??
-      user.global_name ??
-      `${user.username}#${user.discriminator}`;
+      guildUser?.nick ?? user.global_name ?? `${user.username}#${user.discriminator}`;
 
     return userData;
   }

@@ -29,16 +29,12 @@
             class="avatar"
             :avatarDecorationUrl="votingCardInfo.decoratorUrl"
             :avatarUrl="votingCardInfo.avatarUrl"
-            :shouldAnimate="
-              shouldAnimateByUserId.get(Number(votingCardInfo.userId))
-            "
+            :shouldAnimate="shouldAnimateByUserId.get(Number(votingCardInfo.userId))"
           ></Avatar>
           <p v-show="props.resultsMode" class="submitter-info-text">
             {{ votingCardInfo.displayName }}
           </p>
-          <p class="time submitter-info-text">
-            {{ votingCardInfo.submissionTime }} s
-          </p>
+          <p class="time submitter-info-text">{{ votingCardInfo.submissionTime }} s</p>
         </div>
         <p class="submission-text" :id="'p.' + votingCardInfo.userId">
           {{ votingCardInfo.submissionText }}
@@ -49,9 +45,7 @@
       </div>
     </div>
     <div v-show="props.resultsMode" class="controls">
-      <button class="next-round-button font gradient" @click="nextRound()">
-        Next Round
-      </button>
+      <button class="next-round-button font gradient" @click="nextRound()">Next Round</button>
     </div>
   </div>
 </template>
@@ -90,45 +84,44 @@ const selectedGradient = colors.acronymPallette.map((color) => color.main);
 
 const votingSubmissions = computed(() => {
   const submissions = Object.keys(props.submissionsByUserId).map((userId) => {
-    const userSubmission: UserSubmission =
-      props.submissionsByUserId[userId];
+    const userSubmission: UserSubmission = props.submissionsByUserId[userId];
     return new VotingCardInfo(
       userId,
       userSubmission.user_data.displayName,
       userSubmission.user_data.avatarUrl,
       userSubmission.user_data.decorationUrl,
       userSubmission.submission!,
-      userSubmission.answer_time!
+      userSubmission.answer_time!,
     );
   });
 
-  submissions.sort(
-    (current, next) => current.submissionTime - next.submissionTime
-  );
+  submissions.sort((current, next) => current.submissionTime - next.submissionTime);
 
   submissions.forEach((votingCardInfo: VotingCardInfo, index: number) => {
     if (colors.acronymPallette.length > 0) {
-      votingCardInfo.color =
-        colors.acronymPallette[index % colors.acronymPallette.length].main;
+      votingCardInfo.color = colors.acronymPallette[index % colors.acronymPallette.length].main;
     } else {
       votingCardInfo.color = "#FFFFFF"; // Fallback color
     }
   });
 
   return submissions;
-})
+});
 
 let shouldAnimateByUserId = ref<Map<number, boolean>>(new Map());
 let hasVoted = ref<boolean>(props.resultsMode);
 
-watch(() => props.resultsMode, (newValue) => {
-  if (newValue) {
-    Object.keys(props.submissionsByUserId).forEach((userId) => {
-      document.getElementById(userId)?.classList.remove("gradient");
-      document.getElementById(userId)?.classList.remove("selected-text");
-    });
-  }
-});
+watch(
+  () => props.resultsMode,
+  (newValue) => {
+    if (newValue) {
+      Object.keys(props.submissionsByUserId).forEach((userId) => {
+        document.getElementById(userId)?.classList.remove("gradient");
+        document.getElementById(userId)?.classList.remove("selected-text");
+      });
+    }
+  },
+);
 
 function vote(userId: string) {
   if (discord.auth.user.id != userId && !hasVoted.value && !props.resultsMode) {
@@ -140,10 +133,7 @@ function vote(userId: string) {
     selectedElement.classList.add("gradient");
     // set the CSS variable on the selected element so the pseudo-element can read it
     // format: a comma-separated list of color stops (e.g. "#ff0000, #00ff00, #0000ff")
-    selectedElement.style.setProperty(
-      "--selectedGradient",
-      selectedGradient.join(", ")
-    );
+    selectedElement.style.setProperty("--selectedGradient", selectedGradient.join(", "));
     selectedElementChildParagraph.textContent = userSubmission.submission;
     selectedElementChildParagraph.classList.add("selected-text");
   }
@@ -271,10 +261,7 @@ function nextRound() {
   height: calc(100% + var(--borderWidth) * 2);
   width: calc(100% + var(--borderWidth) * 2);
   /* use a runtime CSS variable set on the selected element; fallback to a simple gradient */
-  background: linear-gradient(
-    60deg,
-    var(--selectedGradient, #ff7f24, #ff2aff, #00ffde)
-  );
+  background: linear-gradient(60deg, var(--selectedGradient, #ff7f24, #ff2aff, #00ffde));
   border-radius: calc(2 * var(--borderWidth));
   z-index: -1;
   animation: animated-gradient 3s ease alternate infinite;

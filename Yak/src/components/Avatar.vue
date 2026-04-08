@@ -39,7 +39,7 @@ watch(
   (newValue) => {
     setImageSources(newValue);
   },
-  { immediate: true }
+  { immediate: true },
 );
 </script>
 
@@ -52,17 +52,10 @@ watch(
       '--container-size': `${props.size * 1.2}px`,
     }"
   >
-    <img
-      v-if="decorationUrl"
-      class="avatar-decoration avatar"
-      :src="decorationUrl"
-    />
+    <img v-if="decorationUrl" class="avatar-decoration avatar" :src="decorationUrl" />
     <img
       class="avatar-icon avatar"
-      :src="
-        displayAvatarUrl ??
-        'https://1219391019515121716.discordsays.com/media/yak.png'
-      "
+      :src="displayAvatarUrl ?? 'https://1219391019515121716.discordsays.com/media/yak.png'"
     />
   </div>
 </template>

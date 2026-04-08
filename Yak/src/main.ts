@@ -1,25 +1,25 @@
-import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
-import { createPinia } from 'pinia'
-import { useDiscordStore } from './stores/discordStore'
-import { useGameStore } from './stores/gameStore'
+import { createApp } from "vue";
+import "./style.css";
+import App from "./App.vue";
+import { createPinia } from "pinia";
+import { useDiscordStore } from "./stores/discordStore";
+import { useGameStore } from "./stores/gameStore";
 
-const pinia = createPinia()
-const app = createApp(App)
+const pinia = createPinia();
+const app = createApp(App);
 
 app.use(pinia);
-app.mount('#app');
+app.mount("#app");
 
 const discord = useDiscordStore();
 const cable = useGameStore();
 
 (async () => {
-    await discord.setup();
-    await cable.setup(
-        discord.auth!.access_token,
-        discord.instanceId,
-        discord.currentUserData,
-        discord.auth!.user.id
-    );
-})()
+  await discord.setup();
+  await cable.setup(
+    discord.auth!.access_token,
+    discord.instanceId,
+    discord.currentUserData,
+    discord.auth!.user.id,
+  );
+})();

@@ -1,93 +1,93 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { shallowMount } from '@vue/test-utils';
-import AnimatedTypingComponent from './AnimatedTypingComponent.vue';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { shallowMount } from "@vue/test-utils";
+import AnimatedTypingComponent from "./AnimatedTypingComponent.vue";
 
-describe('AnimatedTypingComponent', () => {
-    beforeEach(() => {
-        vi.useFakeTimers();
+describe("AnimatedTypingComponent", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("should start with empty displayed text", () => {
+    const wrapper = shallowMount(AnimatedTypingComponent, {
+      props: { text: "Hello" },
     });
 
-    afterEach(() => {
-        vi.useRealTimers();
+    // Before any interval fires, displayedText is empty
+    // (the watch fires immediately but the first interval hasn't ticked yet)
+    expect(wrapper.find("p").text()).toBe("");
+  });
+
+  it("should type text character by character", async () => {
+    const wrapper = shallowMount(AnimatedTypingComponent, {
+      props: { text: "Hi" },
     });
 
-    it('should start with empty displayed text', () => {
-        const wrapper = shallowMount(AnimatedTypingComponent, {
-            props: { text: 'Hello' },
-        });
+    vi.advanceTimersByTime(80);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find("p").text()).toBe("H");
 
-        // Before any interval fires, displayedText is empty
-        // (the watch fires immediately but the first interval hasn't ticked yet)
-        expect(wrapper.find('p').text()).toBe('');
+    vi.advanceTimersByTime(80);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find("p").text()).toBe("Hi");
+  });
+
+  it("should have typing-cursor class while typing", () => {
+    const wrapper = shallowMount(AnimatedTypingComponent, {
+      props: { text: "Hello" },
     });
 
-    it('should type text character by character', async () => {
-        const wrapper = shallowMount(AnimatedTypingComponent, {
-            props: { text: 'Hi' },
-        });
+    expect(wrapper.find("p").classes()).toContain("typing-cursor");
+  });
 
-        vi.advanceTimersByTime(80);
-        await wrapper.vm.$nextTick();
-        expect(wrapper.find('p').text()).toBe('H');
-
-        vi.advanceTimersByTime(80);
-        await wrapper.vm.$nextTick();
-        expect(wrapper.find('p').text()).toBe('Hi');
+  it("should switch to blinking-out-cursor after typing completes", async () => {
+    const wrapper = shallowMount(AnimatedTypingComponent, {
+      props: { text: "AB" },
     });
 
-    it('should have typing-cursor class while typing', () => {
-        const wrapper = shallowMount(AnimatedTypingComponent, {
-            props: { text: 'Hello' },
-        });
+    // Type both characters plus one more tick to trigger the "else" branch
+    vi.advanceTimersByTime(80 * 3);
+    await wrapper.vm.$nextTick();
 
-        expect(wrapper.find('p').classes()).toContain('typing-cursor');
+    expect(wrapper.find("p").classes()).toContain("blinking-out-cursor");
+  });
+
+  it("should handle empty text by showing typing cursor", () => {
+    const wrapper = shallowMount(AnimatedTypingComponent, {
+      props: { text: "" },
     });
 
-    it('should switch to blinking-out-cursor after typing completes', async () => {
-        const wrapper = shallowMount(AnimatedTypingComponent, {
-            props: { text: 'AB' },
-        });
+    expect(wrapper.find("p").classes()).toContain("typing-cursor");
+    expect(wrapper.find("p").text()).toBe("");
+  });
 
-        // Type both characters plus one more tick to trigger the "else" branch
-        vi.advanceTimersByTime(80 * 3);
-        await wrapper.vm.$nextTick();
-
-        expect(wrapper.find('p').classes()).toContain('blinking-out-cursor');
+  it("should restart animation when text prop changes", async () => {
+    const wrapper = shallowMount(AnimatedTypingComponent, {
+      props: { text: "AB" },
     });
 
-    it('should handle empty text by showing typing cursor', () => {
-        const wrapper = shallowMount(AnimatedTypingComponent, {
-            props: { text: '' },
-        });
+    // Type out first text
+    vi.advanceTimersByTime(80 * 3);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find("p").text()).toBe("AB");
 
-        expect(wrapper.find('p').classes()).toContain('typing-cursor');
-        expect(wrapper.find('p').text()).toBe('');
-    });
+    // Change text prop
+    await wrapper.setProps({ text: "XY" });
 
-    it('should restart animation when text prop changes', async () => {
-        const wrapper = shallowMount(AnimatedTypingComponent, {
-            props: { text: 'AB' },
-        });
+    // Should reset
+    expect(wrapper.find("p").text()).toBe("");
+    expect(wrapper.find("p").classes()).toContain("typing-cursor");
 
-        // Type out first text
-        vi.advanceTimersByTime(80 * 3);
-        await wrapper.vm.$nextTick();
-        expect(wrapper.find('p').text()).toBe('AB');
+    // Type new text
+    vi.advanceTimersByTime(80);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find("p").text()).toBe("X");
 
-        // Change text prop
-        await wrapper.setProps({ text: 'XY' });
-
-        // Should reset
-        expect(wrapper.find('p').text()).toBe('');
-        expect(wrapper.find('p').classes()).toContain('typing-cursor');
-
-        // Type new text
-        vi.advanceTimersByTime(80);
-        await wrapper.vm.$nextTick();
-        expect(wrapper.find('p').text()).toBe('X');
-
-        vi.advanceTimersByTime(80);
-        await wrapper.vm.$nextTick();
-        expect(wrapper.find('p').text()).toBe('XY');
-    });
+    vi.advanceTimersByTime(80);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find("p").text()).toBe("XY");
+  });
 });

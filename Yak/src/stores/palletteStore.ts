@@ -12,7 +12,7 @@ function shuffleArray<T>(array: T[]) {
     array[j] = array[i];
     array[i] = temp;
   }
-};
+}
 
 const colors = [
   // Neon variants
@@ -45,9 +45,9 @@ export const usePalletteStore = defineStore("palletteStore", () => {
       acronymPallette.value = [];
       shuffleArray(colors);
       lastAcronym.value = acronym;
-      acronym.split('').forEach((_, index) => {
-        acronymPallette.value.push(colors[index % colors.length])
-      })
+      acronym.split("").forEach((_, index) => {
+        acronymPallette.value.push(colors[index % colors.length]);
+      });
     }
   }
 
