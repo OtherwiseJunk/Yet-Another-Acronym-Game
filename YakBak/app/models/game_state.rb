@@ -19,14 +19,8 @@ class GameState
   end
 
   def generate_new_acronym(round)
-    acronym = ''
     acronym_length = acronym_length_by_round round
-
-    (1..acronym_length).each do |_|
-      acronym << @alphabet.sample
-    end
-
-    acronym
+    Array.new(acronym_length) { @alphabet.sample }.join
   end
 
   def start_game
