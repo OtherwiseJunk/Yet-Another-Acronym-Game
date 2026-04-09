@@ -3,27 +3,54 @@ module GamePhases
   SUBMITTING = 1
   VOTING = 2
   RESULTS = 3
+  GAME_OVER = 4
+end
+
+module GameModes
+  FIXED_ROUNDS = 'fixed_rounds'.freeze
+  DEADLINE = 'deadline'.freeze
 end
 
 class GameState
   include GamePhases
-  attr_reader :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining,
-              :votes
+  include GameModes
+  attr_reader :round_number, :current_acronym, :scores, :submissions, :game_phase, :players,
+              :round_time_remaining, :votes, :game_mode, :max_rounds, :host_player_id
+
+  # Word-start frequency weights based on English dictionary analysis.
+  # Each value represents the relative likelihood of a word starting with that letter.
+  LETTER_WEIGHTS = {
+    'a' => 793, 'b' => 386, 'c' => 850, 'd' => 413, 'e' => 409,
+    'f' => 281, 'g' => 295, 'h' => 375, 'i' => 338, 'j' => 98,
+    'k' => 132, 'l' => 330, 'm' => 590, 'n' => 228, 'o' => 338,
+    'p' => 1153, 'q' => 156, 'r' => 343, 's' => 1045, 't' => 614,
+    'u' => 121, 'v' => 266, 'w' => 193, 'x' => 61, 'y' => 48,
+    'z' => 143
+  }.freeze
+
+  WEIGHTED_ALPHABET = LETTER_WEIGHTS.flat_map { |letter, weight| [letter] * weight }.freeze
 
   def initialize(player)
     @players = [player]
     @scores = {}
     @game_phase = UNSTARTED
     @round_number = 0
-    @alphabet = ('a'..'z').to_a
+    @host_player_id = player
+    @game_mode = nil
+    @max_rounds = nil
   end
 
   def generate_new_acronym(round)
     acronym_length = acronym_length_by_round round
-    Array.new(acronym_length) { @alphabet.sample }.join
+    Array.new(acronym_length) { WEIGHTED_ALPHABET.sample }.join
   end
 
-  def start_game
+  def configure_game(mode, max_rounds = nil)
+    @game_mode = mode
+    @max_rounds = max_rounds
+  end
+
+  def start_round
     @round_number += 1
     @current_acronym = generate_new_acronym(@round_number)
     @game_phase = SUBMITTING
@@ -40,19 +67,34 @@ class GameState
   end
 
   def next_phase
-    # based on current phased, a little counter-intuitively
     case @game_phase
     when SUBMITTING
-      @round_time_remaining = 20
-      @game_phase = VOTING
-      @votes = {}
+      if @game_mode == DEADLINE && @submissions.empty?
+        @game_phase = GAME_OVER
+        @round_time_remaining = 0
+      else
+        @round_time_remaining = 20
+        @game_phase = VOTING
+        @votes = {}
+      end
     when VOTING
       tally_votes
       @game_phase = RESULTS
       @round_time_remaining = 0
     else
-      Rails.logger.debug 'oh fuck.'
+      Rails.logger.debug 'Unexpected next_phase call'
     end
+  end
+
+  def should_end_game?
+    return false unless @game_phase == RESULTS
+    return false unless @game_mode == FIXED_ROUNDS
+
+    @round_number >= @max_rounds
+  end
+
+  def end_game
+    @game_phase = GAME_OVER
   end
 
   def handle_player_vote(voter_id, voted_for_id)
@@ -80,7 +122,10 @@ class GameState
       "game_phase" => @game_phase,
       "players" => @players,
       "round_time_remaining" => @round_time_remaining,
-      "votes" => @votes
+      "votes" => @votes,
+      "game_mode" => @game_mode,
+      "max_rounds" => @max_rounds,
+      "host_player_id" => @host_player_id
     }
   end
 
@@ -93,7 +138,9 @@ class GameState
     game.instance_variable_set(:@players, hash["players"])
     game.instance_variable_set(:@round_time_remaining, hash["round_time_remaining"])
     game.instance_variable_set(:@votes, hash["votes"] || {})
-    game.instance_variable_set(:@alphabet, ("a".."z").to_a)
+    game.instance_variable_set(:@game_mode, hash["game_mode"])
+    game.instance_variable_set(:@max_rounds, hash["max_rounds"])
+    game.instance_variable_set(:@host_player_id, hash["host_player_id"])
 
     submissions = (hash["submissions"] || {}).transform_values { |s| UserSubmission.from_hash(s) }
     game.instance_variable_set(:@submissions, submissions)
@@ -103,8 +150,8 @@ class GameState
 
   private
 
-  attr_writer :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining,
-              :votes
+  attr_writer :round_number, :current_acronym, :scores, :submissions, :game_phase, :players,
+              :round_time_remaining, :votes, :game_mode, :max_rounds, :host_player_id
 
   def tally_votes
     @votes.each_value do |voted_for_id|

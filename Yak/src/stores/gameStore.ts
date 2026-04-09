@@ -9,12 +9,11 @@ import {
   UserData,
   UserSubmission,
 } from "../models";
+import type { StartGameData } from "../models/CableCommands/startGameCommand";
 
 export const useGameStore = defineStore("gameCable", () => {
   const instanceGame = ref<Channel>();
-  const gameState = ref(
-    new GameState(0, 1, "", new Map<number, number>(), [], 0, new Map<number, UserSubmission>()),
-  );
+  const gameState = ref(new GameState(0, 1, "", {}, [], 0, {}));
   const accessToken = ref<string>();
   const instanceId = ref<string>();
   const currentUserData = ref<UserData>();
@@ -47,13 +46,13 @@ export const useGameStore = defineStore("gameCable", () => {
     );
   }
 
-  function startGame() {
+  function startGame(config?: StartGameData) {
     if (!instanceGame.value) {
       console.error("Game channel not connected");
       return;
     }
 
-    instanceGame.value.send(new StartGameCommand());
+    instanceGame.value.send(new StartGameCommand(config || null));
   }
 
   function submitAnswer(answer: string) {

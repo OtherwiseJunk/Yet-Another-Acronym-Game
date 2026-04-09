@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import SplashScreen from "./components/SplashScreen.vue";
 import AnswerSubmission from "./components/AnswerSubmissionScreen.vue";
 import VotingScreen from "./components/VotingScreen.vue";
+import GameOverScreen from "./components/GameOverScreen.vue";
 import { useGameStore } from "./stores/gameStore";
 import { useDiscordStore } from "./stores/discordStore";
 import { usePalletteStore } from "./stores/palletteStore";
 import { UserSubmission } from "./models/userSubmission";
+import type { StartGameData } from "./models/CableCommands/startGameCommand";
 
 const discord = useDiscordStore();
 const cable = useGameStore();
@@ -26,8 +28,11 @@ const animationComplete = ref(false);
 const acronym = ref("");
 const playerCount = ref(1);
 const roundTimeRemaining = ref(0);
+const hostPlayerId = ref<string | null>(null);
+const scores = ref<Record<string, number>>({});
+const players = ref<string[]>([]);
 
-let submissions: Map<number, UserSubmission>;
+let submissions: Record<string, UserSubmission> = {};
 cable.$subscribe((_, state) => {
   phase.value = state.gameState.game_phase;
   acronym.value = state.gameState.current_acronym;
@@ -35,13 +40,20 @@ cable.$subscribe((_, state) => {
   submissions = state.gameState.submissions;
   playerCount.value = state.gameState.players.length;
   roundTimeRemaining.value = state.gameState.round_time_remaining;
+  hostPlayerId.value = state.gameState.host_player_id;
+  scores.value = state.gameState.scores || {};
+  players.value = state.gameState.players || [];
+});
+
+const isHost = computed(() => {
+  return discord.auth?.user?.id === hostPlayerId.value;
 });
 
 function onComplete() {
   animationComplete.value = true;
 }
-function onStart() {
-  cable.startGame();
+function onStart(config: StartGameData) {
+  cable.startGame(config);
 }
 function onSubmit(answer: string) {
   cable.submitAnswer(answer);
@@ -52,14 +64,18 @@ function onVote(submissionUserId: string) {
 function onNextRound() {
   cable.startGame();
 }
+function onPlayAgain(config: StartGameData) {
+  cable.startGame(config);
+}
 </script>
 
 <template>
   <div class="yaag-root">
     <SplashScreen
-      v-if="phase === 0 || !animationComplete"
+      v-if="(phase === 0 || !animationComplete) && phase !== 4"
+      :isHost="isHost"
       @animation-complete="onComplete()"
-      @start="onStart()"
+      @start="(config) => onStart(config)"
     >
     </SplashScreen>
     <AnswerSubmission
@@ -80,6 +96,15 @@ function onNextRound() {
       @next-round="onNextRound()"
     >
     </VotingScreen>
+    <GameOverScreen
+      v-if="phase === 4"
+      :scores="scores"
+      :players="players"
+      :submissions="submissions"
+      :isHost="isHost"
+      @play-again="(config) => onPlayAgain(config)"
+    >
+    </GameOverScreen>
   </div>
 </template>
 
