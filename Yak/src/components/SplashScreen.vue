@@ -16,12 +16,12 @@
         <span class="mode-hint">Rounds continue until nobody submits an answer</span>
       </div>
       <div class="mode-option" @click="selectMode('fixed_rounds')">
-        <button class="font mode-btn fixed-btn">Fixed Rounds</button>
+        <button class="font mode-btn fixed-btn">Hard Stop</button>
         <span class="mode-hint">Play a set number of rounds, highest score wins</span>
       </div>
     </div>
 
-    <!-- Round count picker for fixed rounds -->
+    <!-- Round count picker for hard stop mode -->
     <div v-if="selectedMode === 'fixed_rounds'" class="round-picker">
       <p class="font round-label">How many rounds?</p>
       <div class="round-options">

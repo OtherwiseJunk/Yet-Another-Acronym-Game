@@ -47,7 +47,7 @@
     >
       <div v-if="!selectedMode" class="mode-buttons">
         <button class="font mode-btn" @click="selectedMode = 'deadline'">Deadline</button>
-        <button class="font mode-btn" @click="selectedMode = 'fixed_rounds'">Fixed Rounds</button>
+        <button class="font mode-btn" @click="selectedMode = 'fixed_rounds'">Hard Stop</button>
       </div>
       <div v-if="selectedMode === 'fixed_rounds'" class="round-picker">
         <div class="round-options">
