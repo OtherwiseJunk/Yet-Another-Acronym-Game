@@ -7,8 +7,8 @@ module GamePhases
 end
 
 module GameModes
-  FIXED_ROUNDS = 'fixed_rounds'
-  DEADLINE = 'deadline'
+  FIXED_ROUNDS = 'fixed_rounds'.freeze
+  DEADLINE = 'deadline'.freeze
 end
 
 class GameState

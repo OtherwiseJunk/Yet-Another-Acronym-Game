@@ -1,5 +1,6 @@
 class GameChannel < ApplicationCable::Channel
   @@timers_by_instance = {}
+  startable_game_phases = [GamePhases::UNSTARTED, GamePhases::RESULTS, GamePhases::GAME_OVER]
 
   def subscribed
     stream_from "game_#{params[:instance]}"
@@ -65,12 +66,10 @@ class GameChannel < ApplicationCable::Channel
   private
 
   def handle_start_game(instance, game_state, data)
-    return unless game_state.game_phase == GamePhases::UNSTARTED ||
-                  game_state.game_phase == GamePhases::RESULTS ||
-                  game_state.game_phase == GamePhases::GAME_OVER
+    return unless startable_game_phases.include?(game_state.game_phase)
 
     if game_state.game_phase == GamePhases::UNSTARTED || game_state.game_phase == GamePhases::GAME_OVER
-      mode = data&.fetch('mode', nil) || GameModes::FIXED_ROUNDS
+      mode = data&.fetch('mode', GameModes::FIXED_ROUNDS)
       max_rounds = data&.fetch('max_rounds', nil) || 10
       game_state.configure_game(mode, max_rounds.to_i)
 
