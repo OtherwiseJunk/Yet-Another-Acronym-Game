@@ -1,6 +1,6 @@
 class RedisGameStore
-  KEY_PREFIX = "yaag:game:"
-  SUB_PREFIX = "yaag:subs:"
+  KEY_PREFIX = "yaag:game:".freeze
+  SUB_PREFIX = "yaag:subs:".freeze
 
   def self.get(instance_id)
     data = REDIS.get("#{KEY_PREFIX}#{instance_id}")

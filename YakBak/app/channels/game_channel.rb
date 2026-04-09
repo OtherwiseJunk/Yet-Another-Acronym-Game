@@ -115,15 +115,15 @@ class GameChannel < ApplicationCable::Channel
     RedisGameStore.set(instance, game_state)
     ActionCable.server.broadcast("game_#{instance}", game_state)
 
-    if game_state.game_phase == GamePhases::VOTING
-      if game_state.players.count < 3
-        Rails.logger.debug 'Less than 3 total players, skipping voting'
-        game_state.next_phase
-        RedisGameStore.set(instance, game_state)
-        ActionCable.server.broadcast("game_#{instance}", game_state)
-      else
-        start_countdown(instance)
-      end
+    return unless game_state.game_phase == GamePhases::VOTING
+
+    if game_state.players.count < 3
+      Rails.logger.debug 'Less than 3 total players, skipping voting'
+      game_state.next_phase
+      RedisGameStore.set(instance, game_state)
+      ActionCable.server.broadcast("game_#{instance}", game_state)
+    else
+      start_countdown(instance)
     end
   end
 

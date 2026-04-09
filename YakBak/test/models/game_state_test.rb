@@ -217,10 +217,9 @@ class GameStateTest < ActiveSupport::TestCase
 
   test 'round trip through JSON preserves submissions' do
     @game.start_game
-    @game.handle_player_submission('discord-123', {
-      'submission' => 'Test Answer',
-      'user_data' => { 'displayName' => 'Tester' }
-    })
+    @game.handle_player_submission('discord-123',
+                                    'submission' => 'Test Answer',
+                                    'user_data' => { 'displayName' => 'Tester' })
 
     json = JSON.generate(@game.to_hash)
     restored = GameState.from_hash(JSON.parse(json))

@@ -69,10 +69,9 @@ class RedisGameStoreTest < ActiveSupport::TestCase
 
   test 'preserves submissions through round trip' do
     @game.start_game
-    @game.handle_player_submission('discord-123', {
-      'submission' => 'Great Answer',
-      'user_data' => { 'displayName' => 'Tester' }
-    })
+    @game.handle_player_submission('discord-123',
+                                    'submission' => 'Great Answer',
+                                    'user_data' => { 'displayName' => 'Tester' })
 
     RedisGameStore.set(@instance_id, @game)
     restored = RedisGameStore.get(@instance_id)

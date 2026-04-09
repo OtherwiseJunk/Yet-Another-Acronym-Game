@@ -62,8 +62,8 @@ class GameState
   end
 
   def handle_player_vote(voter_id, voted_for_id)
-    return if voter_id == voted_for_id 
-    return if @votes.key?(voter_id)    
+    return if voter_id == voted_for_id
+    return if @votes.key?(voter_id)
 
     @votes[voter_id] = voted_for_id
   end
