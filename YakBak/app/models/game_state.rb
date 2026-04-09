@@ -17,12 +17,24 @@ class GameState
   attr_reader :round_number, :current_acronym, :scores, :submissions, :game_phase, :players,
               :round_time_remaining, :votes, :game_mode, :max_rounds, :host_player_id
 
+  # Word-start frequency weights based on English dictionary analysis.
+  # Each value represents the relative likelihood of a word starting with that letter.
+  LETTER_WEIGHTS = {
+    'a' => 793, 'b' => 386, 'c' => 850, 'd' => 413, 'e' => 409,
+    'f' => 281, 'g' => 295, 'h' => 375, 'i' => 338, 'j' => 98,
+    'k' => 132, 'l' => 330, 'm' => 590, 'n' => 228, 'o' => 338,
+    'p' => 1153, 'q' => 156, 'r' => 343, 's' => 1045, 't' => 614,
+    'u' => 121, 'v' => 266, 'w' => 193, 'x' => 61, 'y' => 48,
+    'z' => 143
+  }.freeze
+
+  WEIGHTED_ALPHABET = LETTER_WEIGHTS.flat_map { |letter, weight| [letter] * weight }.freeze
+
   def initialize(player)
     @players = [player]
     @scores = {}
     @game_phase = UNSTARTED
     @round_number = 0
-    @alphabet = ('a'..'z').to_a
     @host_player_id = player
     @game_mode = nil
     @max_rounds = nil
@@ -30,7 +42,7 @@ class GameState
 
   def generate_new_acronym(round)
     acronym_length = acronym_length_by_round round
-    Array.new(acronym_length) { @alphabet.sample }.join
+    Array.new(acronym_length) { WEIGHTED_ALPHABET.sample }.join
   end
 
   def configure_game(mode, max_rounds = nil)
@@ -126,7 +138,6 @@ class GameState
     game.instance_variable_set(:@players, hash["players"])
     game.instance_variable_set(:@round_time_remaining, hash["round_time_remaining"])
     game.instance_variable_set(:@votes, hash["votes"] || {})
-    game.instance_variable_set(:@alphabet, ("a".."z").to_a)
     game.instance_variable_set(:@game_mode, hash["game_mode"])
     game.instance_variable_set(:@max_rounds, hash["max_rounds"])
     game.instance_variable_set(:@host_player_id, hash["host_player_id"])
