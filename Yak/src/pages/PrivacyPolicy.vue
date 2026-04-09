@@ -1,5 +1,6 @@
 <template>
-  <div class="legal-page">
+  <div class="legal-wrapper">
+    <div class="legal-page">
     <h1>Privacy Policy</h1>
     <p class="effective-date">Effective Date: April 9, 2026</p>
 
@@ -108,10 +109,18 @@
       If you have questions or concerns about this Privacy Policy, contact us at
       <a href="mailto:OtherwiseJunk@gmail.com">OtherwiseJunk@gmail.com</a>.
     </p>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.legal-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  overflow-y: auto;
+  align-self: flex-start;
+}
+
 .legal-page {
   max-width: 800px;
   margin: 0 auto;
