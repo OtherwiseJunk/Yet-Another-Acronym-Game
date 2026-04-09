@@ -19,7 +19,7 @@ class GameStateTest < ActiveSupport::TestCase
     assert_equal 60, @game.round_time_remaining
     assert_empty @game.submissions
     assert_kind_of String, @game.current_acronym
-    refute_empty @game.current_acronym
+    assert_not_empty @game.current_acronym
   end
 
   test 'start_game increments round number on subsequent calls' do
@@ -116,5 +116,79 @@ class GameStateTest < ActiveSupport::TestCase
     @game.handle_player_submission('discord-123', submission_data)
 
     assert_equal 5, @game.submissions['discord-123'].answer_time
+  end
+
+  test 'handle_player_vote records a vote' do
+    @game.start_game
+    @game.next_phase # -> voting
+
+    @game.handle_player_vote('voter-1', 'player-1')
+
+    assert_equal 'player-1', @game.votes['voter-1']
+  end
+
+  test 'handle_player_vote prevents voting for yourself' do
+    @game.start_game
+    @game.next_phase
+
+    @game.handle_player_vote('player-1', 'player-1')
+
+    assert_empty @game.votes
+  end
+
+  test 'handle_player_vote prevents double voting' do
+    @game.start_game
+    @game.next_phase
+
+    @game.handle_player_vote('voter-1', 'player-1')
+    @game.handle_player_vote('voter-1', 'player-2')
+
+    assert_equal 'player-1', @game.votes['voter-1']
+  end
+
+  test 'votes are tallied into scores when transitioning to results' do
+    @game.add_player_to_game('player-2')
+    @game.add_player_to_game('player-3')
+    @game.start_game
+    @game.next_phase # -> voting
+
+    @game.handle_player_vote('player-2', 'player-1')
+    @game.handle_player_vote('player-3', 'player-1')
+
+    @game.next_phase # -> results (tallies votes)
+
+    assert_equal 2, @game.scores['player-1']
+  end
+
+  test 'scores accumulate across rounds' do
+    @game.add_player_to_game('player-2')
+    @game.add_player_to_game('player-3')
+
+    # Round 1
+    @game.start_game
+    @game.next_phase # -> voting
+    @game.handle_player_vote('player-2', 'player-1')
+    @game.next_phase # -> results
+
+    # Round 2
+    @game.start_game
+    @game.next_phase # -> voting
+    @game.handle_player_vote('player-3', 'player-1')
+    @game.next_phase # -> results
+
+    assert_equal 2, @game.scores['player-1']
+  end
+
+  test 'players with no votes get no score entry' do
+    @game.add_player_to_game('player-2')
+    @game.add_player_to_game('player-3')
+    @game.start_game
+    @game.next_phase # -> voting
+    @game.handle_player_vote('player-2', 'player-1')
+    @game.next_phase # -> results
+
+    assert_equal 1, @game.scores['player-1']
+    assert_nil @game.scores['player-2']
+    assert_nil @game.scores['player-3']
   end
 end

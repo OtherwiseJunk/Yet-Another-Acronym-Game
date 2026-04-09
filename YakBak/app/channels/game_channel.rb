@@ -1,30 +1,32 @@
 class GameChannel < ApplicationCable::Channel
-  @@gameStateByInstance = {}
-  @@subscriptionCountByInstance = {}
+  @@game_state_by_instance = {}
+  @@subscription_count_by_instance = {}
+  @@timers_by_instance = {}
 
   def subscribed
     stream_from "game_#{params[:instance]}"
 
-    increment_subcription_count params[:instance]
+    increment_subscription_count params[:instance]
     add_player_to_game params[:discordUserId]
 
     broadcast_game_state
   end
 
   def unsubscribed
-    @@subscriptionCountByInstance[params[:instance]] -= 1
-    @@gameStateByInstance[params[:instance]].remove_player_from_game params[:discordUserId]
+    @@subscription_count_by_instance[params[:instance]] -= 1
+    @@game_state_by_instance[params[:instance]].remove_player_from_game params[:discordUserId]
 
-    return unless (@@subscriptionCountByInstance[params[:instance]]).zero?
+    return unless @@subscription_count_by_instance[params[:instance]].zero?
 
     Rails.logger.debug { "Last user has disconnected from instance #{params[:instance]}. Cleaning up..." }
 
-    @@subscriptionCountByInstance = @@subscriptionCountByInstance.delete([params[:instance]]) || {}
-    @@gameStateByInstance = @@gameStateByInstance.delete([params[:instance]]) || {}
+    cancel_timer params[:instance]
+    @@subscription_count_by_instance.delete(params[:instance])
+    @@game_state_by_instance.delete(params[:instance])
   end
 
   def receive(command)
-    game_state = @@gameStateByInstance[params[:instance]]
+    game_state = @@game_state_by_instance[params[:instance]]
     case command['type']
     when 0
       Rails.logger.debug 'received game start request'
@@ -32,65 +34,85 @@ class GameChannel < ApplicationCable::Channel
         Rails.logger.debug 'starting game...'
         game_state.start_game
         broadcast_game_state
-        sleep(3)
-        broadcast_round_countdown game_state
-        if game_state.players.count < 3
-          Rails.logger.debug 'Less than 3 total players, skipping voting'
-          game_state.next_phase
-          broadcast_game_state
-        else
-          broadcast_round_countdown game_state
+        Concurrent::ScheduledTask.execute(3) do
+          start_countdown params[:instance], game_state
         end
-
       end
     when 1
       Rails.logger.debug 'received submission from '
       game_state.handle_player_submission params[:discordUserId], command['data']
+      broadcast_game_state
+      if game_state.submissions.count == game_state.players.count
+        Rails.logger.debug 'All players have submitted answers, ending countdown early.'
+        cancel_timer params[:instance]
+        on_countdown_complete params[:instance], game_state
+      end
+    when 2
+      Rails.logger.debug 'received vote'
+      game_state.handle_player_vote params[:discordUserId], command['data']
+      broadcast_game_state
     end
   end
 
-  def increment_subcription_count(_instance)
-    if @@subscriptionCountByInstance.key?(params[:instance])
-      @@subscriptionCountByInstance[params[:instance]] += 1
+  def increment_subscription_count(_instance)
+    if @@subscription_count_by_instance.key?(params[:instance])
+      @@subscription_count_by_instance[params[:instance]] += 1
     else
-      @@subscriptionCountByInstance[params[:instance]] = 1
+      @@subscription_count_by_instance[params[:instance]] = 1
     end
   end
 
   def add_player_to_game(player)
-    if @@gameStateByInstance.key?(params[:instance])
-      @@gameStateByInstance[params[:instance]].add_player_to_game player
+    if @@game_state_by_instance.key?(params[:instance])
+      @@game_state_by_instance[params[:instance]].add_player_to_game player
     else
-      @@gameStateByInstance[params[:instance]] = GameState.new player
+      @@game_state_by_instance[params[:instance]] = GameState.new player
     end
   end
 
   def broadcast_game_state
-    ActionCable.server.broadcast("game_#{params[:instance]}", @@gameStateByInstance[params[:instance]])
+    ActionCable.server.broadcast("game_#{params[:instance]}", @@game_state_by_instance[params[:instance]])
   end
 
-  def broadcast_round_countdown(game_state)
-    while game_state.round_time_remaining.positive?
-      game_state.round_second_elapsed
-      sleep(1)
+  private
 
-      if (game_state.game_phase == 1) && (game_state.submissions.count == game_state.players.count)
-        Rails.logger.debug 'All players have submitted answers, bailing on countdown.'
-        break
-      end
+  def start_countdown(instance, game_state)
+    cancel_timer(instance)
 
-      unless @@gameStateByInstance.key?(params[:instance])
+    timer = Concurrent::TimerTask.new(execution_interval: 1, run_now: true) do
+      if !@@game_state_by_instance.key?(instance)
         Rails.logger.debug 'Game has ended, bailing on countdown.'
-        break
+        cancel_timer(instance)
+      elsif game_state.round_time_remaining <= 0
+        cancel_timer(instance)
+        on_countdown_complete(instance, game_state)
+      else
+        game_state.round_second_elapsed
+        ActionCable.server.broadcast("game_#{instance}", game_state)
       end
-      broadcast_game_state
     end
 
-    unless @@gameStateByInstance.key?(params[:instance])
-      Rails.logger.debug 'Game has ended, bailing on countdown.'
-      return
-    end
+    @@timers_by_instance[instance] = timer
+    timer.execute
+  end
+
+  def on_countdown_complete(instance, game_state)
     game_state.next_phase
-    broadcast_game_state
+    ActionCable.server.broadcast("game_#{instance}", game_state)
+
+    if game_state.game_phase == GamePhases::VOTING
+      if game_state.players.count < 3
+        Rails.logger.debug 'Less than 3 total players, skipping voting'
+        game_state.next_phase
+        ActionCable.server.broadcast("game_#{instance}", game_state)
+      else
+        start_countdown(instance, game_state)
+      end
+    end
+  end
+
+  def cancel_timer(instance)
+    timer = @@timers_by_instance.delete(instance)
+    timer&.shutdown
   end
 end

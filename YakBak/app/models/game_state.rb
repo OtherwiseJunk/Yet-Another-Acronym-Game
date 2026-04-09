@@ -53,6 +53,7 @@ class GameState
       @game_phase = VOTING
       @votes = {}
     when VOTING
+      tally_votes
       @game_phase = RESULTS
       @round_time_remaining = 0
     else
@@ -60,7 +61,12 @@ class GameState
     end
   end
 
-  def handle_player_vote; end
+  def handle_player_vote(voter_id, voted_for_id)
+    return if voter_id == voted_for_id 
+    return if @votes.key?(voter_id)    
+
+    @votes[voter_id] = voted_for_id
+  end
 
   def round_second_elapsed
     @round_time_remaining -= 1
@@ -75,6 +81,12 @@ class GameState
 
   attr_writer :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining,
               :votes
+
+  def tally_votes
+    @votes.each_value do |voted_for_id|
+      @scores[voted_for_id] = (@scores[voted_for_id] || 0) + 1
+    end
+  end
 
   def acronym_length_by_round(round)
     case round

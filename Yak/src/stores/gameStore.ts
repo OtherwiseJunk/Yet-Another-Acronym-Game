@@ -1,12 +1,19 @@
 import { Channel, createConsumer } from "@rails/actioncable";
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { GameState, StartGameCommand, SubmitAnswerCommand, UserData, UserSubmission } from "../models";
+import {
+  GameState,
+  StartGameCommand,
+  SubmitAnswerCommand,
+  SubmitVoteCommand,
+  UserData,
+  UserSubmission,
+} from "../models";
 
 export const useGameStore = defineStore("gameCable", () => {
   const instanceGame = ref<Channel>();
   const gameState = ref(
-    new GameState(0, 1, "", new Map<number, number>(), [], 0, new Map<number, UserSubmission>())
+    new GameState(0, 1, "", new Map<number, number>(), [], 0, new Map<number, UserSubmission>()),
   );
   const accessToken = ref<string>();
   const instanceId = ref<string>();
@@ -24,9 +31,7 @@ export const useGameStore = defineStore("gameCable", () => {
   function connectToCable() {
     console.log("Connect to cable called");
     console.log(`Discord Instance ID: ${instanceId.value}`);
-    const consumer = createConsumer(
-      `/.proxy/api/cable?token=${accessToken.value}`
-    );
+    const consumer = createConsumer(`/.proxy/api/cable?token=${accessToken.value}`);
     consumer.connect();
     instanceGame.value = consumer.subscriptions.create(
       {
@@ -38,7 +43,7 @@ export const useGameStore = defineStore("gameCable", () => {
         received(data: GameState) {
           gameState.value = data;
         },
-      }
+      },
     );
   }
 
@@ -57,8 +62,19 @@ export const useGameStore = defineStore("gameCable", () => {
       return;
     }
 
-    instanceGame.value.send(new SubmitAnswerCommand(new UserSubmission(answer, 0, currentUserData.value)))
+    instanceGame.value.send(
+      new SubmitAnswerCommand(new UserSubmission(answer, 0, currentUserData.value)),
+    );
   }
 
-  return { setup, gameState, startGame, submitAnswer };
+  function submitVote(votedForUserId: string) {
+    if (!instanceGame.value) {
+      console.error("Game channel not connected");
+      return;
+    }
+
+    instanceGame.value.send(new SubmitVoteCommand(votedForUserId));
+  }
+
+  return { setup, gameState, startGame, submitAnswer, submitVote };
 });
