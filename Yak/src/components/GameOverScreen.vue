@@ -41,7 +41,7 @@
     </div>
 
     <div
-      v-if="allRevealed && props.isHost"
+      v-if="allRevealed"
       class="play-again-container entry-reveal"
       :style="{ animationDelay: `${revealedEntries.length * 0.6 + 0.3}s` }"
     >
@@ -68,13 +68,6 @@
       </div>
     </div>
 
-    <div
-      v-if="allRevealed && !props.isHost"
-      class="play-again-container entry-reveal"
-      :style="{ animationDelay: `${revealedEntries.length * 0.6 + 0.3}s` }"
-    >
-      <p class="font waiting-text">Waiting for host...</p>
-    </div>
   </div>
 </template>
 
@@ -96,10 +89,6 @@ const props = defineProps({
   },
   submissions: {
     type: Object,
-    required: true,
-  },
-  isHost: {
-    type: Boolean,
     required: true,
   },
 });

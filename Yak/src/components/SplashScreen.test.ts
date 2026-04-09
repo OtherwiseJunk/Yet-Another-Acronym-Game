@@ -59,14 +59,13 @@ describe("SplashScreen", () => {
     expect(wrapper.emitted("start")![0]).toEqual([{ mode: "deadline", max_rounds: null }]);
   });
 
-  it("should show waiting text for non-host", async () => {
+  it("should show mode selection for all players after delay", async () => {
     const wrapper = shallowMount(SplashScreen, { props: { isHost: false } });
 
     vi.advanceTimersByTime(5700);
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.find(".waiting-text").exists()).toBe(true);
-    expect(wrapper.find(".mode-selection").exists()).toBe(false);
+    expect(wrapper.find(".mode-selection").exists()).toBe(true);
   });
 
   it("should render the Acronym component with YAAG letters", () => {

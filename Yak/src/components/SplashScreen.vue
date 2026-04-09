@@ -8,8 +8,8 @@
     ></AnimatedTypingComponent>
   </div>
 
-  <!-- Host: mode selection -->
-  <div v-if="displayStartButton && props.isHost" class="mode-selection">
+  <!-- Mode selection — any player can start -->
+  <div v-if="displayStartButton" class="mode-selection">
     <div v-if="!selectedMode" class="mode-buttons">
       <div class="mode-option" @click="selectMode('deadline')">
         <button class="font mode-btn deadline-btn">Deadline</button>
@@ -43,11 +43,6 @@
       <p class="font deadline-text">Last one standing wins</p>
       <button class="font start-btn go-btn" @click="startWithConfig()">Go</button>
     </div>
-  </div>
-
-  <!-- Non-host: waiting message -->
-  <div v-if="displayStartButton && !props.isHost" class="waiting">
-    <p class="font waiting-text">Waiting for host to pick a mode...</p>
   </div>
 </template>
 
@@ -234,12 +229,7 @@ import AnimatedTypingComponent from "./AnimatedTypingComponent.vue";
 import { ref } from "vue";
 import { usePalletteStore } from "../stores/palletteStore";
 
-const props = defineProps({
-  isHost: {
-    type: Boolean,
-    required: true,
-  },
-});
+defineProps({});
 
 const letterArray = ["Y", "A", "A", "G"];
 const fullText = "Yet Another Acronym Game";

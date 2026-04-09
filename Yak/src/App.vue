@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import SplashScreen from "./components/SplashScreen.vue";
 import AnswerSubmission from "./components/AnswerSubmissionScreen.vue";
 import VotingScreen from "./components/VotingScreen.vue";
@@ -28,7 +28,6 @@ const animationComplete = ref(false);
 const acronym = ref("");
 const playerCount = ref(1);
 const roundTimeRemaining = ref(0);
-const hostPlayerId = ref<string | null>(null);
 const scores = ref<Record<string, number>>({});
 const players = ref<string[]>([]);
 
@@ -40,13 +39,8 @@ cable.$subscribe((_, state) => {
   submissions = state.gameState.submissions;
   playerCount.value = state.gameState.players.length;
   roundTimeRemaining.value = state.gameState.round_time_remaining;
-  hostPlayerId.value = state.gameState.host_player_id;
   scores.value = state.gameState.scores || {};
   players.value = state.gameState.players || [];
-});
-
-const isHost = computed(() => {
-  return discord.auth?.user?.id === hostPlayerId.value;
 });
 
 function onComplete() {
@@ -73,7 +67,6 @@ function onPlayAgain(config: StartGameData) {
   <div class="yaag-root">
     <SplashScreen
       v-if="(phase === 0 || !animationComplete) && phase !== 4"
-      :isHost="isHost"
       @animation-complete="onComplete()"
       @start="(config) => onStart(config)"
     >
@@ -101,7 +94,6 @@ function onPlayAgain(config: StartGameData) {
       :scores="scores"
       :players="players"
       :submissions="submissions"
-      :isHost="isHost"
       @play-again="(config) => onPlayAgain(config)"
     >
     </GameOverScreen>
