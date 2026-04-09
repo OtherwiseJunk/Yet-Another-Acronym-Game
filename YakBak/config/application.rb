@@ -31,8 +31,8 @@ module YakBak
     config.action_cable.allowed_request_origins = [
       nil,
       'https://1219391019515121716.discordsays.com',
-      'https://purchasing-primarily-resolution-void.trycloudflare.com',
-      'https://yak.cacheblasters.com'
+      'https://yak.cacheblasters.com',
+      'https://yakbak.cacheblasters.com'
     ]
   end
 end
