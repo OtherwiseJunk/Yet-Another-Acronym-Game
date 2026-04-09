@@ -9,7 +9,6 @@ class TokensController < ApplicationController
     }
 
     response = HTTParty.post(uri, body: body)
-    Rails.logger.debug response
 
     if response.code == 200
       render json: JSON.parse(response.body)

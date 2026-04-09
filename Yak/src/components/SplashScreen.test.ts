@@ -21,42 +21,56 @@ describe("SplashScreen", () => {
     vi.useRealTimers();
   });
 
-  it("should not show start button initially", () => {
-    const wrapper = shallowMount(SplashScreen);
+  it("should not show mode selection initially", () => {
+    const wrapper = shallowMount(SplashScreen, { props: { isHost: true } });
 
-    expect(wrapper.find(".start-btn").exists()).toBe(false);
+    expect(wrapper.find(".mode-selection").exists()).toBe(false);
   });
 
-  it("should show start button after delay", async () => {
-    const wrapper = shallowMount(SplashScreen);
+  it("should show mode selection after delay for host", async () => {
+    const wrapper = shallowMount(SplashScreen, { props: { isHost: true } });
 
     vi.advanceTimersByTime(5700);
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.find(".start-btn").exists()).toBe(true);
+    expect(wrapper.find(".mode-selection").exists()).toBe(true);
   });
 
   it("should emit animation-complete after 5500ms", () => {
-    const wrapper = shallowMount(SplashScreen);
+    const wrapper = shallowMount(SplashScreen, { props: { isHost: true } });
 
     vi.advanceTimersByTime(5500);
 
     expect(wrapper.emitted("animation-complete")).toHaveLength(1);
   });
 
-  it("should emit start when start button is clicked", async () => {
-    const wrapper = shallowMount(SplashScreen);
+  it("should emit start with config when deadline mode is selected", async () => {
+    const wrapper = shallowMount(SplashScreen, { props: { isHost: true } });
 
     vi.advanceTimersByTime(5700);
     await wrapper.vm.$nextTick();
 
-    await wrapper.find(".start-btn").trigger("click");
+    await wrapper.find(".deadline-btn").trigger("click");
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find(".go-btn").trigger("click");
 
     expect(wrapper.emitted("start")).toHaveLength(1);
+    expect(wrapper.emitted("start")![0]).toEqual([{ mode: "deadline", max_rounds: null }]);
+  });
+
+  it("should show waiting text for non-host", async () => {
+    const wrapper = shallowMount(SplashScreen, { props: { isHost: false } });
+
+    vi.advanceTimersByTime(5700);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(".waiting-text").exists()).toBe(true);
+    expect(wrapper.find(".mode-selection").exists()).toBe(false);
   });
 
   it("should render the Acronym component with YAAG letters", () => {
-    const wrapper = shallowMount(SplashScreen);
+    const wrapper = shallowMount(SplashScreen, { props: { isHost: true } });
     const acronym = wrapper.findComponent({ name: "Acronym" });
 
     expect(acronym.exists()).toBe(true);
@@ -64,7 +78,7 @@ describe("SplashScreen", () => {
   });
 
   it("should show AnimatedTypingComponent after 2300ms", async () => {
-    const wrapper = shallowMount(SplashScreen);
+    const wrapper = shallowMount(SplashScreen, { props: { isHost: true } });
 
     expect(wrapper.findComponent({ name: "AnimatedTypingComponent" }).exists()).toBe(false);
 

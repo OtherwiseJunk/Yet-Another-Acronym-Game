@@ -41,31 +41,11 @@ class GameChannel < ApplicationCable::Channel
 
     case command['type']
     when 0
-      Rails.logger.debug 'received game start request'
-      if game_state.game_phase.zero? || (game_state.game_phase == 3)
-        Rails.logger.debug 'starting game...'
-        game_state.start_game
-        RedisGameStore.set(instance, game_state)
-        broadcast_game_state
-        Concurrent::ScheduledTask.execute(3) do
-          start_countdown instance
-        end
-      end
+      handle_start_game(instance, game_state, command['data'])
     when 1
-      Rails.logger.debug 'received submission from '
-      game_state.handle_player_submission params[:discordUserId], command['data']
-      RedisGameStore.set(instance, game_state)
-      broadcast_game_state
-      if game_state.submissions.count == game_state.players.count
-        Rails.logger.debug 'All players have submitted answers, ending countdown early.'
-        cancel_timer instance
-        on_countdown_complete instance
-      end
+      handle_submission(instance, game_state, command['data'])
     when 2
-      Rails.logger.debug 'received vote'
-      game_state.handle_player_vote params[:discordUserId], command['data']
-      RedisGameStore.set(instance, game_state)
-      broadcast_game_state
+      handle_vote(instance, game_state, command['data'])
     end
   end
 
@@ -88,6 +68,48 @@ class GameChannel < ApplicationCable::Channel
   end
 
   private
+
+  def handle_start_game(instance, game_state, data)
+    return unless STARTABLE_GAME_PHASES.include?(game_state.game_phase)
+
+    if UNSTARTED_OR_FINISHED_GAME_PHASES.include?(game_state.game_phase)
+      mode = data&.fetch('mode', GameModes::FIXED_ROUNDS)
+      max_rounds = data&.fetch('max_rounds', nil) || 10
+      game_state.configure_game(mode, max_rounds.to_i)
+
+      # Reset for new game if coming from GAME_OVER
+      if game_state.game_phase == GamePhases::GAME_OVER
+        game_state.instance_variable_set(:@scores, {})
+        game_state.instance_variable_set(:@round_number, 0)
+      end
+    end
+
+    game_state.start_round
+    RedisGameStore.set(instance, game_state)
+    broadcast_game_state
+
+    Concurrent::ScheduledTask.execute(3) do
+      start_countdown instance
+    end
+  end
+
+  def handle_submission(instance, game_state, data)
+    game_state.handle_player_submission params[:discordUserId], data
+    RedisGameStore.set(instance, game_state)
+    broadcast_game_state
+
+    return unless game_state.submissions.count == game_state.players.count
+
+    Rails.logger.debug 'All players have submitted answers, ending countdown early.'
+    cancel_timer instance
+    on_countdown_complete instance
+  end
+
+  def handle_vote(instance, game_state, data)
+    game_state.handle_player_vote params[:discordUserId], data
+    RedisGameStore.set(instance, game_state)
+    broadcast_game_state
+  end
 
   def start_countdown(instance)
     cancel_timer(instance)
@@ -120,16 +142,30 @@ class GameChannel < ApplicationCable::Channel
     RedisGameStore.set(instance, game_state)
     ActionCable.server.broadcast("game_#{instance}", game_state)
 
-    return unless game_state.game_phase == GamePhases::VOTING
+    # If deadline mode ended the game during next_phase (no submissions), we're done
+    return if game_state.game_phase == GamePhases::GAME_OVER
 
-    if game_state.players.count < 3
-      Rails.logger.debug 'Less than 3 total players, skipping voting'
-      game_state.next_phase
-      RedisGameStore.set(instance, game_state)
-      ActionCable.server.broadcast("game_#{instance}", game_state)
-    else
-      start_countdown(instance)
+    if game_state.game_phase == GamePhases::RESULTS
+      check_game_end(instance, game_state)
+    elsif game_state.game_phase == GamePhases::VOTING
+      if game_state.players.count < 3
+        Rails.logger.debug 'Less than 3 total players, skipping voting'
+        game_state.next_phase
+        RedisGameStore.set(instance, game_state)
+        ActionCable.server.broadcast("game_#{instance}", game_state)
+        check_game_end(instance, game_state)
+      else
+        start_countdown(instance)
+      end
     end
+  end
+
+  def check_game_end(instance, game_state)
+    return unless game_state.should_end_game?
+
+    game_state.end_game
+    RedisGameStore.set(instance, game_state)
+    ActionCable.server.broadcast("game_#{instance}", game_state)
   end
 
   def cancel_timer(instance)

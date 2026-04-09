@@ -1,8 +1,12 @@
-import { ICableCommand } from "./command.interface";
+import { ICableCommandWithPayload } from "./command.interface";
 import { CommandType } from "./commandType.enum";
 
-export class StartGameCommand implements ICableCommand {
+export interface StartGameData {
+  mode: string;
+  max_rounds: number | null;
+}
+
+export class StartGameCommand implements ICableCommandWithPayload<StartGameData | null> {
   public type = CommandType.StartGame;
-  public data = null;
-  constructor() {}
+  constructor(public data: StartGameData | null = null) {}
 }
