@@ -65,6 +65,7 @@ function onNextRound() {
     <AnswerSubmission
       :timeRemaining="roundTimeRemaining"
       :acronym="acronym"
+      :colorPallette="colors.acronymPallette"
       v-if="phase === 1 && animationComplete"
       @submit="(answer) => onSubmit(answer)"
     >

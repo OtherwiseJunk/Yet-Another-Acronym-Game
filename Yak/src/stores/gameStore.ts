@@ -18,9 +18,9 @@ export const useGameStore = defineStore("gameCable", () => {
   const accessToken = ref<string>();
   const instanceId = ref<string>();
   const currentUserData = ref<UserData>();
-  const currentUserId = ref<number>();
+  const currentUserId = ref<string>();
 
-  function setup(token: string, instance: string, userData: UserData, userId: number) {
+  function setup(token: string, instance: string, userData: UserData, userId: string) {
     console.log("Attempting to setup cable");
     accessToken.value = token;
     instanceId.value = instance;

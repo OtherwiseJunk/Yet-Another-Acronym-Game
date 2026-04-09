@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toRef } from "vue";
+import { computed, ref } from "vue";
 import WaitingForOtherPlayersComponent from "./WaitingForOtherPlayersComponent.vue";
 import Acronym from "./Acronym.vue";
 import { useDynamicTextColor } from "../composables/useDynamicTextColor";

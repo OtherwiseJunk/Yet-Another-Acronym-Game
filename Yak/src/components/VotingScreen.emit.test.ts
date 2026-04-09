@@ -70,7 +70,7 @@ describe("VotingScreen - emits", () => {
     // The controls div uses v-show with resultsMode, so it exists but is hidden
     const controls = wrapper.find(".controls");
     expect(controls.exists()).toBe(true);
-    expect(controls.element.style.display).toBe("none");
+    expect((controls.element as HTMLElement).style.display).toBe("none");
   });
 
   it("should display skip voting message when skipVoting is true", () => {

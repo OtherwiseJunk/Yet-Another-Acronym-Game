@@ -72,7 +72,7 @@ const startOrRestartAnimation = () => {
     return;
   }
 
-  typingIntervalId = setInterval(() => {
+  typingIntervalId = window.setInterval(() => {
     if (charIndex < props.text.length) {
       displayedText.value += props.text[charIndex];
       charIndex++;
