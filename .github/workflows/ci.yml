@@ -68,6 +68,47 @@ jobs:
           name: vitest-results-yak
           path: Yak/test-results
 
+  build-yak:
+    name: Yak build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: Yak
+        run: npm ci
+
+      - name: Type check (vue-tsc)
+        working-directory: Yak
+        run: npx vue-tsc --noEmit
+
+      - name: Build (vite)
+        working-directory: Yak
+        run: npx vite build
+
+  build-yakbak:
+    name: YakBak Docker build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        working-directory: YakBak
+        run: docker build .
+
   lint-yakbak:
     name: YakBak linter
     runs-on: ubuntu-latest
