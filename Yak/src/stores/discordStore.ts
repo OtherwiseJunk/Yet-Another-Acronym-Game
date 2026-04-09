@@ -1,15 +1,15 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { UserData } from "../models";
+import { AuthenticateResponse, UserData } from "../models";
 import { DiscordSDK } from "@discord/embedded-app-sdk";
+import { APIGuildMember } from "discord-api-types/v10";
 
 export const useDiscordStore = defineStore("discord", () => {
-  let auth = ref<any>(undefined);
-  let currentUserData = ref(new UserData("", "", ""));
-  let instanceId = ref("");
+  const auth = ref<AuthenticateResponse>(undefined);
+  const currentUserData = ref(new UserData("", "", ""));
+  const instanceId = ref("");
   const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
-  const defaultImage =
-    "https://1219391019515121716.discordsays.com/media/yak.png";
+  const defaultImage = "https://1219391019515121716.discordsays.com/media/yak.png";
 
   async function setup() {
     await setupDiscordSdk();
@@ -35,36 +35,37 @@ export const useDiscordStore = defineStore("discord", () => {
       access_token: (await response.json()).access_token,
     });
 
-    if (auth == null) {
-      throw new Error("Authenticate command failed");
+    if (auth.value == null) {
+      throw new Error("Error during Discord SDK setup; Authenticate command failed");
     }
   }
 
-  async function fetchDiscordResource(resource: string): Promise<any> {
-    let resp = await fetch(resource, {
+  async function fetchDiscordResource<T>(resource: string): Promise<T> {
+    const resp = await fetch(resource, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${auth.value.access_token}`,
       },
     });
-    return resp.json();
+    return resp.json() as T;
   }
 
   async function getUserInformation(userId: string): Promise<UserData> {
-    let participants = (
-      await discordSdk.commands.getInstanceConnectedParticipants()
-    ).participants;
-    let user = participants.find((user) => user.id === userId);
-    let userData = new UserData(defaultImage, "", "Unknown User");
+    const participants = (await discordSdk.commands.getInstanceConnectedParticipants())
+      .participants;
+    const user = participants.find((user) => user.id === userId);
+    const userData = new UserData(defaultImage, "", "Unknown User");
 
     if (user == undefined || user == null) {
       return userData;
     }
 
-    let extension = user.avatar?.startsWith("a_") ? "gif" : "webp";
+    const extension = user.avatar?.startsWith("a_") ? "gif" : "webp";
 
-    let guildUser = await fetchDiscordResource( userId === auth.value.user.id ? `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member` :
-      `https://discord.com/api/guilds/${discordSdk.guildId}/members/${userId}`
+    const guildUser: APIGuildMember = await fetchDiscordResource<APIGuildMember>(
+      userId === auth.value.user.id
+        ? `https://discord.com/api/users/@me/guilds/${discordSdk.guildId}/member`
+        : `https://discord.com/api/guilds/${discordSdk.guildId}/members/${userId}`,
     );
     // Retrieve the guild-specific avatar, and fallback to the user's avatar
     if (guildUser?.avatar) {
@@ -76,15 +77,13 @@ export const useDiscordStore = defineStore("discord", () => {
       userData.avatarUrl = `https://cdn.discordapp.com/embed/avatars/${defaultAvatarIndex}.${extension}`;
     }
 
-    if (guildUser?.user.avatar_decoration_data) {
+    if (guildUser?.user?.avatar_decoration_data) {
       userData.decorationUrl = `https://cdn.discordapp.com/avatar-decoration-presets/${guildUser.user.avatar_decoration_data.asset}.png?size=256`;
     }
 
     // Retrieve the guild-specific nickname, and fallback to the username#discriminator
     userData.displayName =
-      guildUser?.nick ??
-      user.global_name ??
-      `${user.username}#${user.discriminator}`;
+      guildUser?.nick ?? user.global_name ?? `${user.username}#${user.discriminator}`;
 
     return userData;
   }

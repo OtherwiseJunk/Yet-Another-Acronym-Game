@@ -1,5 +1,5 @@
-export enum CommandType{
-    StartGame,
-    SubmitAnswer,
-    SubmitVote
+export enum CommandType {
+  StartGame,
+  SubmitAnswer,
+  SubmitVote,
 }

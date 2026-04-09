@@ -1,7 +1,7 @@
 import { ICableCommandWithPayload } from "./command.interface";
 import { CommandType } from "./commandType.enum";
 
-export class SubmitAnswerCommand implements ICableCommandWithPayload<string>{
-    public type = CommandType.SubmitAnswer;
-    constructor(public data: string){}
+export class SubmitVoteCommand implements ICableCommandWithPayload<string> {
+  public type = CommandType.SubmitVote;
+  constructor(public data: string) {}
 }

@@ -1,96 +1,134 @@
 class GameChannel < ApplicationCable::Channel
-  @@gameStateByInstance = {}
-  @@subscriptionCountByInstance = {}
+  @@timers_by_instance = {}
 
   def subscribed
     stream_from "game_#{params[:instance]}"
 
-    increment_subcription_count params[:instance]
+    RedisGameStore.increment_subscriptions(params[:instance])
     add_player_to_game params[:discordUserId]
 
     broadcast_game_state
   end
 
   def unsubscribed
-    @@subscriptionCountByInstance[params[:instance]] -= 1
-    @@gameStateByInstance[params[:instance]].remove_player_from_game params[:discordUserId]
+    instance = params[:instance]
+    RedisGameStore.decrement_subscriptions(instance)
 
-    return unless (@@subscriptionCountByInstance[params[:instance]]).zero?
+    game_state = RedisGameStore.get(instance)
+    if game_state
+      game_state.remove_player_from_game params[:discordUserId]
+      RedisGameStore.set(instance, game_state)
+    end
 
-    Rails.logger.debug { "Last user has disconnected from instance #{params[:instance]}. Cleaning up..." }
+    return unless RedisGameStore.subscription_count(instance) <= 0
 
-    @@subscriptionCountByInstance = @@subscriptionCountByInstance.delete([params[:instance]]) || {}
-    @@gameStateByInstance = @@gameStateByInstance.delete([params[:instance]]) || {}
+    Rails.logger.debug { "Last user has disconnected from instance #{instance}. Cleaning up..." }
+
+    cancel_timer instance
+    RedisGameStore.delete(instance)
+    RedisGameStore.delete_subscriptions(instance)
   end
 
   def receive(command)
-    game_state = @@gameStateByInstance[params[:instance]]
+    instance = params[:instance]
+    game_state = RedisGameStore.get(instance)
+    return unless game_state
+
     case command['type']
     when 0
       Rails.logger.debug 'received game start request'
       if game_state.game_phase.zero? || (game_state.game_phase == 3)
         Rails.logger.debug 'starting game...'
         game_state.start_game
+        RedisGameStore.set(instance, game_state)
         broadcast_game_state
-        sleep(3)
-        broadcast_round_countdown game_state
-        if game_state.players.count < 3
-          Rails.logger.debug 'Less than 3 total players, skipping voting'
-          game_state.next_phase
-          broadcast_game_state
-        else
-          broadcast_round_countdown game_state
+        Concurrent::ScheduledTask.execute(3) do
+          start_countdown instance
         end
-
       end
     when 1
       Rails.logger.debug 'received submission from '
       game_state.handle_player_submission params[:discordUserId], command['data']
-    end
-  end
-
-  def increment_subcription_count(_instance)
-    if @@subscriptionCountByInstance.key?(params[:instance])
-      @@subscriptionCountByInstance[params[:instance]] += 1
-    else
-      @@subscriptionCountByInstance[params[:instance]] = 1
+      RedisGameStore.set(instance, game_state)
+      broadcast_game_state
+      if game_state.submissions.count == game_state.players.count
+        Rails.logger.debug 'All players have submitted answers, ending countdown early.'
+        cancel_timer instance
+        on_countdown_complete instance
+      end
+    when 2
+      Rails.logger.debug 'received vote'
+      game_state.handle_player_vote params[:discordUserId], command['data']
+      RedisGameStore.set(instance, game_state)
+      broadcast_game_state
     end
   end
 
   def add_player_to_game(player)
-    if @@gameStateByInstance.key?(params[:instance])
-      @@gameStateByInstance[params[:instance]].add_player_to_game player
+    instance = params[:instance]
+    game_state = RedisGameStore.get(instance)
+
+    if game_state
+      game_state.add_player_to_game player
     else
-      @@gameStateByInstance[params[:instance]] = GameState.new player
+      game_state = GameState.new player
     end
+
+    RedisGameStore.set(instance, game_state)
   end
 
   def broadcast_game_state
-    ActionCable.server.broadcast("game_#{params[:instance]}", @@gameStateByInstance[params[:instance]])
+    game_state = RedisGameStore.get(params[:instance])
+    ActionCable.server.broadcast("game_#{params[:instance]}", game_state)
   end
 
-  def broadcast_round_countdown(game_state)
-    while game_state.round_time_remaining.positive?
-      game_state.round_second_elapsed
-      sleep(1)
+  private
 
-      if (game_state.game_phase == 1) && (game_state.submissions.count == game_state.players.count)
-        Rails.logger.debug 'All players have submitted answers, bailing on countdown.'
-        break
-      end
+  def start_countdown(instance)
+    cancel_timer(instance)
 
-      unless @@gameStateByInstance.key?(params[:instance])
+    timer = Concurrent::TimerTask.new(execution_interval: 1, run_now: true) do
+      game_state = RedisGameStore.get(instance)
+
+      if game_state.nil?
         Rails.logger.debug 'Game has ended, bailing on countdown.'
-        break
+        cancel_timer(instance)
+      elsif game_state.round_time_remaining <= 0
+        cancel_timer(instance)
+        on_countdown_complete(instance)
+      else
+        game_state.round_second_elapsed
+        RedisGameStore.set(instance, game_state)
+        ActionCable.server.broadcast("game_#{instance}", game_state)
       end
-      broadcast_game_state
     end
 
-    unless @@gameStateByInstance.key?(params[:instance])
-      Rails.logger.debug 'Game has ended, bailing on countdown.'
-      return
-    end
+    @@timers_by_instance[instance] = timer
+    timer.execute
+  end
+
+  def on_countdown_complete(instance)
+    game_state = RedisGameStore.get(instance)
+    return unless game_state
+
     game_state.next_phase
-    broadcast_game_state
+    RedisGameStore.set(instance, game_state)
+    ActionCable.server.broadcast("game_#{instance}", game_state)
+
+    return unless game_state.game_phase == GamePhases::VOTING
+
+    if game_state.players.count < 3
+      Rails.logger.debug 'Less than 3 total players, skipping voting'
+      game_state.next_phase
+      RedisGameStore.set(instance, game_state)
+      ActionCable.server.broadcast("game_#{instance}", game_state)
+    else
+      start_countdown(instance)
+    end
+  end
+
+  def cancel_timer(instance)
+    timer = @@timers_by_instance.delete(instance)
+    timer&.shutdown
   end
 end

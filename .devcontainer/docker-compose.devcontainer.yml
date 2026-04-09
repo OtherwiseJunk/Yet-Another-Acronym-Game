@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  app:
+    # Replicates the image from your original devcontainer.json
+    image: mcr.microsoft.com/devcontainers/ruby:3.4-bookworm
+
+    # This command keeps the container running
+    command: sleep infinity
+
+    volumes:
+      # Mounts the entire project folder into the container
+      - ..:/workspaces/Yet-Another-Acronym-Game:cached
+
+    # Connects this container to the 'db' service
+    depends_on:
+      - db
+
+  db:
+    image: postgres:14-bookworm
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

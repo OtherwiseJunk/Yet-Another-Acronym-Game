@@ -1,0 +1,36 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ruby
+{
+	"name": "YakBak Dev Container",
+	// Tells VS Code to use your Docker Compose file
+	"dockerComposeFile": "docker-compose.devcontainer.yml",
+	// The service to use as the dev container
+	"service": "app",
+	"workspaceFolder": "/workspaces/Yet-Another-Acronym-Game",
+	"features": {
+		// Installs Node.js and related tools into your 'app' service container
+		"ghcr.io/devcontainers/features/node:1": {
+			"nodeGypDependencies": true,
+			"installYarnUsingApt": true,
+			"version": "lts",
+			"pnpmVersion": "latest",
+			"nvmVersion": "latest"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"vitest.explorer",
+				"Vue.volar",
+				"github.vscode-github-actions",
+				"rvest.vs-code-prettier-eslint",
+				"Shopify.ruby-lsp",
+				"Shopify.ruby-extensions-pack"
+			]
+		}
+	},
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "chmod +x /workspaces/Yet-Another-Acronym-Game/.devcontainer/postCreateCommand.sh && /workspaces/Yet-Another-Acronym-Game/.devcontainer/postCreateCommand.sh"
+
+	// Forward ports from the container to your local machine.
+}

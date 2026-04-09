@@ -3,7 +3,7 @@ module ApplicationCable
     identified_by :discord_user_id
 
     def connect
-      self.discord_user_id = get_validated_user_discord_id
+      self.discord_user_id = extract_validated_user_discord_id
     end
 
     private

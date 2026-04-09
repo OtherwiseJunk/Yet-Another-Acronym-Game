@@ -1,13 +1,27 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import SplashScreen from './components/SplashScreen.vue'
-import AnswerSubmission from './components/AnswerSubmissionScreen.vue'
-import VotingScreen from './components/VotingScreen.vue'
-import { useGameStore } from './stores/gameStore';
-import { UserSubmission } from './models/userSubmission';
+import { ref, onMounted } from "vue";
+import SplashScreen from "./components/SplashScreen.vue";
+import AnswerSubmission from "./components/AnswerSubmissionScreen.vue";
+import VotingScreen from "./components/VotingScreen.vue";
+import { useGameStore } from "./stores/gameStore";
+import { useDiscordStore } from "./stores/discordStore";
+import { usePalletteStore } from "./stores/palletteStore";
+import { UserSubmission } from "./models/userSubmission";
 
+const discord = useDiscordStore();
 const cable = useGameStore();
-const phase = ref(0)
+const colors = usePalletteStore();
+
+onMounted(async () => {
+  await discord.setup();
+  await cable.setup(
+    discord.auth!.access_token,
+    discord.instanceId,
+    discord.currentUserData,
+    discord.auth!.user.id,
+  );
+});
+const phase = ref(0);
 const animationComplete = ref(false);
 const acronym = ref("");
 const playerCount = ref(1);
@@ -15,12 +29,13 @@ const roundTimeRemaining = ref(0);
 
 let submissions: Map<number, UserSubmission>;
 cable.$subscribe((_, state) => {
-  phase.value = state.gameState.game_phase
-  acronym.value = state.gameState.current_acronym
-  submissions = state.gameState.submissions
-  playerCount.value = state.gameState.players.length
+  phase.value = state.gameState.game_phase;
+  acronym.value = state.gameState.current_acronym;
+  colors.setAcronymPallette(acronym.value);
+  submissions = state.gameState.submissions;
+  playerCount.value = state.gameState.players.length;
   roundTimeRemaining.value = state.gameState.round_time_remaining;
-})
+});
 
 function onComplete() {
   animationComplete.value = true;
@@ -32,29 +47,38 @@ function onSubmit(answer: string) {
   cable.submitAnswer(answer);
 }
 function onVote(submissionUserId: string) {
-  console.log('got an OnVote trigger!');
-  console.log(submissionUserId);
+  cable.submitVote(submissionUserId);
 }
-function onNextRound(){
+function onNextRound() {
   cable.startGame();
 }
-
 </script>
 
 <template>
   <div class="yaag-root">
-    <SplashScreen v-if="phase === 0 || !animationComplete" @animation-complete="onComplete()" @start="onStart()">
+    <SplashScreen
+      v-if="phase === 0 || !animationComplete"
+      @animation-complete="onComplete()"
+      @start="onStart()"
+    >
     </SplashScreen>
-    <AnswerSubmission :timeRemaining="roundTimeRemaining" :acronym="acronym" v-if="phase === 1 && animationComplete" @submit="(answer) => onSubmit(answer)">
+    <AnswerSubmission
+      :timeRemaining="roundTimeRemaining"
+      :acronym="acronym"
+      :colorPallette="colors.acronymPallette"
+      v-if="phase === 1 && animationComplete"
+      @submit="(answer) => onSubmit(answer)"
+    >
     </AnswerSubmission>
-    <VotingScreen 
+    <VotingScreen
       :submissionsByUserId="submissions"
       :resultsMode="phase === 3"
       :skipVoting="playerCount <= 2"
       :timeRemaining="roundTimeRemaining"
-      v-if="(phase === 2 || phase === 3) && animationComplete" 
+      v-if="(phase === 2 || phase === 3) && animationComplete"
       @vote="(submissionUserId) => onVote(submissionUserId)"
-      @next-round="onNextRound()">
+      @next-round="onNextRound()"
+    >
     </VotingScreen>
   </div>
 </template>
@@ -73,7 +97,7 @@ function onNextRound(){
 }
 
 @font-face {
-  font-family: 'Orbitron';
+  font-family: "Orbitron";
   src: url("https://1219391019515121716.discordsays.com/media/Orbitron.ttf");
 }
 </style>
