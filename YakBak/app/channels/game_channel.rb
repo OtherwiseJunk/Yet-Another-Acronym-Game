@@ -1,7 +1,7 @@
 class GameChannel < ApplicationCable::Channel
   @@timers_by_instance = {}
-  STARTABLE_GAME_PHASES = [GamePhases::UNSTARTED, GamePhases::RESULTS, GamePhases::GAME_OVER]
-  UNSTARTED_OR_FINISHED_GAME_PHASES = [GamePhases::UNSTARTED, GamePhases::GAME_OVER]
+  STARTABLE_GAME_PHASES = [GamePhases::UNSTARTED, GamePhases::RESULTS, GamePhases::GAME_OVER].freeze
+  UNSTARTED_OR_FINISHED_GAME_PHASES = [GamePhases::UNSTARTED, GamePhases::GAME_OVER].freeze
 
   def subscribed
     stream_from "game_#{params[:instance]}"
