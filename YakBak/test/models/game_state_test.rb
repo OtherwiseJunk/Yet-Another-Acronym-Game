@@ -191,4 +191,68 @@ class GameStateTest < ActiveSupport::TestCase
     assert_nil @game.scores['player-2']
     assert_nil @game.scores['player-3']
   end
+
+  # Serialization tests
+
+  test 'to_hash returns a hash with all game state fields' do
+    hash = @game.to_hash
+
+    assert_equal 0, hash["round_number"]
+    assert_equal GamePhases::UNSTARTED, hash["game_phase"]
+    assert_equal ['player-1'], hash["players"]
+    assert_equal({}, hash["scores"])
+  end
+
+  test 'from_hash restores a game state from a hash' do
+    @game.start_game
+    hash = @game.to_hash
+    restored = GameState.from_hash(hash)
+
+    assert_equal @game.round_number, restored.round_number
+    assert_equal @game.current_acronym, restored.current_acronym
+    assert_equal @game.game_phase, restored.game_phase
+    assert_equal @game.players, restored.players
+    assert_equal @game.round_time_remaining, restored.round_time_remaining
+  end
+
+  test 'round trip through JSON preserves submissions' do
+    @game.start_game
+    @game.handle_player_submission('discord-123', {
+      'submission' => 'Test Answer',
+      'user_data' => { 'displayName' => 'Tester' }
+    })
+
+    json = JSON.generate(@game.to_hash)
+    restored = GameState.from_hash(JSON.parse(json))
+
+    assert restored.submissions.key?('discord-123')
+    assert_equal 'Test Answer', restored.submissions['discord-123'].submission
+    assert_equal({ 'displayName' => 'Tester' }, restored.submissions['discord-123'].user_data)
+  end
+
+  test 'round trip through JSON preserves votes and scores' do
+    @game.add_player_to_game('player-2')
+    @game.add_player_to_game('player-3')
+    @game.start_game
+    @game.next_phase # -> voting
+    @game.handle_player_vote('player-2', 'player-1')
+    @game.next_phase # -> results
+
+    json = JSON.generate(@game.to_hash)
+    restored = GameState.from_hash(JSON.parse(json))
+
+    assert_equal({ 'player-2' => 'player-1' }, restored.votes)
+    assert_equal 1, restored.scores['player-1']
+  end
+
+  test 'restored game state can continue gameplay' do
+    @game.start_game
+    restored = GameState.from_hash(JSON.parse(JSON.generate(@game.to_hash)))
+
+    restored.round_second_elapsed
+    assert_equal 59, restored.round_time_remaining
+
+    restored.next_phase
+    assert_equal GamePhases::VOTING, restored.game_phase
+  end
 end

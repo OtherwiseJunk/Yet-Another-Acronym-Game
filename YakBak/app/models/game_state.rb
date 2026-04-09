@@ -77,6 +77,36 @@ class GameState
       UserSubmission.new(submission_data['submission'], 60 - @round_time_remaining, submission_data['user_data'])
   end
 
+  def to_hash
+    {
+      "round_number" => @round_number,
+      "current_acronym" => @current_acronym,
+      "scores" => @scores,
+      "submissions" => (@submissions || {}).transform_values(&:to_hash),
+      "game_phase" => @game_phase,
+      "players" => @players,
+      "round_time_remaining" => @round_time_remaining,
+      "votes" => @votes
+    }
+  end
+
+  def self.from_hash(hash)
+    game = allocate
+    game.instance_variable_set(:@round_number, hash["round_number"])
+    game.instance_variable_set(:@current_acronym, hash["current_acronym"])
+    game.instance_variable_set(:@scores, hash["scores"] || {})
+    game.instance_variable_set(:@game_phase, hash["game_phase"])
+    game.instance_variable_set(:@players, hash["players"])
+    game.instance_variable_set(:@round_time_remaining, hash["round_time_remaining"])
+    game.instance_variable_set(:@votes, hash["votes"] || {})
+    game.instance_variable_set(:@alphabet, ("a".."z").to_a)
+
+    submissions = (hash["submissions"] || {}).transform_values { |s| UserSubmission.from_hash(s) }
+    game.instance_variable_set(:@submissions, submissions)
+
+    game
+  end
+
   private
 
   attr_writer :round_number, :current_acronym, :scores, :submissions, :game_phase, :players, :round_time_remaining,
