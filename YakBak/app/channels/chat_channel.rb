@@ -16,7 +16,7 @@ class ChatChannel < ApplicationCable::Channel
 
     stream_from "chat_#{instance_id}"
 
-    transmit(@@messages_by_instance[params[:instance]])
+    transmit(@@messages_by_instance[instance_id])
   end
 
   def receive(data)
@@ -32,9 +32,9 @@ class ChatChannel < ApplicationCable::Channel
     instance_id = params[:instance]
     @@subscription_count_by_instance[instance_id] -= 1 if @@subscription_count_by_instance[instance_id].present?
 
-    return unless @@subscription_count_by_instance[params[:instance]].zero?
+    return unless @@subscription_count_by_instance[instance_id]&.zero?
 
-    @@subscription_count_by_instance.delete([params[:instance]])
-    @@messages_by_instance.delete([params[:instance]])
+    @@subscription_count_by_instance.delete(instance_id)
+    @@messages_by_instance.delete(instance_id)
   end
 end
