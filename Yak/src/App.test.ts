@@ -12,6 +12,15 @@ vi.mock("gsap", () => ({
   },
 }));
 
+vi.mock("./stores/discordStore", () => ({
+  useDiscordStore: vi.fn(() => ({
+    setup: vi.fn(() => Promise.resolve()),
+    auth: { access_token: "mock-token", user: { id: "mock-user" } },
+    instanceId: "mock-instance",
+    currentUserData: {},
+  })),
+}));
+
 let subscribeCallback: (mutation: any, state: any) => void;
 const mockStartGame = vi.fn();
 const mockSubmitAnswer = vi.fn();
@@ -22,6 +31,7 @@ vi.mock("./stores/gameStore", () => ({
     $subscribe: vi.fn((cb: any) => {
       subscribeCallback = cb;
     }),
+    setup: vi.fn(() => Promise.resolve()),
     startGame: mockStartGame,
     submitAnswer: mockSubmitAnswer,
     submitVote: mockSubmitVote,

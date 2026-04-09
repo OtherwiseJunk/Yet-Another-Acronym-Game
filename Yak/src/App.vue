@@ -1,14 +1,26 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import SplashScreen from "./components/SplashScreen.vue";
 import AnswerSubmission from "./components/AnswerSubmissionScreen.vue";
 import VotingScreen from "./components/VotingScreen.vue";
 import { useGameStore } from "./stores/gameStore";
+import { useDiscordStore } from "./stores/discordStore";
 import { usePalletteStore } from "./stores/palletteStore";
 import { UserSubmission } from "./models/userSubmission";
 
+const discord = useDiscordStore();
 const cable = useGameStore();
 const colors = usePalletteStore();
+
+onMounted(async () => {
+  await discord.setup();
+  await cable.setup(
+    discord.auth!.access_token,
+    discord.instanceId,
+    discord.currentUserData,
+    discord.auth!.user.id,
+  );
+});
 const phase = ref(0);
 const animationComplete = ref(false);
 const acronym = ref("");
