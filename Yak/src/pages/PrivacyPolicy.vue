@@ -131,6 +131,7 @@
     sans-serif;
   color: #e0e0e0;
   line-height: 1.7;
+  text-align: left;
 }
 
 .legal-page h1 {
