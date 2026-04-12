@@ -148,7 +148,7 @@ class GameChannel < ApplicationCable::Channel
     if game_state.game_phase == GamePhases::RESULTS
       check_game_end(instance, game_state)
     elsif game_state.game_phase == GamePhases::VOTING
-      if game_state.players.count < 3
+      if game_state.players.count < 3 && !ENV['YAAG_FORCE_VOTING']
         Rails.logger.debug 'Less than 3 total players, skipping voting'
         game_state.next_phase
         RedisGameStore.set(instance, game_state)
