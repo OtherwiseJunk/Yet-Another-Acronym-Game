@@ -1,6 +1,6 @@
 <template>
   <div v-if="allowSubmission" class="submission-screen-container">
-    <h1 class="font" :style="{ color: dynamicTextColor }">{{ props.timeRemaining }}</h1>
+    <h1 class="font">{{ props.timeRemaining }}</h1>
     <Acronym :letterArray="letterArray" :colors="props.colorPallette"></Acronym>
     <br />
     <form @submit.prevent="submit">

@@ -73,7 +73,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import { UserSubmission } from "../models";
+import { UserSubmission, UserData } from "../models";
 import Avatar from "./Avatar.vue";
 import Acronym from "./Acronym.vue";
 import { Color } from "../models/color";
@@ -90,6 +90,10 @@ const props = defineProps({
   submissions: {
     type: Object,
     required: true,
+  },
+  playerData: {
+    type: Object as () => Record<string, UserData>,
+    default: () => ({}),
   },
 });
 
@@ -135,11 +139,12 @@ const sortedEntries = computed((): LeaderboardEntry[] => {
   const entries: LeaderboardEntry[] = props.players.map((playerId: string) => {
     const score = props.scores[playerId] || 0;
     const sub: UserSubmission | undefined = props.submissions[playerId];
+    const saved = props.playerData[playerId];
     return {
       userId: playerId,
-      displayName: sub?.user_data?.displayName || playerId,
-      avatarUrl: sub?.user_data?.avatarUrl || "",
-      decorationUrl: sub?.user_data?.decorationUrl || "",
+      displayName: sub?.user_data?.displayName || saved?.displayName || playerId,
+      avatarUrl: sub?.user_data?.avatarUrl || saved?.avatarUrl || "",
+      decorationUrl: sub?.user_data?.decorationUrl || saved?.decorationUrl || "",
       score,
       rank: 0,
     };
