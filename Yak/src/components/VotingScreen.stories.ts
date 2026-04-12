@@ -10,6 +10,8 @@ const meta: Meta<typeof VotingScreen> = {
     resultsMode: { control: "boolean" },
     skipVoting: { control: "boolean" },
     timeRemaining: { control: "number" },
+    acronym: { control: "text" },
+    colorPallette: { control: "object" },
     // @ts-ignore
     vote: { action: "vote" },
     "next-round": { action: "next-round" },
@@ -80,6 +82,7 @@ export const Default: Story = {
     resultsMode: false,
     skipVoting: false,
     timeRemaining: 20,
+    acronym: "YAAG",
   },
 };
 
@@ -89,6 +92,7 @@ export const TimerAlmostExpired: Story = {
     resultsMode: false,
     skipVoting: false,
     timeRemaining: 3,
+    acronym: "YAAG",
   },
 };
 
@@ -101,6 +105,7 @@ export const TwoPlayers: Story = {
     resultsMode: false,
     skipVoting: false,
     timeRemaining: 15,
+    acronym: "YAAG",
   },
 };
 
@@ -127,6 +132,7 @@ export const SixPlayers: Story = {
     resultsMode: false,
     skipVoting: false,
     timeRemaining: 20,
+    acronym: "YAAG",
   },
 };
 
@@ -152,6 +158,7 @@ export const LongSubmissions: Story = {
     resultsMode: false,
     skipVoting: false,
     timeRemaining: 10,
+    acronym: "YAAGBIZKR",
   },
 };
 
@@ -177,6 +184,7 @@ export const ShortAcronym: Story = {
     resultsMode: false,
     skipVoting: false,
     timeRemaining: 18,
+    acronym: "FBC",
   },
 };
 
@@ -202,6 +210,7 @@ export const CloseAnswerTimes: Story = {
     resultsMode: false,
     skipVoting: false,
     timeRemaining: 14,
+    acronym: "YAAG",
   },
 };
 
@@ -213,6 +222,7 @@ export const SkipVoting: Story = {
     resultsMode: false,
     skipVoting: true,
     timeRemaining: 0,
+    acronym: "YAAG",
   },
 };
 
@@ -224,6 +234,7 @@ export const ResultsMode: Story = {
     resultsMode: true,
     skipVoting: false,
     timeRemaining: 0,
+    acronym: "YAAG",
   },
 };
 
@@ -236,6 +247,7 @@ export const ResultsTwoPlayers: Story = {
     resultsMode: true,
     skipVoting: true,
     timeRemaining: 0,
+    acronym: "YAAG",
   },
 };
 
@@ -262,6 +274,7 @@ export const ResultsSixPlayers: Story = {
     resultsMode: true,
     skipVoting: false,
     timeRemaining: 0,
+    acronym: "YAAG",
   },
 };
 
@@ -287,6 +300,7 @@ export const ResultsLongSubmissions: Story = {
     resultsMode: true,
     skipVoting: false,
     timeRemaining: 0,
+    acronym: "YAAGBIZKR",
   },
 };
 
@@ -302,6 +316,7 @@ export const SingleSubmission: Story = {
     resultsMode: true,
     skipVoting: true,
     timeRemaining: 0,
+    acronym: "YAAG",
   },
 };
 
@@ -322,5 +337,6 @@ export const ResultsNoDecorations: Story = {
     resultsMode: true,
     skipVoting: true,
     timeRemaining: 0,
+    acronym: "YAAG",
   },
 };

@@ -96,6 +96,8 @@ function onPlayAgain(config: StartGameData) {
       :resultsMode="phase === 3"
       :skipVoting="playerCount <= 2"
       :timeRemaining="roundTimeRemaining"
+      :acronym="acronym"
+      :colorPallette="colors.acronymPallette"
       v-if="(phase === 2 || phase === 3) && animationComplete"
       @vote="(submissionUserId) => onVote(submissionUserId)"
       @next-round="onNextRound()"

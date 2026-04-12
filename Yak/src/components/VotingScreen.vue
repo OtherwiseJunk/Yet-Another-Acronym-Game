@@ -1,6 +1,9 @@
 <template>
   <!-- guard rendering until the stories / parent have passed props -->
   <div v-if="props.submissionsByUserId" class="container">
+    <div class="acronym-header">
+      <Acronym :letterArray="acronym.split('')" :colors="colorPallette"></Acronym>
+    </div>
     <div class="header">
       <p class="font header-text">
         {{ props.resultsMode ? "Results" : `Vote - ${props.timeRemaining}` }}
@@ -19,28 +22,26 @@
         @mouseenter="setShouldAnimate(votingCardInfo.userId, true)"
         @mouseleave="setShouldAnimate(votingCardInfo.userId, false)"
         :style="{
-          background: `${colors.hexToRGB(votingCardInfo.color, 0.08)}`,
-          'box-shadow': `1px 1px 6px ${votingCardInfo.color}`,
+          'border-left': `3px solid ${votingCardInfo.color}`,
         }"
       >
-        <div class="submitter-info">
-          <Avatar
-            v-show="props.resultsMode"
-            class="avatar"
-            :avatarDecorationUrl="votingCardInfo.decoratorUrl"
-            :avatarUrl="votingCardInfo.avatarUrl"
-            :shouldAnimate="shouldAnimateByUserId.get(Number(votingCardInfo.userId))"
-          ></Avatar>
-          <p v-show="props.resultsMode" class="submitter-info-text">
-            {{ votingCardInfo.displayName }}
-          </p>
-          <p class="time submitter-info-text">{{ votingCardInfo.submissionTime }} s</p>
+        <div class="card-top-row">
+          <div class="submitter-info">
+            <Avatar
+              v-show="props.resultsMode"
+              class="avatar"
+              :avatarDecorationUrl="votingCardInfo.decoratorUrl"
+              :avatarUrl="votingCardInfo.avatarUrl"
+              :shouldAnimate="shouldAnimateByUserId.get(Number(votingCardInfo.userId))"
+            ></Avatar>
+            <p v-show="props.resultsMode" class="submitter-name font">
+              {{ votingCardInfo.displayName }}
+            </p>
+          </div>
+          <p class="time font">{{ votingCardInfo.submissionTime }} s</p>
         </div>
         <p class="submission-text" :id="'p.' + votingCardInfo.userId">
           {{ votingCardInfo.submissionText }}
-          <!--<span v-for="(word, wordIndex) in votingCardInfo.submissionText.split(' ')"
-                        :style="{ 'color': `${colors.acronymPallette[wordIndex % colors.acronymPallette.length].shades[1]}` }">{{
-                `${word} ` }} </span>-->
         </p>
       </div>
     </div>
@@ -54,6 +55,8 @@
 import { UserSubmission } from "../models";
 import { useDiscordStore } from "../stores/discordStore";
 import Avatar from "./Avatar.vue";
+import Acronym from "./Acronym.vue";
+import { Color } from "../models/color";
 import { VotingCardInfo } from "../models/votingCardInfo";
 import { computed, ref, watch } from "vue";
 import { usePalletteStore } from "../stores/palletteStore";
@@ -72,6 +75,14 @@ const props = defineProps({
   },
   timeRemaining: {
     type: Number,
+    required: true,
+  },
+  acronym: {
+    type: String,
+    required: true,
+  },
+  colorPallette: {
+    type: Array as () => Color[],
     required: true,
   },
 });
@@ -149,103 +160,151 @@ function nextRound() {
 </script>
 
 <style scoped>
-.avatar {
-  margin-right: var(--space-5xl);
+.container {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow-y: auto;
+  padding: var(--space-xl);
 }
 
-.submitter-info-text {
-  margin-top: 5px;
+.acronym-header {
+  flex-shrink: 0;
+  width: 100%;
+  margin-bottom: var(--space-md);
 }
 
 .header {
   display: flex;
   flex-direction: column;
+  align-items: center;
   width: 100%;
+  flex-shrink: 0;
 }
 
 .header-text {
-  margin-bottom: 0px;
+  margin-bottom: 0;
   font-size: var(--font-size-3xl);
 }
 
 .header-subtext {
   font-size: var(--font-size-lg);
+  color: var(--text-muted);
 }
 
-.time {
-  position: absolute;
-  right: 0px;
-  margin-left: var(--space-xl);
+.font {
+  font-family: var(--font-family);
+  font-weight: 800;
+}
+
+.voting-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  width: 100%;
+  padding: var(--space-md) 0;
+}
+
+.voting-card {
+  width: 100%;
+  max-width: var(--leaderboard-max-width);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: normal;
+  background: var(--glass-bg-subtle);
+  border: var(--border-thin) solid var(--glass-bg-medium);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md) var(--space-xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+}
+
+.voting-card:hover {
+  background: var(--glass-bg-medium);
+  transform: translateY(-2px);
+}
+
+.card-top-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--space-2xl);
 }
 
 .submitter-info {
   display: flex;
   flex-direction: row;
-  font-weight: 800;
-  position: relative;
-  font-family: var(--font-family);
-  height: var(--input-height);
+  align-items: center;
+  gap: var(--space-md);
 }
 
-.font {
-  font-family: var(--font-family);
+.avatar {
+  flex-shrink: 0;
 }
 
-.voting-card {
-  padding: var(--space-sm);
-  margin: 0.5%;
-  width: 40%;
-  display: flex;
-  flex-direction: column;
-  font-size: var(--font-size-md);
-  font-family: var(--font-family);
-  font-weight: 700;
-  font-style: normal;
-  border: var(--border-heavy) solid black;
-  transition: 1s;
-  position: relative;
+.submitter-name {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.voting-card:hover {
-  top: -10px;
-  font-weight: 800;
+.time {
+  font-size: var(--font-size-sm);
+  color: var(--text-subtle);
+  margin: 0;
+  flex-shrink: 0;
 }
 
-.voting-container {
-  overflow-y: scroll;
-  overflow-x: scroll;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.container {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  top: 0px;
-  left: 0px;
-  bottom: 0px;
-  right: 0px;
+.submission-text {
+  font-size: var(--font-size-lg);
+  text-align: center;
+  color: var(--text-primary);
+  margin: var(--space-md) 0 var(--space-xs);
 }
 
 .selected-text {
   font-size: var(--font-size-base);
 }
 
-/* submission text uses default styles */
+.controls {
+  margin-top: var(--space-2xl);
+  margin-bottom: var(--space-xl);
+  flex-shrink: 0;
+}
 
 .next-round-button {
-  height: 40px;
-  margin-top: var(--space-sm);
-  border-width: var(--border-default);
-  border-style: solid;
+  font-size: var(--font-size-lg);
+  background: var(--glass-bg-light);
+  border: var(--border-default) solid var(--glass-bg-prominent);
+  color: var(--text-primary);
+  padding: 14px var(--space-5xl);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  backdrop-filter: var(--glass-backdrop);
 }
 
-.controls {
-  margin-bottom: auto;
+.next-round-button:hover {
+  background: var(--glass-bg-prominent);
+  box-shadow: var(--shadow-glow-lg) var(--glass-bg-heavy);
+  transform: translateY(-2px);
 }
+
 .gradient {
   --borderWidth: 3px;
   background: var(--bg-surface);
