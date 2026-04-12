@@ -22,15 +22,15 @@ svg {
 }
 
 .container {
-  padding-top: 50px;
+  padding-top: var(--space-5xl);
   height: 150px;
   position: relative;
 }
 .text {
-  font-size: 100px;
+  font-size: var(--font-size-display);
   display: block;
   margin: 0;
-  font-family: "Orbitron";
+  font-family: var(--font-family);
 }
 </style>
 

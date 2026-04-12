@@ -81,7 +81,7 @@ watch(
 
 .avatar-container {
   position: relative;
-  margin-right: 25px;
+  margin-right: var(--space-2xl);
   width: var(--container-size);
   height: var(--container-size);
 }

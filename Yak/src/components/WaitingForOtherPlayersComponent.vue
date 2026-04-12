@@ -9,15 +9,15 @@ const props = defineProps(["submissionText"]);
 
 <style scoped>
 .font {
-  font-size: 2em;
-  font-family: "Orbitron";
+  font-size: var(--font-size-3xl);
+  font-family: var(--font-family);
   font-weight: 800;
   font-style: normal;
 }
 
 .smaller-font {
   font-size: 1.5em;
-  font-family: "Orbitron";
+  font-family: var(--font-family);
   font-weight: 800;
   font-style: normal;
 }

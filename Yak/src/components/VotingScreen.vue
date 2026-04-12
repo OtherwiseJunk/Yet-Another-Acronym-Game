@@ -150,7 +150,7 @@ function nextRound() {
 
 <style scoped>
 .avatar {
-  margin-right: 50px;
+  margin-right: var(--space-5xl);
 }
 
 .submitter-info-text {
@@ -165,17 +165,17 @@ function nextRound() {
 
 .header-text {
   margin-bottom: 0px;
-  font-size: 2em;
+  font-size: var(--font-size-3xl);
 }
 
 .header-subtext {
-  font-size: 1.2em;
+  font-size: var(--font-size-lg);
 }
 
 .time {
   position: absolute;
   right: 0px;
-  margin-left: 20px;
+  margin-left: var(--space-xl);
 }
 
 .submitter-info {
@@ -183,25 +183,25 @@ function nextRound() {
   flex-direction: row;
   font-weight: 800;
   position: relative;
-  font-family: "Orbitron";
-  height: 50px;
+  font-family: var(--font-family);
+  height: var(--input-height);
 }
 
 .font {
-  font-family: "Orbitron";
+  font-family: var(--font-family);
 }
 
 .voting-card {
-  padding: 10px;
+  padding: var(--space-sm);
   margin: 0.5%;
   width: 40%;
   display: flex;
   flex-direction: column;
-  font-size: 1.1em;
-  font-family: "Orbitron";
+  font-size: var(--font-size-md);
+  font-family: var(--font-family);
   font-weight: 700;
   font-style: normal;
-  border: 4px solid black;
+  border: var(--border-heavy) solid black;
   transition: 1s;
   position: relative;
 }
@@ -231,15 +231,15 @@ function nextRound() {
 }
 
 .selected-text {
-  font-size: 1em;
+  font-size: var(--font-size-base);
 }
 
 /* submission text uses default styles */
 
 .next-round-button {
   height: 40px;
-  margin-top: 10px;
-  border-width: 2px;
+  margin-top: var(--space-sm);
+  border-width: var(--border-default);
   border-style: solid;
 }
 
@@ -248,7 +248,7 @@ function nextRound() {
 }
 .gradient {
   --borderWidth: 3px;
-  background: #1d1f20;
+  background: var(--bg-surface);
   position: relative;
   border-radius: var(--borderWidth);
 }

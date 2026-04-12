@@ -4,23 +4,22 @@
 
 <style scoped>
 .font {
-  font-size: 2em;
-  font-family: "Orbitron";
+  font-size: var(--font-size-3xl);
+  font-family: var(--font-family);
   font-weight: 800;
   font-style: normal;
-  display: inline-block; /* Keep this from the previous fix */
+  display: inline-block;
   letter-spacing: 0.15em;
-  /* The border-right for the cursor will be applied by the cursor classes */
-  padding-right: 0.1em; /* Add a little padding so cursor doesn't overlap last char */
+  padding-right: 0.1em;
 }
 
 .typing-cursor {
-  border-right: 0.15em solid orange;
+  border-right: 0.15em solid var(--color-cursor);
   animation: blink-caret 0.75s step-end infinite;
 }
 
 .blinking-out-cursor {
-  border-right: 0.15em solid orange;
+  border-right: 0.15em solid var(--color-cursor);
   animation: blink-out 0.75s steps(2, end) 2 forwards;
 }
 
@@ -30,7 +29,7 @@
     border-color: transparent;
   }
   50% {
-    border-color: orange;
+    border-color: var(--color-cursor);
   }
 }
 
@@ -40,7 +39,7 @@
     border-color: transparent;
   }
   50% {
-    border-color: orange;
+    border-color: var(--color-cursor);
   }
 }
 </style>

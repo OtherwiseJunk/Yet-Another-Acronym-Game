@@ -55,7 +55,7 @@ let allowSubmission = ref<boolean>(true);
 
 const letterArray = computed(() => props.acronym.split(""));
 
-const inputBackgroundColor = ref("rgba(255, 255, 255, 0.1)"); // The background of the input container
+const inputBackgroundColor = ref("rgba(255, 255, 255, 0.1)");
 const dynamicTextColor = useDynamicTextColor(inputBackgroundColor);
 
 function submit() {
@@ -84,18 +84,18 @@ const submittable = computed(() => {
 }
 
 .input-container {
-  padding: 10px;
-  outline: 3px black solid;
-  width: 700px;
-  height: 50px;
-  border-radius: 35px;
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: saturate(150%) blur(10px);
+  padding: var(--space-sm);
+  outline: var(--border-thick) black solid;
+  width: var(--input-max-width);
+  height: var(--input-height);
+  border-radius: var(--radius-pill);
+  background: var(--glass-bg-solid);
+  backdrop-filter: var(--glass-backdrop);
 }
 
 .font {
-  font-size: 2em;
-  font-family: "Orbitron";
+  font-size: var(--font-size-3xl);
+  font-family: var(--font-family);
   font-weight: 800;
   font-style: normal;
 }
@@ -117,22 +117,22 @@ input:focus {
 
 .submit-button {
   height: 100px;
-  margin-top: 40px;
+  margin-top: var(--space-4xl);
 }
 
 .start-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: var(--glass-bg-strong);
+  border: var(--border-default) solid var(--glass-bg-heavy);
   color: white;
-  padding: 10px 30px;
-  border-radius: 35px; /* Match the input box */
+  padding: var(--space-sm) 30px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: saturate(150%) blur(10px); /* Match the input box */
+  transition: all var(--transition-normal);
+  backdrop-filter: var(--glass-backdrop);
 }
 
 .start-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  background: var(--glass-bg-heavy);
+  box-shadow: var(--shadow-glow-md) var(--glass-bg-solid);
 }
 </style>

@@ -122,49 +122,49 @@
 }
 
 .legal-page {
-  max-width: 800px;
+  max-width: var(--legal-max-width);
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: var(--space-4xl) var(--space-xl);
   font-family:
     system-ui,
     -apple-system,
     sans-serif;
-  color: #e0e0e0;
+  color: var(--color-legal-text);
   line-height: 1.7;
   text-align: left;
 }
 
 .legal-page h1 {
   font-size: 2rem;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-2xs);
 }
 
 .legal-page h2 {
   font-size: 1.25rem;
-  margin-top: 32px;
-  margin-bottom: 8px;
-  color: #ffffff;
+  margin-top: var(--space-3xl);
+  margin-bottom: var(--space-xs);
+  color: var(--color-legal-heading);
 }
 
 .legal-page h3 {
   font-size: 1.1rem;
-  margin-top: 20px;
+  margin-top: var(--space-xl);
   margin-bottom: 6px;
-  color: #cccccc;
+  color: var(--color-legal-subheading);
 }
 
 .effective-date {
-  color: #999;
+  color: var(--color-legal-meta);
   font-size: 0.9rem;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-2xl);
 }
 
 .legal-page a {
-  color: #7289da;
+  color: var(--color-link);
 }
 
 .legal-page ul {
-  padding-left: 24px;
+  padding-left: var(--space-2xl);
 }
 
 .legal-page li {

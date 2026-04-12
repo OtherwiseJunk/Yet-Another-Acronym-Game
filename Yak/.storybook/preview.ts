@@ -1,6 +1,7 @@
 import type { Preview } from '@storybook/vue3-vite';
 import { setup } from '@storybook/vue3';
 import { createPinia } from 'pinia';
+import '../src/styles/tokens.css';
 import { usePalletteStore } from '../src/stores/palletteStore';
 import { useDiscordStore } from '../src/stores/discordStore';
 
