@@ -123,7 +123,7 @@ input:focus {
 .start-btn {
   background: var(--glass-bg-strong);
   border: var(--border-default) solid var(--glass-bg-heavy);
-  color: white;
+  color: var(--text-primary);
   padding: var(--space-sm) 30px;
   border-radius: var(--radius-pill);
   cursor: pointer;

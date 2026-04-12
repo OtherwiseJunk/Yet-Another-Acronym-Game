@@ -373,7 +373,7 @@ onMounted(() => {
   font-size: var(--font-size-lg);
   background: var(--glass-bg-light);
   border: var(--border-default) solid var(--glass-bg-prominent);
-  color: white;
+  color: var(--text-primary);
   padding: 14px var(--space-5xl);
   border-radius: var(--radius-pill);
   cursor: pointer;
@@ -397,7 +397,7 @@ onMounted(() => {
   font-size: var(--font-size-base);
   background: var(--glass-bg-light);
   border: var(--border-default) solid var(--glass-bg-prominent);
-  color: white;
+  color: var(--text-primary);
   padding: var(--space-md) 28px;
   border-radius: var(--radius-pill);
   cursor: pointer;
@@ -425,7 +425,7 @@ onMounted(() => {
   font-size: var(--font-size-sm);
   background: var(--glass-bg-light);
   border: var(--border-default) solid var(--glass-bg-prominent);
-  color: white;
+  color: var(--text-primary);
   width: 52px;
   height: 52px;
   border-radius: var(--radius-circle);

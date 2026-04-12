@@ -90,7 +90,7 @@
   font-size: var(--font-size-lg);
   background: var(--glass-bg-light);
   border: var(--border-default) solid var(--glass-bg-prominent);
-  color: white;
+  color: var(--text-primary);
   padding: var(--space-lg) var(--space-3xl);
   border-radius: var(--radius-pill);
   cursor: pointer;
@@ -146,7 +146,7 @@
   font-size: var(--font-size-md);
   background: var(--glass-bg-light);
   border: var(--border-default) solid var(--glass-bg-prominent);
-  color: white;
+  color: var(--text-primary);
   width: 64px;
   height: 64px;
   border-radius: var(--radius-circle);
@@ -168,7 +168,7 @@
 .start-btn {
   background: var(--glass-bg-strong);
   border: var(--border-default) solid var(--glass-bg-heavy);
-  color: white;
+  color: var(--text-primary);
   padding: var(--space-sm) 30px;
   border-radius: var(--radius-pill);
   cursor: pointer;
