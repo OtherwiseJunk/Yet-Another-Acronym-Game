@@ -4,6 +4,7 @@ import SplashScreen from "./components/SplashScreen.vue";
 import AnswerSubmission from "./components/AnswerSubmissionScreen.vue";
 import VotingScreen from "./components/VotingScreen.vue";
 import GameOverScreen from "./components/GameOverScreen.vue";
+import FloatingActions from "./components/FloatingActions.vue";
 import { useGameStore } from "./stores/gameStore";
 import { useDiscordStore } from "./stores/discordStore";
 import { usePalletteStore } from "./stores/palletteStore";
@@ -97,6 +98,7 @@ function onPlayAgain(config: StartGameData) {
       @play-again="(config) => onPlayAgain(config)"
     >
     </GameOverScreen>
+    <FloatingActions />
   </div>
 </template>
 
