@@ -2,6 +2,7 @@ import type { Preview } from '@storybook/vue3-vite';
 import { setup } from '@storybook/vue3';
 import { createPinia } from 'pinia';
 import { usePalletteStore } from '../src/stores/palletteStore';
+import { useDiscordStore } from '../src/stores/discordStore';
 
 // Create a new Pinia instance for Storybook
 const pinia = createPinia();
@@ -17,8 +18,32 @@ setup((app) => {
   } catch (e) {
     // If initialization fails in certain environments, silently continue —
     // individual stories can still set the pallette as needed.
-     
+
     console.warn('Could not initialize pallette store for Storybook', e);
+  }
+
+  // Seed the discord store with a fake auth so components that check
+  // discord.auth.user.id (e.g. VotingScreen vote guard) don't crash.
+  try {
+    const discordStore = useDiscordStore(pinia);
+    discordStore.auth = {
+      access_token: 'storybook-fake-token',
+      user: {
+        username: 'StorybookUser',
+        discriminator: '0000',
+        id: '999',
+        public_flags: 0,
+      },
+      scopes: ['identify'],
+      expires: new Date(Date.now() + 86400000).toISOString(),
+      application: {
+        id: '0',
+        description: 'Storybook',
+        name: 'YAAG Storybook',
+      },
+    } as any;
+  } catch (e) {
+    console.warn('Could not initialize discord store for Storybook', e);
   }
 });
 
