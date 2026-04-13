@@ -43,7 +43,7 @@ import keystrokeSrc from "../assets/audio/keystroke.wav";
 import bellSrc from "../assets/audio/typewriter_bell.wav";
 
 const keystrokeSound = new Howl({ src: [keystrokeSrc], volume: 0.4 });
-const bellSound = new Howl({ src: [bellSrc], volume: 0.5 });
+const bellSound = new Howl({ src: [bellSrc], volume: 0.35 });
 
 const props = defineProps<{
   letterArray: string[];
