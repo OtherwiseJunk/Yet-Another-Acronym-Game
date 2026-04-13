@@ -2,7 +2,7 @@
   <!-- guard rendering until the stories / parent have passed props -->
   <div v-if="props.submissionsByUserId" class="container">
     <div class="acronym-header">
-      <Acronym :letterArray="acronym.split('')" :colors="colorPallette"></Acronym>
+      <StaticAcronym :letterArray="acronym.split('')" :colors="colorPallette" />
     </div>
     <div class="header">
       <p class="font header-text">
@@ -55,7 +55,7 @@
 import { UserSubmission } from "../models";
 import { useDiscordStore } from "../stores/discordStore";
 import Avatar from "./Avatar.vue";
-import Acronym from "./Acronym.vue";
+import StaticAcronym from "./StaticAcronym.vue";
 import { Color } from "../models/color";
 import { VotingCardInfo } from "../models/votingCardInfo";
 import { computed, ref, watch } from "vue";
@@ -176,7 +176,9 @@ function nextRound() {
 .acronym-header {
   flex-shrink: 0;
   width: 100%;
-  margin-bottom: var(--space-md);
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-sm);
 }
 
 .header {
