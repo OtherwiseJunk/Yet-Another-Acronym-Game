@@ -12,6 +12,14 @@
           :style="{ color: dynamicTextColor }"
         />
       </div>
+      <div v-if="submission.trim().length > 0" class="word-validation">
+        <span
+          v-for="(result, index) in wordValidation"
+          :key="index"
+          class="validation-word font"
+          :class="{ 'invalid-word': !result.valid }"
+        >{{ result.word }}</span>
+      </div>
       <div class="submit-button">
         <button type="submit" :disabled="!submittable" class="font start-btn">Submit</button>
       </div>
@@ -28,6 +36,7 @@ import WaitingForOtherPlayersComponent from "./WaitingForOtherPlayersComponent.v
 import Acronym from "./Acronym.vue";
 import { useDynamicTextColor } from "../composables/useDynamicTextColor";
 import { Color } from "../models/color";
+import { isValidWordLength } from "../constants/shortWords";
 const props = defineProps({
   acronym: {
     type: String,
@@ -65,6 +74,18 @@ function submit() {
   }
 }
 
+const wordValidation = computed(() => {
+  const words = submission.value.split(" ");
+  const letters = props.acronym.toLowerCase().split("");
+
+  return words.map((word, index) => {
+    const lowerWord = word.toLowerCase();
+    const startsCorrectly = index < letters.length && lowerWord.startsWith(letters[index]);
+    const validLength = isValidWordLength(lowerWord);
+    return { word, valid: startsCorrectly && validLength };
+  });
+});
+
 const submittable = computed(() => {
   const words = submission.value.toLowerCase().split(" ");
   const letters = props.acronym.toLowerCase().split("");
@@ -72,7 +93,7 @@ const submittable = computed(() => {
     return false;
   }
 
-  return words.every((word, index) => word.startsWith(letters[index]));
+  return words.every((word, index) => word.startsWith(letters[index]) && isValidWordLength(word));
 });
 </script>
 
@@ -113,6 +134,24 @@ const submittable = computed(() => {
 
 input:focus {
   outline: none;
+}
+
+.word-validation {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.validation-word {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+}
+
+.invalid-word {
+  color: var(--color-danger);
+  text-decoration: underline wavy var(--color-danger);
 }
 
 .submit-button {

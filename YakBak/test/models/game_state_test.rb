@@ -254,4 +254,172 @@ class GameStateTest < ActiveSupport::TestCase
     restored.next_phase
     assert_equal GamePhases::VOTING, restored.game_phase
   end
+
+  # Word length validation tests
+
+  test 'handle_player_submission rejects single-letter words not in allowlist' do
+    @game.start_round
+    result = @game.handle_player_submission('discord-123',
+                                            'submission' => 'A B C',
+                                            'user_data' => {})
+
+    assert_not_nil result
+    assert_equal 'invalid_words', result[:error]
+    assert_includes result[:words], 1 # "B" is invalid
+    assert_includes result[:words], 2 # "C" is invalid
+    assert_nil @game.submissions['discord-123']
+  end
+
+  test 'handle_player_submission accepts valid short words from allowlist' do
+    @game.start_round
+    result = @game.handle_player_submission('discord-123',
+                                            'submission' => 'Hug a Frog',
+                                            'user_data' => {})
+
+    assert_nil result
+    assert @game.submissions.key?('discord-123')
+  end
+
+  test 'handle_player_submission accepts all words 3+ characters' do
+    @game.start_round
+    result = @game.handle_player_submission('discord-123',
+                                            'submission' => 'Apples Bananas Cherries',
+                                            'user_data' => {})
+
+    assert_nil result
+    assert @game.submissions.key?('discord-123')
+  end
+
+  test 'handle_player_submission rejects invalid 2-letter words' do
+    @game.start_round
+    result = @game.handle_player_submission('discord-123',
+                                            'submission' => 'Apples bb Cherries',
+                                            'user_data' => {})
+
+    assert_not_nil result
+    assert_equal 'invalid_words', result[:error]
+    assert_includes result[:words], 1 # "bb" is invalid
+  end
+
+  # Deadline timer decay tests
+
+  test 'submission_timer returns 60 by default' do
+    @game.configure_game(GameModes::DEADLINE)
+    assert_equal 60, @game.submission_timer
+  end
+
+  test 'deadline decay increments when not all players submit' do
+    @game.add_player_to_game('player-2')
+    @game.configure_game(GameModes::DEADLINE)
+    @game.start_round
+
+    # Only one player submits (out of 2)
+    @game.handle_player_submission('player-1',
+                                    'submission' => 'Test Answer Here',
+                                    'user_data' => {})
+    @game.next_phase
+
+    assert_equal 1, @game.deadline_decay_level
+    assert_equal 45, @game.submission_timer
+  end
+
+  test 'deadline decay does not increment when all players submit' do
+    @game.add_player_to_game('player-2')
+    @game.configure_game(GameModes::DEADLINE)
+    @game.start_round
+
+    @game.handle_player_submission('player-1',
+                                    'submission' => 'Test Answer Here',
+                                    'user_data' => {})
+    @game.handle_player_submission('player-2',
+                                    'submission' => 'Another Answer Here',
+                                    'user_data' => {})
+    @game.next_phase
+
+    assert_equal 0, @game.deadline_decay_level
+    assert_equal 60, @game.submission_timer
+  end
+
+  test 'deadline decay does not apply in fixed rounds mode' do
+    @game.add_player_to_game('player-2')
+    @game.configure_game(GameModes::FIXED_ROUNDS, 10)
+    @game.start_round
+
+    @game.handle_player_submission('player-1',
+                                    'submission' => 'Test Answer Here',
+                                    'user_data' => {})
+    @game.next_phase
+
+    assert_equal 0, @game.deadline_decay_level
+  end
+
+  test 'deadline decay follows the full schedule' do
+    @game.add_player_to_game('player-2')
+    @game.configure_game(GameModes::DEADLINE)
+
+    expected_timers = [60, 45, 30, 20, 15]
+
+    expected_timers.each_with_index do |expected_timer, level|
+      assert_equal expected_timer, @game.submission_timer
+      @game.start_round
+
+      # Only one player submits to trigger decay
+      @game.handle_player_submission('player-1',
+                                      'submission' => 'Test Answer Here',
+                                      'user_data' => {})
+      @game.next_phase
+    end
+
+    # Should be at floor (15s) and not go lower
+    assert_equal 15, @game.submission_timer
+  end
+
+  test 'deadline decay persists through serialization' do
+    @game.add_player_to_game('player-2')
+    @game.configure_game(GameModes::DEADLINE)
+    @game.start_round
+
+    @game.handle_player_submission('player-1',
+                                    'submission' => 'Test Answer Here',
+                                    'user_data' => {})
+    @game.next_phase
+
+    json = JSON.generate(@game.to_hash)
+    restored = GameState.from_hash(JSON.parse(json))
+
+    assert_equal 1, restored.deadline_decay_level
+    assert_equal 45, restored.submission_timer
+  end
+
+  test 'start_round uses decayed timer' do
+    @game.add_player_to_game('player-2')
+    @game.configure_game(GameModes::DEADLINE)
+    @game.start_round
+
+    @game.handle_player_submission('player-1',
+                                    'submission' => 'Test Answer Here',
+                                    'user_data' => {})
+    @game.next_phase # decay to level 1
+    @game.next_phase # voting -> results
+
+    @game.start_round # should use decayed timer
+
+    assert_equal 45, @game.round_time_remaining
+  end
+
+  test 'configure_game resets decay level' do
+    @game.add_player_to_game('player-2')
+    @game.configure_game(GameModes::DEADLINE)
+    @game.start_round
+
+    @game.handle_player_submission('player-1',
+                                    'submission' => 'Test Answer Here',
+                                    'user_data' => {})
+    @game.next_phase
+    assert_equal 1, @game.deadline_decay_level
+
+    # Reconfiguring for a new game resets decay
+    @game.configure_game(GameModes::DEADLINE)
+    assert_equal 0, @game.deadline_decay_level
+  end
 end
