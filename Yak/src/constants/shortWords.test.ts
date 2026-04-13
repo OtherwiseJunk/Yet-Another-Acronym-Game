@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isValidWordLength, SHORT_WORDS } from "./shortWords";
+import { isValidWordLength, SHORT_WORDS, setShortWords } from "./shortWords";
 
 describe("shortWords", () => {
   describe("isValidWordLength", () => {
@@ -66,6 +66,40 @@ describe("shortWords", () => {
       for (const word of SHORT_WORDS) {
         expect(word).toBe(word.toLowerCase());
       }
+    });
+  });
+
+  describe("setShortWords", () => {
+    it("should replace the word list with server-provided words", () => {
+      setShortWords(["zz", "qq"]);
+
+      expect(isValidWordLength("zz")).toBe(true);
+      expect(isValidWordLength("qq")).toBe(true);
+      expect(isValidWordLength("am")).toBe(false);
+
+      // Restore fallback for other tests
+      setShortWords([
+        "a", "i", "ah", "am", "an", "as", "at", "aw", "ax", "ba", "be", "by", "do", "eh", "em",
+        "ew", "gi", "go", "ha", "he", "hi", "hm", "ho", "id", "if", "in", "is", "it", "ki", "lo",
+        "ma", "me", "my", "no", "of", "oh", "oi", "ok", "on", "or", "ow", "ox", "pa", "pi", "qi",
+        "sh", "so", "ta", "to", "uh", "um", "up", "us", "we", "ya", "ye",
+      ]);
+    });
+
+    it("should normalize words to lowercase", () => {
+      setShortWords(["AM", "By", "do"]);
+
+      expect(isValidWordLength("am")).toBe(true);
+      expect(isValidWordLength("by")).toBe(true);
+      expect(isValidWordLength("DO")).toBe(true);
+
+      // Restore
+      setShortWords([
+        "a", "i", "ah", "am", "an", "as", "at", "aw", "ax", "ba", "be", "by", "do", "eh", "em",
+        "ew", "gi", "go", "ha", "he", "hi", "hm", "ho", "id", "if", "in", "is", "it", "ki", "lo",
+        "ma", "me", "my", "no", "of", "oh", "oi", "ok", "on", "or", "ow", "ox", "pa", "pi", "qi",
+        "sh", "so", "ta", "to", "uh", "um", "up", "us", "we", "ya", "ye",
+      ]);
     });
   });
 });

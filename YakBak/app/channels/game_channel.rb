@@ -13,6 +13,7 @@ class GameChannel < ApplicationCable::Channel
     add_player_to_game params[:discordUserId]
 
     broadcast_game_state
+    transmit({ "type" => "config", "valid_short_words" => ShortWords::VALID.to_a })
   end
 
   def unsubscribed

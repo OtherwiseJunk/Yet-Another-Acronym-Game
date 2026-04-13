@@ -10,6 +10,7 @@ import {
   UserSubmission,
 } from "../models";
 import type { StartGameData } from "../models/CableCommands/startGameCommand";
+import { setShortWords } from "../constants/shortWords";
 
 export const useGameStore = defineStore("gameCable", () => {
   const instanceGame = ref<Channel>();
@@ -39,8 +40,14 @@ export const useGameStore = defineStore("gameCable", () => {
         discordUserId: currentUserId.value,
       },
       {
-        received(data: GameState) {
-          gameState.value = data;
+        received(data: any) {
+          if (data.type === "config") {
+            if (data.valid_short_words) {
+              setShortWords(data.valid_short_words);
+            }
+            return;
+          }
+          gameState.value = data as GameState;
         },
       },
     );
