@@ -1,4 +1,4 @@
-import shortWordsList from "../../../shared/short_words.json";
+import shortWordsList from "../../shared/short_words.json";
 
 /**
  * Valid English words that are 1-2 characters long.

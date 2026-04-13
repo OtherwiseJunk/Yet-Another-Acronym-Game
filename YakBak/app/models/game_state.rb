@@ -69,9 +69,7 @@ class GameState
         @game_phase = GAME_OVER
         @round_time_remaining = 0
       else
-        if @game_mode == DEADLINE && @submissions.count < @players.count
-          @deadline_decay_level = [@deadline_decay_level + 1, DEADLINE_TIMER_SCHEDULE.length - 1].min
-        end
+        @deadline_decay_level = [@deadline_decay_level + 1, DEADLINE_TIMER_SCHEDULE.length - 1].min if @game_mode == DEADLINE && @submissions.count < @players.count
         @round_time_remaining = 20
         @game_phase = VOTING
         @votes = {}
@@ -169,7 +167,7 @@ class GameState
   def validate_word_lengths(submission_text)
     return [] if submission_text.nil?
 
-    submission_text.split(' ').each_with_index.filter_map do |word, index|
+    submission_text.split.each_with_index.filter_map do |word, index|
       index unless ShortWords.valid_word_length?(word)
     end
   end

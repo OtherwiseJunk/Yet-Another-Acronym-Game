@@ -359,7 +359,7 @@ class GameStateTest < ActiveSupport::TestCase
 
     expected_timers = [60, 45, 30, 20, 15]
 
-    expected_timers.each_with_index do |expected_timer, level|
+    expected_timers.each do |expected_timer|
       assert_equal expected_timer, @game.submission_timer
       @game.start_round
 

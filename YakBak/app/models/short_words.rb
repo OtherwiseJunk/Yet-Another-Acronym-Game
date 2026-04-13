@@ -6,7 +6,7 @@ require 'json'
 # Words shorter than 3 characters must appear in this set to be accepted in submissions.
 # Sourced from shared/short_words.json (single source of truth for frontend + backend).
 module ShortWords
-  SHARED_PATH = File.expand_path('../../../shared/short_words.json', __dir__)
+  SHARED_PATH = File.expand_path('../../shared/short_words.json', __dir__)
 
   VALID = Set.new(JSON.parse(File.read(SHARED_PATH))).freeze
 
