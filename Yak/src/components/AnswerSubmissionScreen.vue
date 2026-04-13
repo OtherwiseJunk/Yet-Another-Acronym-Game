@@ -1,6 +1,6 @@
 <template>
   <div v-if="allowSubmission" class="submission-screen-container">
-    <h1 class="font" :style="{ color: dynamicTextColor }">{{ props.timeRemaining }}</h1>
+    <h1 class="font">{{ props.timeRemaining }}</h1>
     <Acronym :letterArray="letterArray" :colors="props.colorPallette"></Acronym>
     <br />
     <form @submit.prevent="submit">
@@ -11,6 +11,15 @@
           type="text"
           :style="{ color: dynamicTextColor }"
         />
+      </div>
+      <div v-if="submission.trim().length > 0" class="word-validation">
+        <span
+          v-for="(result, index) in wordValidation"
+          :key="index"
+          class="validation-word font"
+          :class="{ 'invalid-word': !result.valid }"
+          >{{ result.word }}</span
+        >
       </div>
       <div class="submit-button">
         <button type="submit" :disabled="!submittable" class="font start-btn">Submit</button>
@@ -28,6 +37,7 @@ import WaitingForOtherPlayersComponent from "./WaitingForOtherPlayersComponent.v
 import Acronym from "./Acronym.vue";
 import { useDynamicTextColor } from "../composables/useDynamicTextColor";
 import { Color } from "../models/color";
+import { isValidWordLength } from "../constants/shortWords";
 const props = defineProps({
   acronym: {
     type: String,
@@ -55,7 +65,7 @@ let allowSubmission = ref<boolean>(true);
 
 const letterArray = computed(() => props.acronym.split(""));
 
-const inputBackgroundColor = ref("rgba(255, 255, 255, 0.1)"); // The background of the input container
+const inputBackgroundColor = ref("rgba(255, 255, 255, 0.1)");
 const dynamicTextColor = useDynamicTextColor(inputBackgroundColor);
 
 function submit() {
@@ -65,6 +75,18 @@ function submit() {
   }
 }
 
+const wordValidation = computed(() => {
+  const words = submission.value.split(" ");
+  const letters = props.acronym.toLowerCase().split("");
+
+  return words.map((word, index) => {
+    const lowerWord = word.toLowerCase();
+    const startsCorrectly = index < letters.length && lowerWord.startsWith(letters[index]);
+    const validLength = isValidWordLength(lowerWord);
+    return { word, valid: startsCorrectly && validLength };
+  });
+});
+
 const submittable = computed(() => {
   const words = submission.value.toLowerCase().split(" ");
   const letters = props.acronym.toLowerCase().split("");
@@ -72,7 +94,7 @@ const submittable = computed(() => {
     return false;
   }
 
-  return words.every((word, index) => word.startsWith(letters[index]));
+  return words.every((word, index) => word.startsWith(letters[index]) && isValidWordLength(word));
 });
 </script>
 
@@ -84,18 +106,18 @@ const submittable = computed(() => {
 }
 
 .input-container {
-  padding: 10px;
-  outline: 3px black solid;
-  width: 700px;
-  height: 50px;
-  border-radius: 35px;
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: saturate(150%) blur(10px);
+  padding: var(--space-sm);
+  outline: var(--border-thick) black solid;
+  width: var(--input-max-width);
+  height: var(--input-height);
+  border-radius: var(--radius-pill);
+  background: var(--glass-bg-solid);
+  backdrop-filter: var(--glass-backdrop);
 }
 
 .font {
-  font-size: 2em;
-  font-family: "Orbitron";
+  font-size: var(--font-size-3xl);
+  font-family: var(--font-family);
   font-weight: 800;
   font-style: normal;
 }
@@ -115,24 +137,42 @@ input:focus {
   outline: none;
 }
 
+.word-validation {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.validation-word {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+}
+
+.invalid-word {
+  color: var(--color-danger);
+  text-decoration: underline wavy var(--color-danger);
+}
+
 .submit-button {
   height: 100px;
-  margin-top: 40px;
+  margin-top: var(--space-4xl);
 }
 
 .start-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 10px 30px;
-  border-radius: 35px; /* Match the input box */
+  background: var(--glass-bg-strong);
+  border: var(--border-default) solid var(--glass-bg-heavy);
+  color: var(--text-primary);
+  padding: var(--space-sm) 30px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: saturate(150%) blur(10px); /* Match the input box */
+  transition: all var(--transition-normal);
+  backdrop-filter: var(--glass-backdrop);
 }
 
 .start-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  background: var(--glass-bg-heavy);
+  box-shadow: var(--shadow-glow-md) var(--glass-bg-solid);
 }
 </style>

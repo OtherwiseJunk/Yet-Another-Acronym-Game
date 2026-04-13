@@ -109,4 +109,59 @@ describe("AnswerSubmissionScreen - submittable validation", () => {
 
     expect(wrapper.emitted("submit")).toHaveLength(1);
   });
+
+  // Word length validation tests
+
+  it("should reject single-letter words that are not in the allowlist", async () => {
+    const wrapper = mountWithAcronym("ABC");
+    const input = wrapper.find('input[type="text"]');
+
+    await input.setValue("A B C");
+    expect(wrapper.find('button[type="submit"]').attributes("disabled")).toBeDefined();
+  });
+
+  it("should accept single-letter words that are in the allowlist", async () => {
+    const wrapper = mountWithAcronym("HAF");
+    const input = wrapper.find('input[type="text"]');
+
+    await input.setValue("Hug a Frog");
+    expect(wrapper.find('button[type="submit"]').attributes("disabled")).toBeUndefined();
+  });
+
+  it("should reject invalid 2-letter words", async () => {
+    const wrapper = mountWithAcronym("ABC");
+    const input = wrapper.find('input[type="text"]');
+
+    await input.setValue("Apples bb Cherries");
+    expect(wrapper.find('button[type="submit"]').attributes("disabled")).toBeDefined();
+  });
+
+  it("should accept valid 2-letter words from the allowlist", async () => {
+    const wrapper = mountWithAcronym("AIC");
+    const input = wrapper.find('input[type="text"]');
+
+    await input.setValue("Apes in Cars");
+    expect(wrapper.find('button[type="submit"]').attributes("disabled")).toBeUndefined();
+  });
+
+  it("should highlight invalid words in the validation display", async () => {
+    const wrapper = mountWithAcronym("ABC");
+    const input = wrapper.find('input[type="text"]');
+
+    await input.setValue("Apples b Cherries");
+
+    const invalidWords = wrapper.findAll(".invalid-word");
+    expect(invalidWords.length).toBeGreaterThanOrEqual(1);
+    expect(invalidWords.some((el) => el.text() === "b")).toBe(true);
+  });
+
+  it("should not highlight valid words", async () => {
+    const wrapper = mountWithAcronym("ABC");
+    const input = wrapper.find('input[type="text"]');
+
+    await input.setValue("Apples Bananas Cherries");
+
+    const invalidWords = wrapper.findAll(".invalid-word");
+    expect(invalidWords).toHaveLength(0);
+  });
 });

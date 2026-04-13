@@ -4,10 +4,12 @@ import SplashScreen from "./components/SplashScreen.vue";
 import AnswerSubmission from "./components/AnswerSubmissionScreen.vue";
 import VotingScreen from "./components/VotingScreen.vue";
 import GameOverScreen from "./components/GameOverScreen.vue";
+import FloatingActions from "./components/FloatingActions.vue";
 import { useGameStore } from "./stores/gameStore";
 import { useDiscordStore } from "./stores/discordStore";
 import { usePalletteStore } from "./stores/palletteStore";
 import { UserSubmission } from "./models/userSubmission";
+import { UserData } from "./models/userData";
 import type { StartGameData } from "./models/CableCommands/startGameCommand";
 
 const discord = useDiscordStore();
@@ -32,6 +34,8 @@ const scores = ref<Record<string, number>>({});
 const players = ref<string[]>([]);
 
 let submissions: Record<string, UserSubmission> = {};
+const playerDataById = ref<Record<string, UserData>>({});
+
 cable.$subscribe((_, state) => {
   phase.value = state.gameState.game_phase;
   acronym.value = state.gameState.current_acronym;
@@ -41,6 +45,14 @@ cable.$subscribe((_, state) => {
   roundTimeRemaining.value = state.gameState.round_time_remaining;
   scores.value = state.gameState.scores || {};
   players.value = state.gameState.players || [];
+
+  // Accumulate player data from submissions so GameOverScreen
+  // can display names/avatars even if last round had no submissions.
+  for (const [userId, sub] of Object.entries(submissions)) {
+    if (sub?.user_data?.displayName) {
+      playerDataById.value[userId] = sub.user_data;
+    }
+  }
 });
 
 function onComplete() {
@@ -84,6 +96,8 @@ function onPlayAgain(config: StartGameData) {
       :resultsMode="phase === 3"
       :skipVoting="playerCount <= 2"
       :timeRemaining="roundTimeRemaining"
+      :acronym="acronym"
+      :colorPallette="colors.acronymPallette"
       v-if="(phase === 2 || phase === 3) && animationComplete"
       @vote="(submissionUserId) => onVote(submissionUserId)"
       @next-round="onNextRound()"
@@ -94,9 +108,11 @@ function onPlayAgain(config: StartGameData) {
       :scores="scores"
       :players="players"
       :submissions="submissions"
+      :playerData="playerDataById"
       @play-again="(config) => onPlayAgain(config)"
     >
     </GameOverScreen>
+    <FloatingActions />
   </div>
 </template>
 

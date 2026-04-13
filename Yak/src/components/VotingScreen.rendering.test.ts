@@ -35,6 +35,8 @@ describe("VotingScreen - rendering", () => {
         resultsMode: false,
         skipVoting: false,
         timeRemaining: 20,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -49,6 +51,8 @@ describe("VotingScreen - rendering", () => {
         resultsMode: false,
         skipVoting: false,
         timeRemaining: 20,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -70,6 +74,8 @@ describe("VotingScreen - rendering", () => {
         resultsMode: false,
         skipVoting: false,
         timeRemaining: 20,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -86,6 +92,8 @@ describe("VotingScreen - rendering", () => {
         resultsMode: false,
         skipVoting: false,
         timeRemaining: 15,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -99,6 +107,8 @@ describe("VotingScreen - rendering", () => {
         resultsMode: true,
         skipVoting: false,
         timeRemaining: 0,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -112,6 +122,8 @@ describe("VotingScreen - rendering", () => {
         resultsMode: false,
         skipVoting: true,
         timeRemaining: 20,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -125,6 +137,8 @@ describe("VotingScreen - rendering", () => {
         resultsMode: true,
         skipVoting: false,
         timeRemaining: 0,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -138,6 +152,8 @@ describe("VotingScreen - rendering", () => {
         resultsMode: true,
         skipVoting: false,
         timeRemaining: 0,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -152,6 +168,8 @@ describe("VotingScreen - rendering", () => {
         resultsMode: false,
         skipVoting: false,
         timeRemaining: 20,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 

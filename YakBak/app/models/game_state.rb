@@ -1,8 +1,11 @@
 class GameState
   include GamePhases
   include GameModes
+  DEADLINE_TIMER_SCHEDULE = [60, 45, 30, 20, 15].freeze
+
   attr_reader :round_number, :current_acronym, :scores, :submissions, :game_phase, :players,
-              :round_time_remaining, :votes, :game_mode, :max_rounds, :host_player_id
+              :round_time_remaining, :votes, :game_mode, :max_rounds, :host_player_id,
+              :deadline_decay_level
 
   # Word-start frequency weights based on English dictionary analysis.
   # Each value represents the relative likelihood of a word starting with that letter.
@@ -25,6 +28,7 @@ class GameState
     @host_player_id = player
     @game_mode = nil
     @max_rounds = nil
+    @deadline_decay_level = 0
   end
 
   def generate_new_acronym(round)
@@ -35,13 +39,18 @@ class GameState
   def configure_game(mode, max_rounds = nil)
     @game_mode = mode
     @max_rounds = max_rounds
+    @deadline_decay_level = 0
+  end
+
+  def submission_timer
+    DEADLINE_TIMER_SCHEDULE[[@deadline_decay_level, DEADLINE_TIMER_SCHEDULE.length - 1].min]
   end
 
   def start_round
     @round_number += 1
     @current_acronym = generate_new_acronym(@round_number)
     @game_phase = SUBMITTING
-    @round_time_remaining = 60
+    @round_time_remaining = submission_timer
     @submissions = {}
   end
 
@@ -60,6 +69,7 @@ class GameState
         @game_phase = GAME_OVER
         @round_time_remaining = 0
       else
+        @deadline_decay_level = [@deadline_decay_level + 1, DEADLINE_TIMER_SCHEDULE.length - 1].min if @game_mode == DEADLINE && @submissions.count < @players.count
         @round_time_remaining = 20
         @game_phase = VOTING
         @votes = {}
@@ -96,8 +106,13 @@ class GameState
   end
 
   def handle_player_submission(discord_id, submission_data)
+    submission_text = submission_data['submission']
+    invalid_words = validate_word_lengths(submission_text)
+    return { error: 'invalid_words', words: invalid_words } if invalid_words.any?
+
     @submissions[discord_id] =
-      UserSubmission.new(submission_data['submission'], 60 - @round_time_remaining, submission_data['user_data'])
+      UserSubmission.new(submission_text, submission_timer - @round_time_remaining, submission_data['user_data'])
+    nil
   end
 
   def to_hash
@@ -112,7 +127,8 @@ class GameState
       "votes" => @votes,
       "game_mode" => @game_mode,
       "max_rounds" => @max_rounds,
-      "host_player_id" => @host_player_id
+      "host_player_id" => @host_player_id,
+      "deadline_decay_level" => @deadline_decay_level
     }
   end
 
@@ -128,6 +144,7 @@ class GameState
     game.instance_variable_set(:@game_mode, hash["game_mode"])
     game.instance_variable_set(:@max_rounds, hash["max_rounds"])
     game.instance_variable_set(:@host_player_id, hash["host_player_id"])
+    game.instance_variable_set(:@deadline_decay_level, hash["deadline_decay_level"] || 0)
 
     submissions = (hash["submissions"] || {}).transform_values { |s| UserSubmission.from_hash(s) }
     game.instance_variable_set(:@submissions, submissions)
@@ -138,11 +155,20 @@ class GameState
   private
 
   attr_writer :round_number, :current_acronym, :scores, :submissions, :game_phase, :players,
-              :round_time_remaining, :votes, :game_mode, :max_rounds, :host_player_id
+              :round_time_remaining, :votes, :game_mode, :max_rounds, :host_player_id,
+              :deadline_decay_level
 
   def tally_votes
     @votes.each_value do |voted_for_id|
       @scores[voted_for_id] = (@scores[voted_for_id] || 0) + 1
+    end
+  end
+
+  def validate_word_lengths(submission_text)
+    return [] if submission_text.nil?
+
+    submission_text.split.each_with_index.filter_map do |word, index|
+      index unless ShortWords.valid_word_length?(word)
     end
   end
 

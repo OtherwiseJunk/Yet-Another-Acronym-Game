@@ -94,7 +94,13 @@ class GameChannel < ApplicationCable::Channel
   end
 
   def handle_submission(instance, game_state, data)
-    game_state.handle_player_submission params[:discordUserId], data
+    error = game_state.handle_player_submission params[:discordUserId], data
+
+    if error
+      transmit({ "error" => error[:error], "invalid_word_indices" => error[:words] })
+      return
+    end
+
     RedisGameStore.set(instance, game_state)
     broadcast_game_state
 
@@ -148,7 +154,7 @@ class GameChannel < ApplicationCable::Channel
     if game_state.game_phase == GamePhases::RESULTS
       check_game_end(instance, game_state)
     elsif game_state.game_phase == GamePhases::VOTING
-      if game_state.players.count < 3
+      if game_state.players.count < 3 && !ENV['YAAG_FORCE_VOTING']
         Rails.logger.debug 'Less than 3 total players, skipping voting'
         game_state.next_phase
         RedisGameStore.set(instance, game_state)

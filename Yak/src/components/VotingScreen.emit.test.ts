@@ -25,6 +25,8 @@ function mountVotingScreen(propsOverrides = {}) {
       resultsMode: false,
       skipVoting: false,
       timeRemaining: 20,
+      acronym: "YAAG",
+      colorPallette: [],
       ...propsOverrides,
     },
     global: {
@@ -46,6 +48,8 @@ describe("VotingScreen - emits", () => {
         resultsMode: true,
         skipVoting: false,
         timeRemaining: 20,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -64,6 +68,8 @@ describe("VotingScreen - emits", () => {
         resultsMode: false,
         skipVoting: false,
         timeRemaining: 20,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -80,6 +86,8 @@ describe("VotingScreen - emits", () => {
         resultsMode: false,
         skipVoting: true,
         timeRemaining: 20,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -93,6 +101,8 @@ describe("VotingScreen - emits", () => {
         resultsMode: false,
         skipVoting: false,
         timeRemaining: 42,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -106,6 +116,8 @@ describe("VotingScreen - emits", () => {
         resultsMode: true,
         skipVoting: false,
         timeRemaining: 0,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -119,6 +131,8 @@ describe("VotingScreen - emits", () => {
         resultsMode: false,
         skipVoting: false,
         timeRemaining: 20,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -133,6 +147,8 @@ describe("VotingScreen - emits", () => {
         resultsMode: false,
         skipVoting: false,
         timeRemaining: 20,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 
@@ -205,6 +221,8 @@ describe("VotingScreen - emits", () => {
         resultsMode: false,
         skipVoting: false,
         timeRemaining: 20,
+        acronym: "YAAG",
+        colorPallette: [],
       },
     });
 

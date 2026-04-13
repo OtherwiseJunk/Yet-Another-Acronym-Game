@@ -39,6 +39,8 @@ describe("VotingScreen", () => {
           resultsMode: true,
           skipVoting: false,
           timeRemaining: 20,
+          acronym: "YAAG",
+          colorPallette: [],
         },
         global: {
           config: {

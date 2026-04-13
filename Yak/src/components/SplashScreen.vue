@@ -48,27 +48,27 @@
 
 <style scoped>
 .input {
-  padding: 10px;
-  outline: 3px black solid;
-  width: 700px;
-  height: 50px;
-  border-radius: 35px;
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: saturate(150%) blur(10px);
+  padding: var(--space-sm);
+  outline: var(--border-thick) black solid;
+  width: var(--input-max-width);
+  height: var(--input-height);
+  border-radius: var(--radius-pill);
+  background: var(--glass-bg-solid);
+  backdrop-filter: var(--glass-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .font {
-  font-size: 2em;
-  font-family: "Orbitron";
+  font-size: var(--font-size-3xl);
+  font-family: var(--font-family);
   font-weight: 800;
   font-style: normal;
 }
 
 .mode-selection {
-  margin-top: 40px;
+  margin-top: var(--space-4xl);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -76,48 +76,48 @@
 
 .mode-buttons {
   display: flex;
-  gap: 24px;
+  gap: var(--space-2xl);
 }
 
 .mode-option {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-xs);
 }
 
 .mode-btn {
-  font-size: 1.2em;
-  background: rgba(255, 255, 255, 0.06);
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  color: white;
-  padding: 16px 32px;
-  border-radius: 35px;
+  font-size: var(--font-size-lg);
+  background: var(--glass-bg-light);
+  border: var(--border-default) solid var(--glass-bg-prominent);
+  color: var(--text-primary);
+  padding: var(--space-lg) var(--space-3xl);
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: saturate(150%) blur(10px);
+  transition: all var(--transition-normal);
+  backdrop-filter: var(--glass-backdrop);
 }
 
 .mode-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  background: var(--glass-bg-prominent);
+  box-shadow: var(--shadow-glow-lg) var(--glass-bg-heavy);
   transform: translateY(-2px);
 }
 
 .deadline-btn:hover {
-  border-color: #ff4444;
-  box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+  border-color: var(--color-danger);
+  box-shadow: var(--shadow-glow-lg) var(--color-danger-glow-medium);
 }
 
 .fixed-btn:hover {
-  border-color: #44aaff;
-  box-shadow: 0 0 20px rgba(68, 170, 255, 0.3);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-glow-lg) var(--color-primary-glow-strong);
 }
 
 .mode-hint {
-  font-family: "Orbitron";
+  font-family: var(--font-family);
   font-size: 0.7em;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-faint);
   max-width: 220px;
   text-align: center;
   line-height: 1.4;
@@ -127,87 +127,87 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  margin-top: 8px;
+  gap: var(--space-lg);
+  margin-top: var(--space-xs);
 }
 
 .round-label {
-  font-size: 1em;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: var(--font-size-base);
+  color: var(--text-muted);
   margin: 0;
 }
 
 .round-options {
   display: flex;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
 .round-btn {
-  font-size: 1.1em;
-  background: rgba(255, 255, 255, 0.06);
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  color: white;
+  font-size: var(--font-size-md);
+  background: var(--glass-bg-light);
+  border: var(--border-default) solid var(--glass-bg-prominent);
+  color: var(--text-primary);
   width: 64px;
   height: 64px;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   cursor: pointer;
   transition: all 0.25s ease;
 }
 
 .round-btn:hover {
-  background: rgba(68, 170, 255, 0.15);
-  border-color: #44aaff;
+  background: var(--color-primary-glow-subtle);
+  border-color: var(--color-primary);
 }
 
 .round-selected {
-  background: rgba(68, 170, 255, 0.25);
-  border-color: #44aaff;
-  box-shadow: 0 0 16px rgba(68, 170, 255, 0.4);
+  background: var(--color-primary-glow-medium);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 16px var(--color-primary-glow-intense);
 }
 
 .start-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 10px 30px;
-  border-radius: 35px;
+  background: var(--glass-bg-strong);
+  border: var(--border-default) solid var(--glass-bg-heavy);
+  color: var(--text-primary);
+  padding: var(--space-sm) 30px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: saturate(150%) blur(10px);
+  transition: all var(--transition-normal);
+  backdrop-filter: var(--glass-backdrop);
 }
 
 .start-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  background: var(--glass-bg-heavy);
+  box-shadow: var(--shadow-glow-md) var(--glass-bg-solid);
 }
 
 .go-btn {
-  margin-top: 8px;
-  font-size: 1.3em;
-  padding: 12px 48px;
+  margin-top: var(--space-xs);
+  font-size: var(--font-size-xl);
+  padding: var(--space-md) var(--space-5xl);
 }
 
 .deadline-confirm {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  margin-top: 8px;
+  gap: var(--space-lg);
+  margin-top: var(--space-xs);
 }
 
 .deadline-text {
-  font-size: 0.9em;
-  color: rgba(255, 68, 68, 0.7);
+  font-size: var(--font-size-sm);
+  color: var(--color-danger-text);
   margin: 0;
 }
 
 .waiting {
-  margin-top: 40px;
+  margin-top: var(--space-4xl);
 }
 
 .waiting-text {
-  font-size: 0.9em;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: var(--font-size-sm);
+  color: var(--text-faint);
   animation: pulse 2s ease-in-out infinite;
 }
 
