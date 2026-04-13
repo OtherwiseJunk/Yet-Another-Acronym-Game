@@ -4,7 +4,7 @@
       v-for="(letter, index) in letterArray"
       :key="index"
       class="letter"
-      :style="{ color: colors[index % colors.length]?.main ?? '#fff' }"
+      :style="{ color: colors?.length ? colors[index % colors.length].main : '#fff' }"
     >{{ letter }}</span>
   </div>
 </template>
@@ -12,10 +12,12 @@
 <script setup lang="ts">
 import { Color } from "../models/color";
 
-defineProps<{
+withDefaults(defineProps<{
   letterArray: string[];
-  colors: Color[];
-}>();
+  colors?: Color[];
+}>(), {
+  colors: () => [],
+});
 </script>
 
 <style scoped>

@@ -26,15 +26,14 @@
         }"
       >
         <div class="card-top-row">
-          <div class="submitter-info">
+          <div v-if="props.resultsMode" class="submitter-info">
             <Avatar
-              v-show="props.resultsMode"
               class="avatar"
               :avatarDecorationUrl="votingCardInfo.decoratorUrl"
               :avatarUrl="votingCardInfo.avatarUrl"
               :shouldAnimate="shouldAnimateByUserId.get(Number(votingCardInfo.userId))"
             ></Avatar>
-            <p v-show="props.resultsMode" class="submitter-name font">
+            <p class="submitter-name font">
               {{ votingCardInfo.displayName }}
             </p>
           </div>

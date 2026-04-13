@@ -52,37 +52,38 @@ watch(
       '--container-size': `${props.size * 1.2}px`,
     }"
   >
-    <img v-if="decorationUrl" class="avatar-decoration avatar" :src="decorationUrl" />
+    <img v-if="decorationUrl" class="avatar-decoration" :src="decorationUrl" />
     <img
-      class="avatar-icon avatar"
+      class="avatar-icon"
       :src="displayAvatarUrl ?? 'https://1219391019515121716.discordsays.com/media/yak.png'"
     />
   </div>
 </template>
 
 <style scoped>
-.avatar-decoration {
-  z-index: 1;
-  height: var(--decoration-size);
-}
-
-.avatar-icon {
-  height: var(--icon-size);
-  z-index: -1;
-}
-
-.avatar {
-  position: absolute;
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
 .avatar-container {
   position: relative;
   width: var(--container-size);
   height: var(--container-size);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-decoration {
+  position: absolute;
+  z-index: 1;
+  height: var(--decoration-size);
+  width: var(--decoration-size);
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.avatar-icon {
+  height: var(--icon-size);
+  width: var(--icon-size);
+  object-fit: cover;
+  border-radius: 50%;
 }
 </style>
