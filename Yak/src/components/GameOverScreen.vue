@@ -67,7 +67,6 @@
         <button class="font play-again-btn" @click="startWithConfig()">Go</button>
       </div>
     </div>
-
   </div>
 </template>
 

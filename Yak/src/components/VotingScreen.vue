@@ -49,7 +49,9 @@
         class="next-round-button font gradient"
         :style="{ '--selectedGradient': selectedGradient.join(', ') }"
         @click="nextRound()"
-      >Next Round</button>
+      >
+        Next Round
+      </button>
     </div>
   </div>
 </template>

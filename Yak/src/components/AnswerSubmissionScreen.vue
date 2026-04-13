@@ -18,7 +18,8 @@
           :key="index"
           class="validation-word font"
           :class="{ 'invalid-word': !result.valid }"
-        >{{ result.word }}</span>
+          >{{ result.word }}</span
+        >
       </div>
       <div class="submit-button">
         <button type="submit" :disabled="!submittable" class="font start-btn">Submit</button>

@@ -5,19 +5,23 @@
       :key="index"
       class="letter"
       :style="{ color: colors?.length ? colors[index % colors.length].main : '#fff' }"
-    >{{ letter }}</span>
+      >{{ letter }}</span
+    >
   </div>
 </template>
 
 <script setup lang="ts">
 import { Color } from "../models/color";
 
-withDefaults(defineProps<{
-  letterArray: string[];
-  colors?: Color[];
-}>(), {
-  colors: () => [],
-});
+withDefaults(
+  defineProps<{
+    letterArray: string[];
+    colors?: Color[];
+  }>(),
+  {
+    colors: () => [],
+  },
+);
 </script>
 
 <style scoped>

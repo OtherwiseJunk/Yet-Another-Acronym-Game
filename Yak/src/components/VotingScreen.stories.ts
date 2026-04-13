@@ -114,17 +114,32 @@ export const SixPlayers: Story = {
     submissionsByUserId: {
       ...threePlayerSubmissions,
       "4": {
-        user_data: { id: 4, displayName: "SpeedDemon", avatarUrl: playerOne.avatarUrl, decorationUrl: "" },
+        user_data: {
+          id: 4,
+          displayName: "SpeedDemon",
+          avatarUrl: playerOne.avatarUrl,
+          decorationUrl: "",
+        },
         submission: "Yaks Ate All Grass",
         answer_time: 3,
       },
       "5": {
-        user_data: { id: 5, displayName: "SlowAndSteady", avatarUrl: playerTwo.avatarUrl, decorationUrl: "" },
+        user_data: {
+          id: 5,
+          displayName: "SlowAndSteady",
+          avatarUrl: playerTwo.avatarUrl,
+          decorationUrl: "",
+        },
         submission: "Yesterday's Antics Are Gone",
         answer_time: 45,
       },
       "6": {
-        user_data: { id: 6, displayName: "LastMinuteLarry", avatarUrl: playerThree.avatarUrl, decorationUrl: "" },
+        user_data: {
+          id: 6,
+          displayName: "LastMinuteLarry",
+          avatarUrl: playerThree.avatarUrl,
+          decorationUrl: "",
+        },
         submission: "Yelling About Awful Guacamole",
         answer_time: 58,
       },
@@ -141,17 +156,20 @@ export const LongSubmissions: Story = {
     submissionsByUserId: {
       "1": {
         user_data: playerOne,
-        submission: "Youthful Ambitious Astronauts Gracefully Blasting Into Zany Kaleidoscopic Realms",
+        submission:
+          "Youthful Ambitious Astronauts Gracefully Blasting Into Zany Kaleidoscopic Realms",
         answer_time: 30,
       },
       "2": {
         user_data: playerTwo,
-        submission: "Yearning Aimlessly Around Galaxies Before Investigating Zealous Koala Restaurants",
+        submission:
+          "Yearning Aimlessly Around Galaxies Before Investigating Zealous Koala Restaurants",
         answer_time: 42,
       },
       "3": {
         user_data: playerThree,
-        submission: "Yellow Armadillos Accidentally Generated Brilliant Ideas Zapping Keyboard Rhythms",
+        submission:
+          "Yellow Armadillos Accidentally Generated Brilliant Ideas Zapping Keyboard Rhythms",
         answer_time: 55,
       },
     },
@@ -256,17 +274,32 @@ export const ResultsSixPlayers: Story = {
     submissionsByUserId: {
       ...threePlayerSubmissions,
       "4": {
-        user_data: { id: 4, displayName: "SpeedDemon", avatarUrl: playerOne.avatarUrl, decorationUrl: "" },
+        user_data: {
+          id: 4,
+          displayName: "SpeedDemon",
+          avatarUrl: playerOne.avatarUrl,
+          decorationUrl: "",
+        },
         submission: "Yaks Ate All Grass",
         answer_time: 3,
       },
       "5": {
-        user_data: { id: 5, displayName: "SlowAndSteady", avatarUrl: playerTwo.avatarUrl, decorationUrl: "" },
+        user_data: {
+          id: 5,
+          displayName: "SlowAndSteady",
+          avatarUrl: playerTwo.avatarUrl,
+          decorationUrl: "",
+        },
         submission: "Yesterday's Antics Are Gone",
         answer_time: 45,
       },
       "6": {
-        user_data: { id: 6, displayName: "LastMinuteLarry", avatarUrl: playerThree.avatarUrl, decorationUrl: "" },
+        user_data: {
+          id: 6,
+          displayName: "LastMinuteLarry",
+          avatarUrl: playerThree.avatarUrl,
+          decorationUrl: "",
+        },
         submission: "Yelling About Awful Guacamole",
         answer_time: 58,
       },
@@ -283,17 +316,20 @@ export const ResultsLongSubmissions: Story = {
     submissionsByUserId: {
       "1": {
         user_data: playerOne,
-        submission: "Youthful Ambitious Astronauts Gracefully Blasting Into Zany Kaleidoscopic Realms",
+        submission:
+          "Youthful Ambitious Astronauts Gracefully Blasting Into Zany Kaleidoscopic Realms",
         answer_time: 30,
       },
       "2": {
         user_data: playerTwo,
-        submission: "Yearning Aimlessly Around Galaxies Before Investigating Zealous Koala Restaurants",
+        submission:
+          "Yearning Aimlessly Around Galaxies Before Investigating Zealous Koala Restaurants",
         answer_time: 42,
       },
       "3": {
         user_data: playerThree,
-        submission: "Yellow Armadillos Accidentally Generated Brilliant Ideas Zapping Keyboard Rhythms",
+        submission:
+          "Yellow Armadillos Accidentally Generated Brilliant Ideas Zapping Keyboard Rhythms",
         answer_time: 55,
       },
     },
@@ -324,12 +360,22 @@ export const ResultsNoDecorations: Story = {
   args: {
     submissionsByUserId: {
       "1": {
-        user_data: { id: 1, displayName: "NoDeco1", avatarUrl: playerOne.avatarUrl, decorationUrl: "" },
+        user_data: {
+          id: 1,
+          displayName: "NoDeco1",
+          avatarUrl: playerOne.avatarUrl,
+          decorationUrl: "",
+        },
         submission: "Yet Another Acronym Game",
         answer_time: 5,
       },
       "2": {
-        user_data: { id: 2, displayName: "NoDeco2", avatarUrl: playerTwo.avatarUrl, decorationUrl: "" },
+        user_data: {
+          id: 2,
+          displayName: "NoDeco2",
+          avatarUrl: playerTwo.avatarUrl,
+          decorationUrl: "",
+        },
         submission: "Yawning Alpacas Always Giggle",
         answer_time: 8,
       },
