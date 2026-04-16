@@ -37,13 +37,7 @@ svg {
 <script defer setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { gsap } from "gsap";
-import { Howl } from "howler";
 import { Color } from "../models";
-import keystrokeSrc from "../assets/audio/keystroke.wav";
-import bellSrc from "../assets/audio/typewriter_bell.wav";
-
-const keystrokeSound = new Howl({ src: [keystrokeSrc], volume: 0.4 });
-const bellSound = new Howl({ src: [bellSrc], volume: 0.35 });
 
 const props = defineProps<{
   letterArray: string[];
@@ -186,17 +180,6 @@ function addCircle(centerX: number, centerY: number) {
   );
 }
 
-function playKeystroke(index: number, totalLetters: number) {
-  // Modulate pitch based on letter position: sweep from low to high across the acronym
-  const baseRate = 0.85;
-  const rateRange = 0.5;
-  const rate = baseRate + (index / Math.max(totalLetters - 1, 1)) * rateRange;
-  // Add slight random variation for organic feel
-  const jitter = 0.95 + Math.random() * 0.1;
-  const id = keystrokeSound.play();
-  keystrokeSound.rate(rate * jitter, id);
-}
-
 let animationTimeout: number;
 function addText(index: number) {
   clearTimeout(animationTimeout);
@@ -204,11 +187,7 @@ function addText(index: number) {
     if (props.letterArray && props.letterArray[index]) {
       addLetter(props.letterArray[index], index);
       positionLetters();
-      playKeystroke(index, props.letterArray.length);
       addText(index + 1);
-    } else if (index > 0) {
-      // All letters placed — play the bell
-      bellSound.play();
     }
   }, 300);
 }
