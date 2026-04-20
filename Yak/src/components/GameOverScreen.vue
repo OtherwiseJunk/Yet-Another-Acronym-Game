@@ -6,14 +6,14 @@
 
     <div class="leaderboard" ref="leaderboardRef">
       <div
-        v-for="(entry, index) in revealedEntries"
+        v-for="(entry, index) in sortedEntries"
         :key="entry.userId"
         class="leaderboard-entry"
         :class="{
           'first-place': entry.rank === 1,
           'entry-reveal': true,
         }"
-        :style="{ animationDelay: `${index * 0.6}s` }"
+        :style="{ animationDelay: `${(sortedEntries.length - 1 - index) * 0.6}s` }"
       >
         <div class="rank-badge" :class="`rank-${entry.rank}`">
           {{ entry.rank }}
@@ -28,14 +28,27 @@
               :shouldAnimate="true"
             />
           </div>
-          <span class="player-name font" :class="{ 'name-first': entry.rank === 1 }">
-            {{ entry.displayName }}
-          </span>
+          <div class="name-and-time">
+            <span class="player-name font" :class="{ 'name-first': entry.rank === 1 }">
+              {{ entry.displayName }}
+            </span>
+            <span
+              v-if="entry.cumulativeTime !== undefined"
+              class="cumulative-time"
+            >
+              {{ entry.cumulativeTime.toFixed(1) }}s total
+            </span>
+          </div>
         </div>
 
-        <div class="score-display" :class="{ 'score-first': entry.rank === 1 }">
-          <span class="score-value font">{{ entry.score }}</span>
-          <span class="score-label">pts</span>
+        <div class="score-column">
+          <div class="score-display" :class="{ 'score-first': entry.rank === 1 }">
+            <span class="score-value font">{{ entry.score }}</span>
+            <span class="score-label">pts</span>
+          </div>
+          <span v-if="entry.isOverallFastest" class="fastest-overall-badge font">
+            &#9889; Fastest Overall +1
+          </span>
         </div>
       </div>
     </div>
@@ -43,7 +56,7 @@
     <div
       v-if="allRevealed"
       class="play-again-container entry-reveal"
-      :style="{ animationDelay: `${revealedEntries.length * 0.6 + 0.3}s` }"
+      :style="{ animationDelay: `${sortedEntries.length * 0.6 + 0.3}s` }"
     >
       <div v-if="!selectedMode" class="mode-buttons">
         <button class="font mode-btn" @click="selectedMode = 'deadline'">Deadline</button>
@@ -94,6 +107,14 @@ const props = defineProps({
     type: Object as () => Record<string, UserData>,
     default: () => ({}),
   },
+  cumulativeTimes: {
+    type: Object as () => Record<string, number>,
+    default: () => ({}),
+  },
+  overallFastestPlayerIds: {
+    type: Array as () => string[],
+    default: () => [],
+  },
 });
 
 const emits = defineEmits(["play-again"]);
@@ -129,16 +150,19 @@ interface LeaderboardEntry {
   decorationUrl: string;
   score: number;
   rank: number;
+  cumulativeTime?: number;
+  isOverallFastest?: boolean;
 }
 
 const leaderboardRef = ref<HTMLElement | null>(null);
-const revealCount = ref(0);
 
 const sortedEntries = computed((): LeaderboardEntry[] => {
+  const fastestSet = new Set(props.overallFastestPlayerIds || []);
   const entries: LeaderboardEntry[] = props.players.map((playerId: string) => {
     const score = props.scores[playerId] || 0;
     const sub: UserSubmission | undefined = props.submissions[playerId];
     const saved = props.playerData[playerId];
+    const rawTime = props.cumulativeTimes?.[playerId];
     return {
       userId: playerId,
       displayName: sub?.user_data?.displayName || saved?.displayName || playerId,
@@ -146,6 +170,8 @@ const sortedEntries = computed((): LeaderboardEntry[] => {
       decorationUrl: sub?.user_data?.decorationUrl || saved?.decorationUrl || "",
       score,
       rank: 0,
+      cumulativeTime: typeof rawTime === "number" ? rawTime : undefined,
+      isOverallFastest: fastestSet.has(playerId),
     };
   });
 
@@ -157,27 +183,17 @@ const sortedEntries = computed((): LeaderboardEntry[] => {
   return entries;
 });
 
-// Reversed for bottom-to-top reveal
-const entriesBottomUp = computed(() => [...sortedEntries.value].reverse());
-
-const revealedEntries = computed(() => entriesBottomUp.value.slice(0, revealCount.value));
-
 const allRevealed = ref(false);
 
 onMounted(() => {
-  const total = entriesBottomUp.value.length;
-  let i = 0;
-
-  const interval = window.setInterval(() => {
-    i++;
-    revealCount.value = i;
-    if (i >= total) {
-      clearInterval(interval);
-      setTimeout(() => {
-        allRevealed.value = true;
-      }, 800);
-    }
-  }, 600);
+  // Entries animate bottom-up via per-row animationDelay. Unlock the
+  // play-again container only after the last (top-most) row has fully revealed.
+  const total = sortedEntries.value.length;
+  const revealStaggerMs = total * 600;
+  const slideInMs = 800;
+  window.setTimeout(() => {
+    allRevealed.value = true;
+  }, revealStaggerMs + slideInMs);
 });
 </script>
 
@@ -330,6 +346,13 @@ onMounted(() => {
   }
 }
 
+.name-and-time {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  min-width: 0;
+}
+
 .player-name {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
@@ -341,6 +364,32 @@ onMounted(() => {
 .name-first {
   font-size: var(--font-size-md);
   color: var(--color-gold);
+}
+
+.cumulative-time {
+  font-size: var(--font-size-xs);
+  color: var(--text-subtle);
+  font-family: var(--font-family);
+  font-weight: 600;
+}
+
+.score-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2xs);
+  flex-shrink: 0;
+}
+
+.fastest-overall-badge {
+  font-size: var(--font-size-xs);
+  padding: var(--space-2xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 90, 0, 0.25);
+  color: #ffb347;
+  border: var(--border-thin) solid rgba(255, 150, 50, 0.7);
+  text-shadow: 0 0 6px rgba(255, 90, 0, 0.6);
+  white-space: nowrap;
 }
 
 .score-display {

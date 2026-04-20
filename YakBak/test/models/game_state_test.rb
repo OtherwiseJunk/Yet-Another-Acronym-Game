@@ -422,4 +422,199 @@ class GameStateTest < ActiveSupport::TestCase
     @game.configure_game(GameModes::DEADLINE)
     assert_equal 0, @game.deadline_decay_level
   end
+
+  # Scoring rework tests — use start_round (start_game doesn't exist)
+
+  def setup_three_player_voting_round(submit_order: %w[player-1 player-2 player-3])
+    @game.add_player_to_game('player-2')
+    @game.add_player_to_game('player-3')
+    @game.configure_game(GameModes::FIXED_ROUNDS, 10)
+    @game.start_round
+
+    submit_order.each_with_index do |player, idx|
+      idx.times { @game.round_second_elapsed }
+      @game.handle_player_submission(player,
+                                      'submission' => "Answer from #{player}",
+                                      'user_data' => {})
+    end
+    @game.next_phase # -> voting
+  end
+
+  test 'score_round awards +1 per vote received' do
+    setup_three_player_voting_round
+    @game.handle_player_vote('player-2', 'player-1')
+    @game.handle_player_vote('player-3', 'player-1')
+    @game.next_phase # -> results, triggers score_round
+
+    # player-1 gets 2 (votes) + 1 (speed bonus, fastest submitter with votes) = 3
+    assert_equal 3, @game.scores['player-1']
+  end
+
+  test 'voter who voted for winner gets +1' do
+    setup_three_player_voting_round
+    @game.handle_player_vote('player-2', 'player-1') # player-2 votes for winner
+    @game.handle_player_vote('player-3', 'player-1')
+    @game.next_phase
+
+    # player-2 and player-3 each get +1 for voting for the winner
+    assert_equal 1, @game.scores['player-2']
+    assert_equal 1, @game.scores['player-3']
+  end
+
+  test 'voter who did not vote for winner gets no voter-reward bonus' do
+    setup_three_player_voting_round
+    @game.handle_player_vote('player-2', 'player-1') # winner
+    @game.handle_player_vote('player-1', 'player-3') # loser vote
+    @game.next_phase
+
+    # player-1 got 1 vote (loser vote) but voted for player-3 (not winner),
+    # so no voter reward. Winner is player-2 (1 vote, faster than player-3).
+    # Actually with this setup both player-1 and player-3 got 1 vote;
+    # tiebreak by answer_time: player-1 submitted first (0s) vs player-3 (2s).
+    # Winner => player-1.
+    assert_equal 'player-1', @game.last_round_winner_id
+    # player-2 voted for winner (player-1) so gets +1 voter reward
+    assert_equal 1, @game.scores['player-2']
+    # player-1 voted for player-3 (not winner) so no voter reward:
+    # 1 (vote received) + 1 (speed bonus, fastest voted-for) = 2, not 3.
+    assert_equal 2, @game.scores['player-1']
+    assert_equal 0, @game.last_round_scoring.dig('player-1', 'voted_for_winner')
+  end
+
+  test 'winner tie is broken by lowest answer_time; only one winner bonus' do
+    # Two candidates tied at 1 vote, tiebreak by answer_time
+    setup_three_player_voting_round(submit_order: %w[player-1 player-3 player-2])
+    # player-1 answer_time=0, player-3=1, player-2=2
+    # player-2 votes for player-3, player-3 votes for player-2 -> tied at 1 each
+    # Tiebreak: player-3 (answer_time=1) beats player-2 (answer_time=2)
+    @game.handle_player_vote('player-2', 'player-3')
+    @game.handle_player_vote('player-1', 'player-2')
+    @game.next_phase
+
+    assert_equal 'player-3', @game.last_round_winner_id
+  end
+
+  test 'speed bonus only goes to fastest submitter with at least one vote' do
+    setup_three_player_voting_round
+    # Only player-3 (slowest, answer_time=2) gets votes
+    @game.handle_player_vote('player-1', 'player-3')
+    @game.handle_player_vote('player-2', 'player-3')
+    @game.next_phase
+
+    # player-3 gets: 2 votes + 0 (they didn't vote for themselves) + 1 speed bonus
+    # (fastest-with-votes among those voted-for is only player-3)
+    assert_equal 3, @game.scores['player-3']
+    # player-1 is fastest submission but got no votes → no speed bonus
+    assert_nil @game.scores['player-1']
+  end
+
+  test 'no speed bonus awarded when no one got votes' do
+    setup_three_player_voting_round
+    @game.next_phase # no votes cast
+
+    assert_nil @game.last_round_winner_id
+    assert_empty @game.scores
+  end
+
+  test 'winner bonus and speed bonus stack when same player wins and is fastest' do
+    setup_three_player_voting_round
+    # player-1 is fastest AND gets votes
+    @game.handle_player_vote('player-2', 'player-1')
+    @game.handle_player_vote('player-3', 'player-1')
+    @game.next_phase
+
+    scoring = @game.last_round_scoring['player-1']
+    assert_equal 2, scoring['votes_received']
+    assert_equal 1, scoring['speed_bonus']
+    assert_equal true, scoring['is_winner']
+    assert_equal 3, scoring['total']
+  end
+
+  test 'last_round_scoring and last_round_winner_id round-trip through serialization' do
+    setup_three_player_voting_round
+    @game.handle_player_vote('player-2', 'player-1')
+    @game.next_phase
+
+    json = JSON.generate(@game.to_hash)
+    restored = GameState.from_hash(JSON.parse(json))
+
+    assert_equal 'player-1', restored.last_round_winner_id
+    assert_equal 1, restored.last_round_scoring.dig('player-1', 'votes_received')
+    assert_equal 1, restored.last_round_scoring.dig('player-1', 'speed_bonus')
+    assert_equal true, restored.last_round_scoring.dig('player-1', 'is_winner')
+  end
+
+  test 'cumulative_times accumulate across rounds for submitters' do
+    @game.add_player_to_game('player-2')
+    @game.configure_game(GameModes::FIXED_ROUNDS, 10)
+
+    # Round 1: player-1 submits at 3s, player-2 submits at 7s
+    @game.start_round
+    3.times { @game.round_second_elapsed }
+    @game.handle_player_submission('player-1', 'submission' => 'A A A', 'user_data' => {})
+    4.times { @game.round_second_elapsed } # total 7 elapsed
+    @game.handle_player_submission('player-2', 'submission' => 'B B B', 'user_data' => {})
+    @game.next_phase # -> voting
+    @game.next_phase # -> results
+
+    # Round 2: player-1 submits at 5s, player-2 submits at 2s
+    @game.start_round
+    2.times { @game.round_second_elapsed }
+    @game.handle_player_submission('player-2', 'submission' => 'B B B', 'user_data' => {})
+    3.times { @game.round_second_elapsed } # total 5
+    @game.handle_player_submission('player-1', 'submission' => 'A A A', 'user_data' => {})
+
+    assert_equal 8, @game.cumulative_times['player-1'] # 3 + 5
+    assert_equal 9, @game.cumulative_times['player-2'] # 7 + 2
+  end
+
+  test 'non-submitter gets submission_timer added to cumulative_times' do
+    @game.add_player_to_game('player-2')
+    @game.configure_game(GameModes::FIXED_ROUNDS, 10)
+    @game.start_round
+    5.times { @game.round_second_elapsed }
+    @game.handle_player_submission('player-1', 'submission' => 'A A A', 'user_data' => {})
+    @game.next_phase # -> voting; player-2 did not submit
+
+    assert_equal 5, @game.cumulative_times['player-1']
+    assert_equal 60, @game.cumulative_times['player-2'] # full timer as penalty
+  end
+
+  test 'award_final_bonuses awards all players tied for lowest cumulative time' do
+    @game.add_player_to_game('player-2')
+    @game.add_player_to_game('player-3')
+    @game.configure_game(GameModes::FIXED_ROUNDS, 1)
+    @game.start_round
+
+    # Force cumulative_times to a known state
+    @game.instance_variable_set(:@cumulative_times,
+                                  { 'player-1' => 4, 'player-2' => 4, 'player-3' => 10 })
+    @game.instance_variable_set(:@game_phase, GamePhases::RESULTS)
+
+    @game.end_game
+
+    assert_includes @game.overall_fastest_player_ids, 'player-1'
+    assert_includes @game.overall_fastest_player_ids, 'player-2'
+    assert_equal 2, @game.overall_fastest_player_ids.size
+    assert_equal 1, @game.scores['player-1']
+    assert_equal 1, @game.scores['player-2']
+    assert_nil @game.scores['player-3']
+  end
+
+  test 'cumulative_times and overall_fastest_player_ids round-trip through serialization' do
+    @game.add_player_to_game('player-2')
+    @game.configure_game(GameModes::FIXED_ROUNDS, 1)
+    @game.start_round
+    @game.handle_player_submission('player-1', 'submission' => 'A A A', 'user_data' => {})
+    @game.next_phase # -> voting; also penalizes player-2
+    @game.next_phase # -> results
+    @game.instance_variable_set(:@game_phase, GamePhases::RESULTS)
+    @game.end_game
+
+    json = JSON.generate(@game.to_hash)
+    restored = GameState.from_hash(JSON.parse(json))
+
+    assert_equal @game.cumulative_times, restored.cumulative_times
+    assert_equal @game.overall_fastest_player_ids, restored.overall_fastest_player_ids
+  end
 end

@@ -175,4 +175,127 @@ describe("VotingScreen - rendering", () => {
 
     expect(wrapper.findAll(".voting-card")).toHaveLength(0);
   });
+
+  describe("results-mode scoring breakdown", () => {
+    const submissions = () => ({
+      "user-1": new UserSubmission("Fast Answer", 3, new UserData("", "", "FastPlayer")),
+      "user-2": new UserSubmission("Mid Answer", 10, new UserData("", "", "MidPlayer")),
+      "user-3": new UserSubmission("Slow Answer", 20, new UserData("", "", "SlowPlayer")),
+    });
+
+    const scoring = {
+      "user-1": {
+        votes_received: 1,
+        voted_for_winner: 0,
+        speed_bonus: 1,
+        total: 2,
+        is_winner: false,
+      },
+      "user-2": {
+        votes_received: 2,
+        voted_for_winner: 0,
+        speed_bonus: 0,
+        total: 2,
+        is_winner: true,
+      },
+      "user-3": {
+        votes_received: 0,
+        voted_for_winner: 1,
+        speed_bonus: 0,
+        total: 1,
+        is_winner: false,
+      },
+    };
+
+    it("marks only the fastest-with-votes card with .speed-bonus-card", () => {
+      const wrapper = shallowMount(VotingScreen, {
+        props: {
+          submissionsByUserId: submissions(),
+          resultsMode: true,
+          skipVoting: false,
+          timeRemaining: 0,
+          acronym: "YAAG",
+          colorPallette: [],
+          lastRoundScoring: scoring,
+          lastRoundWinnerId: "user-2",
+        },
+      });
+
+      const flameCards = wrapper.findAll(".speed-bonus-card");
+      expect(flameCards).toHaveLength(1);
+      expect(flameCards[0].attributes("id")).toBe("user-1");
+    });
+
+    it("marks only the winner card with .winner-card", () => {
+      const wrapper = shallowMount(VotingScreen, {
+        props: {
+          submissionsByUserId: submissions(),
+          resultsMode: true,
+          skipVoting: false,
+          timeRemaining: 0,
+          acronym: "YAAG",
+          colorPallette: [],
+          lastRoundScoring: scoring,
+          lastRoundWinnerId: "user-2",
+        },
+      });
+
+      const winnerCards = wrapper.findAll(".winner-card");
+      expect(winnerCards).toHaveLength(1);
+      expect(winnerCards[0].attributes("id")).toBe("user-2");
+    });
+
+    it("does NOT apply .speed-bonus-card outside results mode", () => {
+      const wrapper = shallowMount(VotingScreen, {
+        props: {
+          submissionsByUserId: submissions(),
+          resultsMode: false,
+          skipVoting: false,
+          timeRemaining: 20,
+          acronym: "YAAG",
+          colorPallette: [],
+          lastRoundScoring: scoring,
+          lastRoundWinnerId: "user-2",
+        },
+      });
+
+      expect(wrapper.findAll(".speed-bonus-card")).toHaveLength(0);
+    });
+
+    it("shows the winner-voter banner when viewer voted for the winner", () => {
+      const wrapper = shallowMount(VotingScreen, {
+        props: {
+          submissionsByUserId: submissions(),
+          resultsMode: true,
+          skipVoting: false,
+          timeRemaining: 0,
+          acronym: "YAAG",
+          colorPallette: [],
+          lastRoundScoring: scoring,
+          lastRoundWinnerId: "user-2",
+          votes: { "voter-id": "user-2" }, // mocked discord user id
+        },
+      });
+
+      expect(wrapper.find(".winner-voter-banner").exists()).toBe(true);
+    });
+
+    it("hides the winner-voter banner when viewer voted for a non-winner", () => {
+      const wrapper = shallowMount(VotingScreen, {
+        props: {
+          submissionsByUserId: submissions(),
+          resultsMode: true,
+          skipVoting: false,
+          timeRemaining: 0,
+          acronym: "YAAG",
+          colorPallette: [],
+          lastRoundScoring: scoring,
+          lastRoundWinnerId: "user-2",
+          votes: { "voter-id": "user-1" },
+        },
+      });
+
+      expect(wrapper.find(".winner-voter-banner").exists()).toBe(false);
+    });
+  });
 });

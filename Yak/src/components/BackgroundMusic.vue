@@ -30,10 +30,8 @@
 }
 </style>
 
-<script setup lang="ts">
-import { ref, onUnmounted } from "vue";
-
-const PATTERN = `
+<script lang="ts">
+export const DEFAULT_BGM_PATTERN = `
 setCps(70/60/4);
 
 stack(
@@ -51,6 +49,14 @@ stack(
   .lpf(3000)
 )
 `;
+</script>
+
+<script setup lang="ts">
+import { ref, onUnmounted, watch } from "vue";
+
+const props = withDefaults(defineProps<{ pattern?: string }>(), {
+  pattern: DEFAULT_BGM_PATTERN,
+});
 
 const playing = ref(false);
 let initialized = false;
@@ -61,9 +67,18 @@ async function startMusic() {
     await initStrudel();
     initialized = true;
   }
-  await evaluate(PATTERN);
+  await evaluate(props.pattern);
   playing.value = true;
 }
+
+watch(
+  () => props.pattern,
+  async (next) => {
+    if (!playing.value) return;
+    const { evaluate } = await import("@strudel/web");
+    await evaluate(next);
+  },
+);
 
 async function stopMusic() {
   const { hush } = await import("@strudel/web");

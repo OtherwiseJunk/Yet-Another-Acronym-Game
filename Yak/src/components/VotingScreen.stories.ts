@@ -386,3 +386,154 @@ export const ResultsNoDecorations: Story = {
     acronym: "YAAG",
   },
 };
+
+// ── Scoring showcase stories (§5) ────────────────────────────────────
+
+// Winner card also has the fastest submission with votes → badges stack.
+// player-1 is the winner AND the fastest-with-votes (answer_time=5 beats 8, 12).
+export const Results_WinnerAndFastest_AreSamePlayer: Story = {
+  args: {
+    submissionsByUserId: threePlayerSubmissions,
+    resultsMode: true,
+    skipVoting: false,
+    timeRemaining: 0,
+    acronym: "YAAG",
+    lastRoundScoring: {
+      "1": {
+        votes_received: 2,
+        voted_for_winner: 0,
+        speed_bonus: 1,
+        total: 3,
+        is_winner: true,
+      },
+      "2": {
+        votes_received: 0,
+        voted_for_winner: 1,
+        speed_bonus: 0,
+        total: 1,
+        is_winner: false,
+      },
+      "3": {
+        votes_received: 0,
+        voted_for_winner: 1,
+        speed_bonus: 0,
+        total: 1,
+        is_winner: false,
+      },
+    },
+    lastRoundWinnerId: "1",
+  },
+};
+
+// Winner (player-2) is NOT the fastest submitter with votes — player-1 is.
+// So 👑 lands on one card, ⚡ on another — visually separate.
+export const Results_WinnerAndFastest_Different: Story = {
+  args: {
+    submissionsByUserId: threePlayerSubmissions,
+    resultsMode: true,
+    skipVoting: false,
+    timeRemaining: 0,
+    acronym: "YAAG",
+    lastRoundScoring: {
+      "1": {
+        votes_received: 1,
+        voted_for_winner: 0,
+        speed_bonus: 1,
+        total: 2,
+        is_winner: false,
+      },
+      "2": {
+        votes_received: 2,
+        voted_for_winner: 0,
+        speed_bonus: 0,
+        total: 2,
+        is_winner: true,
+      },
+      "3": {
+        votes_received: 0,
+        voted_for_winner: 1,
+        speed_bonus: 0,
+        total: 1,
+        is_winner: false,
+      },
+    },
+    lastRoundWinnerId: "2",
+  },
+};
+
+// Current viewer (discord store id "999" per storybook preview) voted for the
+// winner (player-2), so the "+1 pt — you voted for the winner" banner renders.
+export const Results_VoterRewardBanner: Story = {
+  args: {
+    submissionsByUserId: threePlayerSubmissions,
+    resultsMode: true,
+    skipVoting: false,
+    timeRemaining: 0,
+    acronym: "YAAG",
+    lastRoundScoring: {
+      "1": {
+        votes_received: 1,
+        voted_for_winner: 0,
+        speed_bonus: 1,
+        total: 2,
+        is_winner: false,
+      },
+      "2": {
+        votes_received: 2,
+        voted_for_winner: 0,
+        speed_bonus: 0,
+        total: 2,
+        is_winner: true,
+      },
+      "3": {
+        votes_received: 0,
+        voted_for_winner: 0,
+        speed_bonus: 0,
+        total: 0,
+        is_winner: false,
+      },
+    },
+    lastRoundWinnerId: "2",
+    votes: {
+      "999": "2",
+      "1": "2",
+      "3": "1",
+    },
+  },
+};
+
+// Edge case: nobody got any votes this round — no winner, no speed bonus,
+// no fiery aura anywhere. Proves the "≥1 vote" gate.
+export const Results_Tied_FastestGotZeroVotes: Story = {
+  args: {
+    submissionsByUserId: threePlayerSubmissions,
+    resultsMode: true,
+    skipVoting: false,
+    timeRemaining: 0,
+    acronym: "YAAG",
+    lastRoundScoring: {
+      "1": {
+        votes_received: 0,
+        voted_for_winner: 0,
+        speed_bonus: 0,
+        total: 0,
+        is_winner: false,
+      },
+      "2": {
+        votes_received: 0,
+        voted_for_winner: 0,
+        speed_bonus: 0,
+        total: 0,
+        is_winner: false,
+      },
+      "3": {
+        votes_received: 0,
+        voted_for_winner: 0,
+        speed_bonus: 0,
+        total: 0,
+        is_winner: false,
+      },
+    },
+    lastRoundWinnerId: null,
+  },
+};

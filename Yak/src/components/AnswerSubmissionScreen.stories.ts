@@ -8,7 +8,9 @@ const meta: Meta<typeof AnswerSubmissionScreen> = {
   argTypes: {
     acronym: { control: "text" },
     timeRemaining: { control: "number" },
-    onSubmit: { action: "submitted" }, // To log the submit event
+    submissions: { control: "object" },
+    players: { control: "object" },
+    onSubmit: { action: "submitted" },
   },
   decorators: [
     () => ({
@@ -28,15 +30,38 @@ export const Default: Story = {
   args: {
     acronym: "YAAG",
     timeRemaining: 30,
+    submissions: {},
+    players: ["999", "1", "2", "3"],
   },
 };
 
 export const Submittable: Story = {
-  ...Default, // Inherit args from Default
-  // play function removed
+  ...Default,
 };
 
 export const Submitted: Story = {
   ...Default,
-  // play function removed
+};
+
+// Shows how the screen looks while many other players are still submitting
+// and the local player hasn't yet. (The post-submit WaitingState is covered
+// by dedicated stories in WaitingForOtherPlayersComponent.)
+export const OthersAlreadySubmitted: Story = {
+  args: {
+    acronym: "YAAG",
+    timeRemaining: 14,
+    submissions: {
+      "1": {
+        user_data: { displayName: "Alice", avatarUrl: "", decorationUrl: "" },
+        submission: "Yet Another Acronym Game",
+        answer_time: 6,
+      },
+      "2": {
+        user_data: { displayName: "Bob", avatarUrl: "", decorationUrl: "" },
+        submission: "Yawning Alpacas Always Giggle",
+        answer_time: 9,
+      },
+    },
+    players: ["999", "1", "2", "3"],
+  },
 };

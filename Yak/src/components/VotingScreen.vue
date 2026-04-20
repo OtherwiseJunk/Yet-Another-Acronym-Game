@@ -12,10 +12,24 @@
         voting skipped as there aren't enough players
       </p>
     </div>
+    <div
+      v-if="props.resultsMode && votedForWinner"
+      class="winner-voter-banner font"
+    >
+      You voted for the winner! +1 pt
+    </div>
     <div class="voting-container">
       <div
         v-for="votingCardInfo in votingSubmissions"
         class="voting-card"
+        :class="{
+          'speed-bonus-card':
+            props.resultsMode &&
+            props.lastRoundScoring?.[votingCardInfo.userId]?.speed_bonus === 1,
+          'winner-card':
+            props.resultsMode &&
+            props.lastRoundScoring?.[votingCardInfo.userId]?.is_winner === true,
+        }"
         @click="vote(votingCardInfo.userId)"
         :id="votingCardInfo.userId"
         :key="votingCardInfo.userId"
@@ -42,6 +56,30 @@
         <p class="submission-text" :id="'p.' + votingCardInfo.userId">
           {{ votingCardInfo.submissionText }}
         </p>
+        <div
+          v-if="props.resultsMode && props.lastRoundScoring?.[votingCardInfo.userId]"
+          class="badges-row"
+        >
+          <span class="badge score-pill font">
+            +{{ props.lastRoundScoring[votingCardInfo.userId].total }} pts
+          </span>
+          <span
+            v-if="props.lastRoundScoring[votingCardInfo.userId].is_winner"
+            class="badge winner-chip font"
+            >&#9812; Winner</span
+          >
+          <span
+            v-if="props.lastRoundScoring[votingCardInfo.userId].speed_bonus === 1"
+            class="badge fastest-chip font"
+            >&#9889; Fastest +1</span
+          >
+          <span class="badge vote-count font">
+            {{ props.lastRoundScoring[votingCardInfo.userId].votes_received }}
+            vote{{
+              props.lastRoundScoring[votingCardInfo.userId].votes_received === 1 ? "" : "s"
+            }}
+          </span>
+        </div>
       </div>
     </div>
     <div v-show="props.resultsMode" class="controls">
@@ -63,6 +101,7 @@ import Avatar from "./Avatar.vue";
 import StaticAcronym from "./StaticAcronym.vue";
 import { Color } from "../models/color";
 import { VotingCardInfo } from "../models/votingCardInfo";
+import type { RoundScoringEntry } from "../models/gameState";
 import { computed, ref, watch } from "vue";
 import { usePalletteStore } from "../stores/palletteStore";
 const props = defineProps({
@@ -89,6 +128,18 @@ const props = defineProps({
   colorPallette: {
     type: Array as () => Color[],
     required: true,
+  },
+  lastRoundScoring: {
+    type: Object as () => Record<string, RoundScoringEntry>,
+    default: () => ({}),
+  },
+  lastRoundWinnerId: {
+    type: String as unknown as () => string | null,
+    default: null,
+  },
+  votes: {
+    type: Object as () => Record<string, string>,
+    default: () => ({}),
   },
 });
 
@@ -122,6 +173,14 @@ const votingSubmissions = computed(() => {
   });
 
   return submissions;
+});
+
+const votedForWinner = computed(() => {
+  if (!props.resultsMode) return false;
+  if (!props.lastRoundWinnerId) return false;
+  const myId = discord.auth?.user?.id;
+  if (!myId) return false;
+  return props.votes?.[myId] === props.lastRoundWinnerId;
 });
 
 let shouldAnimateByUserId = ref<Map<number, boolean>>(new Map());
@@ -209,6 +268,19 @@ function nextRound() {
   font-weight: 800;
 }
 
+.winner-voter-banner {
+  margin: var(--space-sm) 0 var(--space-md);
+  padding: var(--space-sm) var(--space-2xl);
+  font-size: var(--font-size-lg);
+  color: #fff7d6;
+  background: linear-gradient(120deg, #a26c00, #d99800, #a26c00);
+  background-size: 250% 250%;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 0 18px rgba(255, 196, 64, 0.55);
+  animation: animated-gradient 4s ease infinite;
+  text-align: center;
+}
+
 .voting-container {
   overflow-y: auto;
   overflow-x: hidden;
@@ -288,6 +360,46 @@ function nextRound() {
   font-size: var(--font-size-base);
 }
 
+.badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.badge {
+  font-size: var(--font-size-xs);
+  padding: var(--space-2xs) var(--space-md);
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.score-pill {
+  background: var(--glass-bg-medium);
+  color: var(--text-primary);
+  border: var(--border-thin) solid var(--glass-bg-prominent);
+}
+
+.winner-chip {
+  background: var(--color-gold-bg-strong, rgba(230, 180, 50, 0.25));
+  color: var(--color-gold, #f6c543);
+  border: var(--border-thin) solid var(--color-gold-border, rgba(230, 180, 50, 0.6));
+}
+
+.fastest-chip {
+  background: rgba(255, 90, 0, 0.25);
+  color: #ffb347;
+  border: var(--border-thin) solid rgba(255, 150, 50, 0.7);
+  text-shadow: 0 0 6px rgba(255, 90, 0, 0.6);
+}
+
+.vote-count {
+  background: var(--glass-bg-subtle);
+  color: var(--text-subtle);
+  border: var(--border-thin) solid var(--glass-bg-medium);
+}
+
 .controls {
   margin-top: var(--space-2xl);
   margin-bottom: var(--space-xl);
@@ -332,6 +444,26 @@ function nextRound() {
   z-index: -1;
   animation: animated-gradient 3s ease alternate infinite;
   background-size: 300% 300%;
+}
+
+.speed-bonus-card {
+  --flameBorderWidth: 3px;
+  position: relative;
+  box-shadow: 0 0 20px rgba(255, 90, 0, 0.45), inset 0 0 10px rgba(255, 170, 80, 0.18);
+}
+
+.speed-bonus-card:after {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--flameBorderWidth));
+  left: calc(-1 * var(--flameBorderWidth));
+  height: calc(100% + var(--flameBorderWidth) * 2);
+  width: calc(100% + var(--flameBorderWidth) * 2);
+  background: linear-gradient(60deg, #ff6b00, #ff2a00, #ffb347, #ff6b00);
+  background-size: 300% 300%;
+  border-radius: calc(var(--radius-sm) + var(--flameBorderWidth));
+  z-index: -1;
+  animation: animated-gradient 2.5s ease alternate infinite;
 }
 
 @keyframes animated-gradient {

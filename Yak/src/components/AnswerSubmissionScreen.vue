@@ -27,7 +27,12 @@
     </form>
   </div>
   <div v-else>
-    <WaitingForOtherPlayersComponent :submissionText="submission"></WaitingForOtherPlayersComponent>
+    <WaitingForOtherPlayersComponent
+      :submissionText="submission"
+      :submittedCount="submittedCount"
+      :totalPlayers="props.players.length"
+      :timeRemaining="props.timeRemaining"
+    ></WaitingForOtherPlayersComponent>
   </div>
 </template>
 
@@ -38,6 +43,7 @@ import Acronym from "./Acronym.vue";
 import { useDynamicTextColor } from "../composables/useDynamicTextColor";
 import { Color } from "../models/color";
 import { isValidWordLength } from "../constants/shortWords";
+import { UserSubmission } from "../models/userSubmission";
 const props = defineProps({
   acronym: {
     type: String,
@@ -51,7 +57,17 @@ const props = defineProps({
     type: Array as () => Color[],
     required: true,
   },
+  submissions: {
+    type: Object as () => Record<string, UserSubmission>,
+    default: () => ({}),
+  },
+  players: {
+    type: Array as () => string[],
+    default: () => [],
+  },
 });
+
+const submittedCount = computed(() => Object.keys(props.submissions || {}).length);
 const emits = defineEmits({
   submit(answer: string) {
     if (answer) return true;
